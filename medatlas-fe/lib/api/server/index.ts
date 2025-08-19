@@ -1,0 +1,1 @@
+export { serverEndpoints } from './endpoints';
