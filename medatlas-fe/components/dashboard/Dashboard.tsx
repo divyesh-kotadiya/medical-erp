@@ -19,8 +19,13 @@ import {
   TrendingUp,
   Activity,
   UserCheck,
-  Bell
+  Bell,
+  Eye,
+  UserPlus,
 } from 'lucide-react';
+import { useAppSelector } from '@/store/hooks';
+import InviteStaffDialog from '../layout/Dialog/InviteStaffDialog';
+import { UserRole } from '@/constants/UserRole/role';
 
 const stats = [
   {
@@ -88,6 +93,38 @@ const recentActivities = [
   }
 ];
 
+const invitedStaffCount = 12; 
+
+const newstates = [
+  {
+    title: "Invite Member",
+    value: "",
+    change: "Send invitation to new staff",
+    icon: UserPlus,
+    component: <InviteStaffDialog />,
+  },
+  {
+    title: "Invited Member",
+    value: invitedStaffCount,
+    change: "Total invited member",
+    icon: Users,
+  },
+  {
+    title: "View Member",
+    value: "",
+    change: "See all Member",
+    icon: Eye,
+    button: true, 
+  },
+  {
+    title: "Manage Roles",
+    value: "",
+    change: "Update Member roles",
+    icon: UserPlus,
+    button: true,
+  },
+];
+
 const upcomingShifts = [
   {
     id: 1,
@@ -126,12 +163,21 @@ const getStatusColor = (status: string) => {
 };
 
 export const Dashboard = () => {
+  const { user, tenant } = useAppSelector((state) => state.auth);
   return (
     <div className="p-6 space-y-6 bg-background min-h-screen">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Welcome back, Demo</h1>
-                      <p className="text-muted-foreground">Here&apos;s what&apos;s happening at MedAtlas today.</p>
+        <div className='flex flex-col space-y-2'>
+          <h1 className="text-3xl font-bold text-foreground">
+            Welcome back, {user?.name ?? "Guest"}
+          </h1>
+          <p className="text-muted-foreground">
+            Here&apos;s what&apos;s happening at{" "}
+            <span className="font-semibold text-primary">
+              {tenant?.name ?? "MedAtlas"}
+            </span>{" "}
+            today.
+          </p>
         </div>
         <div className="flex items-center space-x-2">
           <Button variant="outline" size="sm">
@@ -245,35 +291,62 @@ export const Dashboard = () => {
           </CardContent>
         </Card>
       </div>
+      {
+        user?.role === UserRole.ADMIN && (
+          <Card className=" border border-border/50 shadow-lg rounded-lg">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold">Quick Actions</CardTitle>
+              <CardDescription>
+                Common tasks and shortcuts for efficient management
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {newstates.map((stat, index) => (
+                  <Card
+                    key={index}
+                    className="bg-gradient-card border-border/50 hover:shadow-card transition-all duration-300"
+                  >
+                    <CardContent className="p-6">
+                      <div className="flex items-center  justify-between">
+                        <div className='flex flex-col space-y-4'>
+                          <p className="text-sm font-medium text-muted-foreground">
+                            {stat.title}
+                          </p>
 
-      <Card className="bg-gradient-card border-border/50">
-        <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
-          <CardDescription>
-            Common tasks and shortcuts for efficient management
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Button variant="outline" className="h-20 flex-col space-y-2 hover:bg-muted/50">
-              <Calendar className="h-6 w-6" />
-              <span className="text-sm">Schedule Staff</span>
-            </Button>
-            <Button variant="outline" className="h-20 flex-col space-y-2 hover:bg-muted/50">
-              <Clock className="h-6 w-6" />
-              <span className="text-sm">Review Timesheets</span>
-            </Button>
-            <Button variant="outline" className="h-20 flex-col space-y-2 hover:bg-muted/50">
-              <AlertTriangle className="h-6 w-6" />
-              <span className="text-sm">Report Incident</span>
-            </Button>
-            <Button variant="outline" className="h-20 flex-col space-y-2 hover:bg-muted/50">
-              <TrendingUp className="h-6 w-6" />
-              <span className="text-sm">Generate Report</span>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+                          {stat.value !== "" && (
+                            <p className="text-2xl font-bold text-foreground">
+                              {stat.value}
+                            </p>
+                          )}
+
+                          {stat.change && (
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {stat.change}
+                            </p>
+                          )}
+
+                          {stat.component && <div className="mt-3">{stat.component}</div>}
+
+                          {stat.button && (
+                            <button className=" w-full bg-gradient-primary text-white py-2 px-4 rounded-lg shadow hover:shadow-lg transition">
+                              {stat.title}
+                            </button>
+                          )}
+                        </div>
+
+                        <div className="h-12 w-12 rounded-lg bg-gradient-primary flex items-center justify-center">
+                          <stat.icon className="h-6 w-6 text-white" />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )
+      }
     </div>
   );
 };

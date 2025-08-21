@@ -1,13 +1,15 @@
-import Sidebar from '@/components/Sidebar'
 import MobileNav from '@/components/MobileNav'
+import { RequireAuth } from '@/components/providers/auth/RequireAuth'
 
 export default function ProtectedLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen">
-      <div className="flex-1">
-        <MobileNav />
-        <main>{children}</main>
+    <RequireAuth>
+      <div className="flex min-h-screen">
+        <div className="flex-1">
+          <MobileNav />
+          <main>{children}</main>
+        </div>
       </div>
-    </div>
+    </RequireAuth>
   )
 }

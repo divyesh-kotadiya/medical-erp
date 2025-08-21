@@ -7,14 +7,14 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import * as bcrypt from 'bcryptjs';
-import { JwtService } from '@nestjs/jwt';
 import { User, UserDocument } from './schemas/user.schema';
 import { Tenant } from '../Tenants/schemas/tenant.schema';
 import { Role, UserRole } from '../Role/schemas/roles.schema';
 import { LoginDto } from './dto/login.dto';
 import { InvitesService } from '../Invites/invites.service';
 import { randomBytes } from 'crypto';
-import { EmailService } from '../Email/email.service';
+import { HashService } from 'src/common/hash/hash.service';
+import { EmailService } from 'src/common/email/email.service';
 
 @Injectable()
 export class UsersService {
@@ -23,29 +23,30 @@ export class UsersService {
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     @InjectModel(Tenant.name) private tenantModel: Model<Tenant>,
     @InjectModel(Role.name) private roleModel: Model<Role>,
-    private jwtService: JwtService,
+
     private invitesService: InvitesService,
     private emailService: EmailService,
-  ) {}
+    private hashService: HashService,
+  ) { }
 
   async registerWithInvite(
     token: string,
-    dto: { name: string; phone: string; password: string },
+    dto: { name: string; password: string },
   ) {
-    console.log('Registering with invite token:', token);
-    if (!token) {
-      throw new BadRequestException('Invite token is required');
-    }
+    if (!token) throw new BadRequestException('Invite token is required');
+
     const invite = await this.invitesService.findByToken(token);
 
-    if (!invite) {
-      throw new BadRequestException('Invalid or expired invite');
-    }
+    if (!invite) throw new BadRequestException('Invalid or expired invite');
+
+    if (invite.accepted)
+      throw new BadRequestException('Invite has already been accepted');
 
     const existingUser = await this.findByEmail(invite.email);
-    if (existingUser) {
+
+    if (existingUser)
       throw new BadRequestException('User with this email already exists');
-    }
+
 
     const hashedPassword = await bcrypt.hash(dto.password, 10);
 
@@ -53,7 +54,6 @@ export class UsersService {
       tenantId: invite.tenantId,
       email: invite.email,
       name: dto.name,
-      phone: dto.phone,
       password: hashedPassword,
     });
 
@@ -67,17 +67,54 @@ export class UsersService {
     });
 
     user.roleId = new Types.ObjectId(createdRole._id);
+
     await user.save();
 
     await this.invitesService.markAsAccepted(token);
 
-    return { message: 'Registration successful', userId: user._id };
+    const tenant = await this.tenantModel.findById(invite.tenantId).exec();
+
+    if (!tenant) {
+      throw new BadRequestException('Tenant not found');
+    }
+
+    const userData: {
+      id: any;
+      user: string;
+      email: string;
+      role: UserRole;
+      isTenantAdmin: boolean;
+      disabled: any;
+      token: string;
+    } = {
+      id: user.roleId,
+      user: user.name,
+      email: user.email,
+      role: createdRole.role,
+      isTenantAdmin: user.isTenantAdmin,
+      disabled: user.tenantId,
+      token: token,
+    };
+
+    return {
+      message: 'Registration successful',
+      tenant: {
+        _id: tenant._id,
+        name: tenant.name,
+        metadata: tenant.metadata,
+      },
+      userData,
+    };
   }
 
   async login(loginDto: LoginDto) {
-    console.log(loginDto.email);
+
+    if (!loginDto.email || !loginDto.password) {
+      throw new BadRequestException('Email and password are required');
+    }
+
     const user = await this.findByEmail(loginDto.email);
-    console.log(user);
+
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
@@ -90,6 +127,7 @@ export class UsersService {
       user as UserDocument,
       loginDto.password,
     );
+
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials');
     }
@@ -99,10 +137,18 @@ export class UsersService {
       throw new BadRequestException('Role not found');
     }
 
-    const token = this.generateToken(user);
+    const tenant = await this.tenantModel.findById(user.tenantId).exec();
 
+    if (!tenant) {
+      throw new BadRequestException('Tenant not found');
+    }
+
+    const token = this.hashService.generateToken(user);
+
+    if (!token) {
+      throw new BadRequestException('Failed to generate token');
+    }
     const userData: {
-      tenantId: any;
       id: any;
       user: string;
       email: string;
@@ -111,7 +157,6 @@ export class UsersService {
       disabled: any;
       token: string;
     } = {
-      tenantId: user.tenantId,
       id: user.roleId,
       user: user.name,
       email: user.email,
@@ -121,16 +166,25 @@ export class UsersService {
       token: token,
     };
 
-    return userData;
+    return {
+      tenant: {
+        _id: tenant._id,
+        name: tenant.name,
+        metadata: tenant.metadata,
+      },
+      userData,
+    };
   }
 
   async generateResetToken(email: string): Promise<{ message: string }> {
     const user = await this.findByEmail(email);
+
     if (!user) {
       throw new BadRequestException('User with this email does not exist');
     }
 
     const token = randomBytes(32).toString('hex');
+
     const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
 
     await this.userModel
@@ -142,7 +196,8 @@ export class UsersService {
       .exec();
 
     const baseUrl = process.env.FRONTEND_URL;
-    const resetUrl = `${baseUrl}/reset-password?token=${token}`;
+
+    const resetUrl = `${baseUrl}/reset-password?token=${encodeURIComponent(token)}`;
 
     await this.emailService.sendPasswordResetEmail({
       to: user.email,
@@ -175,11 +230,18 @@ export class UsersService {
     token: string,
     newPassword: string,
   ): Promise<{ message: string }> {
-    if (!newPassword) {
-      throw new BadRequestException('New password is required');
+
+    if (!token || !newPassword) {
+      throw new BadRequestException('Token and new password are required');
     }
+
+    const encodedToken = decodeURIComponent(token);
+    if (!encodedToken) {
+      throw new BadRequestException('Invalid token format');
+    }
+
     const user = await this.userModel.findOne({
-      resetPasswordToken: token,
+      resetPasswordToken: encodedToken,
       resetPasswordExpires: { $gt: new Date() },
       disabled: false,
     });
@@ -188,7 +250,7 @@ export class UsersService {
       throw new BadRequestException('Invalid or expired token');
     }
 
-    const hashed = await bcrypt.hash(newPassword, 10);
+    const hashed = await this.hashService.hashPassword(newPassword);
     user.password = hashed;
     user.resetPasswordToken = undefined;
     user.resetPasswordExpires = undefined;
@@ -203,46 +265,37 @@ export class UsersService {
     newPassword: string,
   ): Promise<{ message: string }> {
     const user = await this.userModel.findById(userId).exec();
+
     if (!user) {
       throw new BadRequestException('User not found');
     }
 
-    const valid = await this.verifyPassword(
-      user as UserDocument,
+    if (!currentPassword || !newPassword) {
+      throw new BadRequestException('Current and new passwords are required');
+    }
+    const valid = await this.hashService.verifyPassword(
       currentPassword,
+      user?.password,
     );
+
     if (!valid) {
       throw new BadRequestException('Current password is incorrect');
     }
 
-    const hashed = await bcrypt.hash(newPassword, 10);
+    const hashed = await this.hashService.hashPassword(newPassword);
+
     user.password = hashed;
+
     await user.save();
 
     return { message: 'Password updated successfully' };
   }
 
-  async update(id: string, data: Partial<User>): Promise<User | null> {
-    if (data.password) {
-      data.password = await bcrypt.hash(data.password, 10);
-    }
-    return this.userModel.findByIdAndUpdate(id, data, { new: true }).exec();
-  }
-
   async delete(id: string): Promise<boolean> {
+    if (!Types.ObjectId.isValid(id)) {
+      throw new BadRequestException('Invalid user ID');
+    }
     const result = await this.userModel.findByIdAndDelete(id).exec();
     return !!result;
-  }
-
-  private generateToken(user: User) {
-    const payload = {
-      sub: user?._id?.toString(),
-      email: user.email,
-      tenantId: user.tenantId?.toString?.(),
-      roleId: user.roleId?.toString?.(),
-      isTenantAdmin: user.isTenantAdmin,
-    };
-
-    return this.jwtService.sign(payload);
   }
 }

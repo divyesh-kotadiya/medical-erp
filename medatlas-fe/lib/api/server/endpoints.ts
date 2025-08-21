@@ -1,4 +1,4 @@
-const SERVER_API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:3001/api';
+const SERVER_API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4000/api';
 
 export const serverEndpoints = {
   root: SERVER_API_BASE_URL,
@@ -6,8 +6,6 @@ export const serverEndpoints = {
   internal: {
     auth: {
       root: `${SERVER_API_BASE_URL}/auth`,
-      validate: (token: string) => `${SERVER_API_BASE_URL}/auth/validate/${token}`,
-      refresh: `${SERVER_API_BASE_URL}/auth/refresh`,
     },
     users: {
       root: `${SERVER_API_BASE_URL}/users`,

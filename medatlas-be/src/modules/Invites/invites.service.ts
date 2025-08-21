@@ -2,16 +2,18 @@ import {
   Injectable,
   BadRequestException,
   NotFoundException,
+  HttpStatus,
+  HttpException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Invite, InviteDocument } from './schemas/invite.schema';
 import { Role, UserRole } from '../Role/schemas/roles.schema';
-import { EmailService } from '../Email/email.service';
 import { Tenant } from '../Tenants/schemas/tenant.schema';
 import { User } from '../Users/schemas/user.schema';
 import { CreateInviteDto } from './dto/create-invite.dto';
 import { randomBytes } from 'crypto';
+import { EmailService } from 'src/common/email/email.service';
 
 @Injectable()
 export class InvitesService {
@@ -35,20 +37,42 @@ export class InvitesService {
       tenantId: new Types.ObjectId(tenantId),
     });
 
+    const exitstingUser = await this.userModel.findOne({
+      email,
+      tenantId: new Types.ObjectId(tenantId),
+    });
+
+    const admin = await this.userModel.findById(adminUserId).exec();
+
+    if (email === admin?.email) {
+      throw new HttpException(
+        'You cannot invite yourself',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
     if (existingInvite) {
-      throw new BadRequestException('Invite already exists for this email');
+      throw new HttpException(
+        'Invite already exists for this email',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    if (exitstingUser) {
+      throw new HttpException(
+        'User already exists with this email',
+        HttpStatus.BAD_REQUEST,
+      );
     }
 
     const tenant = await this.tenantModel.findById(tenantId).exec();
-    const admin = await this.userModel.findById(adminUserId).exec();
 
     if (!tenant) {
-      throw new BadRequestException('Tenant not found');
+      throw new HttpException('Tenant not found', HttpStatus.NOT_FOUND);
     }
 
     const token = randomBytes(32).toString('hex');
 
     const expiresAt = new Date();
+
     expiresAt.setDate(expiresAt.getDate() + 7);
 
     const tenantObjectId = new Types.ObjectId(tenantId);
@@ -66,7 +90,7 @@ export class InvitesService {
 
     await invite.save();
 
-    const inviteUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/register?token=${token}`;
+    const inviteUrl = `${process.env.FRONTEND_URL}/invite?token=${token}`;
     await this.emailService.sendInviteEmail({
       to: email,
       organizationName: `${tenant?.name} Organization`,
@@ -76,9 +100,7 @@ export class InvitesService {
     });
 
     return {
-      invite,
-      message: 'Invite created successfully',
-      inviteUrl,
+      message: `Invite send successfully User Email will be ${email}`,
     };
   }
 

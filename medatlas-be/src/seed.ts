@@ -13,7 +13,6 @@ async function seed() {
     const uri = config.getMongodbConfig().uri!;
 
     await connect(uri);
-    console.log(`Connected to ${uri}`);
 
     const Tenant = models.Tenant || model('Tenant', TenantSchema);
     const User = models.User || model('User', UserSchema);
@@ -71,7 +70,6 @@ async function seed() {
       url: 'https://example.com/demo.txt',
     });
 
-    console.log('Seed complete');
     process.exit(0);
   } catch (error) {
     console.error('Seeding failed:', error);

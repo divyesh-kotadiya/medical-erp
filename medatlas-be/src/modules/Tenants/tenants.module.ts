@@ -5,6 +5,9 @@ import { Role, RoleSchema } from '../Role/schemas/roles.schema';
 import { User, UserSchema } from '../Users/schemas/user.schema';
 import { TenantsService } from './tenants.service';
 import { TenantsController } from './tenants.controller';
+import { JwtModule } from '@nestjs/jwt';
+import { HashModule } from 'src/common/hash/hash.module';
+import { AuthModule } from 'src/common/auth/auth.module';
 
 @Module({
   imports: [
@@ -13,6 +16,9 @@ import { TenantsController } from './tenants.controller';
       { name: Role.name, schema: RoleSchema },
       { name: User.name, schema: UserSchema },
     ]),
+    JwtModule,
+    HashModule,
+    AuthModule,
   ],
   controllers: [TenantsController],
   providers: [TenantsService],

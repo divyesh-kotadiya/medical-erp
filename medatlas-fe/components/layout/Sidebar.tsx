@@ -17,27 +17,35 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-
-const navigationItems = [
-  { title: 'Dashboard', url: '/dashboard', icon: LayoutDashboard },
-  { title: 'Scheduling', url: '/dashboard/scheduling', icon: Calendar },
-  { title: 'Timesheets', url: '/dashboard/timesheets', icon: Clock },
-  { title: 'Incidents', url: '/dashboard/incidents', icon: AlertTriangle },
-  { title: 'Documents', url: '/dashboard/documents', icon: FileText },
-  { title: 'Reports', url: '/dashboard/reports', icon: BarChart3 },
-  { title: 'Admin', url: '/dashboard/admin', icon: Settings },
-];
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { logout } from '@/store/slices/auth';
+import { enqueueSnackbar } from 'notistack';
 
 export const Sidebar = () => {
   const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
-
+  const { user } = useAppSelector((state) => state.auth);
   const isActive = (path: string) => pathname === path;
 
+  const dispatch = useAppDispatch();
+
+  const handleLogout = () => {
+    dispatch(logout());
+    enqueueSnackbar("logout successful", { variant: "success" });
+  }
+  const navigationItems = [
+    { title: 'Dashboard', url: '/dashboard', icon: LayoutDashboard },
+    { title: 'Scheduling', url: '/dashboard/scheduling', icon: Calendar },
+    { title: 'Timesheets', url: '/dashboard/timesheets', icon: Clock },
+    { title: 'Incidents', url: '/dashboard/incidents', icon: AlertTriangle },
+    { title: 'Documents', url: '/dashboard/documents', icon: FileText },
+    { title: 'Reports', url: '/dashboard/reports', icon: BarChart3 },
+    { title: 'Settings', url: '/dashboard/settings', icon: Settings }
+  ];
   return (
     <div className={cn(
       "h-screen bg-sidebar border-r border-sidebar-border transition-all duration-300 flex flex-col",
-      collapsed ? "w-16" : "w-64"
+      collapsed ? "w-20" : "w-64"
     )}>
       <div className="p-4 border-b border-sidebar-border">
         <div className="flex items-center justify-between">
@@ -51,9 +59,9 @@ export const Sidebar = () => {
             variant="ghost"
             size="sm"
             onClick={() => setCollapsed(!collapsed)}
-            className="h-8 w-8 p-0"
+            className="h-8 w-8 p-0  hover:bg-sidebar-primary"
           >
-            {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+            {collapsed ? <ChevronRight className="h-6 w-6" /> : <ChevronLeft className="h-6 w-6" />}
           </Button>
         </div>
       </div>
@@ -64,7 +72,7 @@ export const Sidebar = () => {
             key={item.title}
             href={item.url}
             className={cn(
-              "flex items-center space-x-3 px-3 py-2 rounded-lg transition-all duration-200",
+              "flex items-center space-x-4 px-3 py-3 rounded-lg transition-all duration-200",
               isActive(item.url)
                 ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-medical"
                 : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
@@ -81,19 +89,20 @@ export const Sidebar = () => {
       <div className="p-4 border-t border-sidebar-border">
         {!collapsed && (
           <div className="mb-3">
-            <p className="text-sm font-medium text-sidebar-foreground">Demo User</p>
-            <p className="text-xs text-muted-foreground">Administrator</p>
+            <p className="text-sm font-medium text-sidebar-foreground">{user?.email}</p>
+            <p className="text-xs text-muted-foreground">{user?.role}</p>
           </div>
         )}
         <Button
-          variant="ghost"
+          variant="outline"
+          onClick={() => handleLogout()}
           className={cn(
-            "w-full justify-start text-muted-foreground hover:text-foreground",
+            "w-full justify-start bg-sidebar-primary hover:bg-sidebar-primary",
             collapsed && "px-2"
           )}
         >
           <LogOut className="h-4 w-4" />
-          {!collapsed && <span className="ml-2">Logout</span>}
+          {!collapsed && <span className="ml-2 text-white">Logout</span>}
         </Button>
       </div>
     </div>

@@ -20,8 +20,8 @@ export class JwtGuard implements CanActivate {
     }
 
     try {
-      console.log('Verifying token:', token);
       const payload = await this.jwtService.verifyAsync(token);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       request.user = payload;
       return true;
     } catch {

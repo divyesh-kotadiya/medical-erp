@@ -54,7 +54,11 @@ export class ConfigService {
   }
 
   getJWTSecretKey(): string {
-    return this.envConfig['JWT_SECRET']!;
+    const secret = this.envConfig['JWT_SECRET'];
+    if (!secret) {
+      throw new Error('JWT_SECRET is not defined in environment variables');
+    }
+    return secret;
   }
 
   getPort(): string {
@@ -102,12 +106,12 @@ export class ConfigService {
 
   getEmailConfig() {
     return {
-      type: this.envConfig['EMAIL_TYPE'] || 'ethereal',
-      host: this.envConfig['EMAIL_HOST'] || 'smtp.ethereal.email',
+      type: this.envConfig['EMAIL_TYPE'],
+      host: this.envConfig['EMAIL_HOST'],
       port: parseInt(this.envConfig['EMAIL_PORT'] || '587'),
       secure: this.envConfig['EMAIL_SECURE'] === 'true',
-      user: this.envConfig['EMAIL_USER'] || 'test@ethereal.email',
-      password: this.envConfig['EMAIL_PASSWORD'] || 'test123',
+      user: this.envConfig['EMAIL_USER'],
+      password: this.envConfig['EMAIL_PASSWORD'],
       from: this.envConfig['EMAIL_FROM'] || 'noreply@medatlas.com',
     };
   }
@@ -115,7 +119,7 @@ export class ConfigService {
   getJwtConfig() {
     return {
       secret: this.getJWTSecretKey(),
-      signOptions: { expiresIn: '24h' },
+      signOptions: { expiresIn: '1h' },
     };
   }
 

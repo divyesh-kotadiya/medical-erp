@@ -12,7 +12,7 @@ import {
 import { TenantsService } from './tenants.service';
 import { CreateTenantDto } from './dto/create-tenant.dto';
 import { Tenant } from './schemas/tenant.schema';
-import { JwtGuard } from '../Users/jwt.guard';
+import { JwtGuard } from 'src/common/auth/jwt.guard';
 
 @Controller('tenants')
 export class TenantsController {

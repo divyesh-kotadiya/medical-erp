@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { InvitesService } from './invites.service';
 import { CreateInviteDto } from './dto/create-invite.dto';
-import { JwtGuard } from '../Users/jwt.guard';
+import { JwtGuard } from 'src/common/auth/jwt.guard';
 
 @Controller('invites')
 export class InvitesController {
@@ -35,7 +35,6 @@ export class InvitesController {
     if (!req.user.isTenantAdmin) {
       throw new Error('Only tenant admins can create invites');
     }
-    console.log(req.user.tenantId, 'Admin ID:', req.user.sub);
     return this.invitesService.createInvite(
       createInviteDto,
       req.user.tenantId,

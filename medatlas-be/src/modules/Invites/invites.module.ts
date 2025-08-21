@@ -6,7 +6,9 @@ import { Invite, InviteSchema } from './schemas/invite.schema';
 import { Role, RoleSchema } from '../Role/schemas/roles.schema';
 import { Tenant, TenantSchema } from '../Tenants/schemas/tenant.schema';
 import { User, UserSchema } from '../Users/schemas/user.schema';
-import { EmailModule } from '../Email/email.module';
+import { JwtModule } from '@nestjs/jwt';
+import { EmailModule } from 'src/common/email/email.module';
+import { AuthModule } from 'src/common/auth/auth.module';
 
 @Module({
   imports: [
@@ -17,6 +19,8 @@ import { EmailModule } from '../Email/email.module';
       { name: User.name, schema: UserSchema },
     ]),
     EmailModule,
+    JwtModule,
+    AuthModule,
   ],
   controllers: [InvitesController],
   providers: [InvitesService],

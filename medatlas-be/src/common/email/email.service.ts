@@ -23,29 +23,6 @@ export class EmailService {
     void this.initializeTransporter();
     this.loadTemplates();
   }
-
-  async sendEmail(input: {
-    to: string;
-    subject: string;
-    html: string;
-    text?: string;
-  }): Promise<boolean> {
-    try {
-      await this.transporter.sendMail({
-        from: this.configService.getEmailConfig().from,
-        to: input.to,
-        subject: input.subject,
-        html: input.html,
-        text: input.text,
-      });
-      this.logger.log(`Email sent to ${input.to}`);
-      return true;
-    } catch (err) {
-      this.logger.error(`Failed to send email to ${input.to}`, err);
-      return false;
-    }
-  }
-
   private async initializeTransporter() {
     const emailConfig = this.configService.getEmailConfig();
 
@@ -89,6 +66,7 @@ export class EmailService {
     try {
       const templatesDir = path.join(__dirname, 'templates');
       const invitePath = path.join(templatesDir, 'invite-email.html');
+
       const resetPasswordPath = path.join(
         templatesDir,
         'reset-password-email.html',
@@ -115,21 +93,35 @@ export class EmailService {
     }
   }
 
+  private renderTemplate(
+    template: string,
+    data: Record<string, string>,
+  ): string {
+    let rendered = template;
+    for (const key in data) {
+      if (Object.prototype.hasOwnProperty.call(data, key)) {
+        const safe = data[key] ?? '';
+        rendered = rendered.replace(new RegExp(`\\$\\{${key}\\}`, 'g'), safe);
+      }
+    }
+    return rendered;
+  }
+
   async sendInviteEmail(data: InviteEmailData): Promise<boolean> {
     const subject = `You've been invited to join ${data.organizationName}`;
     const html = this.inviteEmailTemplate
       ? this.renderTemplate(this.inviteEmailTemplate, {
-          organizationName: data.organizationName,
-          inviteUrl: data.inviteUrl,
-          adminName: data.adminName || 'Admin',
-          expiresIn: data.expiresIn || '7 days',
-        })
+        organizationName: data.organizationName,
+        inviteUrl: data.inviteUrl,
+        adminName: data.adminName || 'Admin',
+        expiresIn: data.expiresIn || '7 days',
+      })
       : this.generateInviteEmailHTML({
-          organizationName: data.organizationName,
-          inviteUrl: data.inviteUrl,
-          adminName: data.adminName || 'Admin',
-          expiresIn: data.expiresIn || '7 days',
-        });
+        organizationName: data.organizationName,
+        inviteUrl: data.inviteUrl,
+        adminName: data.adminName || 'Admin',
+        expiresIn: data.expiresIn || '7 days',
+      });
 
     try {
       await this.transporter.sendMail({
@@ -146,20 +138,6 @@ export class EmailService {
     }
   }
 
-  private renderTemplate(
-    template: string,
-    data: Record<string, string>,
-  ): string {
-    let rendered = template;
-    for (const key in data) {
-      if (Object.prototype.hasOwnProperty.call(data, key)) {
-        const safe = data[key] ?? '';
-        rendered = rendered.replace(new RegExp(`\\$\\{${key}\\}`, 'g'), safe);
-      }
-    }
-    return rendered;
-  }
-
   private generateInviteEmailHTML(input: {
     organizationName: string;
     inviteUrl: string;
@@ -170,7 +148,7 @@ export class EmailService {
       <html>
       <head><meta charset="utf-8" /></head>
       <body style="font-family: Arial, sans-serif;">
-        <h2>Staff Invitation</h2>
+        <h2>Member Invitation</h2>
         <p>You have been invited by <strong>${input.adminName}</strong> to join <strong>${input.organizationName}</strong>.</p>
         <p>This link will expire in ${input.expiresIn}.</p>
         <p>
@@ -190,13 +168,13 @@ export class EmailService {
     const subject = 'Reset your password';
     const html = this.resetPasswordEmailTemplate
       ? this.renderTemplate(this.resetPasswordEmailTemplate, {
-          userName: input.userName || 'there',
-          resetUrl: input.resetUrl,
-        })
+        userName: input.userName || 'there',
+        resetUrl: input.resetUrl,
+      })
       : this.generateResetPasswordEmailHTML({
-          userName: input.userName || 'there',
-          resetUrl: input.resetUrl,
-        });
+        userName: input.userName || 'there',
+        resetUrl: input.resetUrl,
+      });
 
     try {
       await this.transporter.sendMail({

@@ -2,16 +2,16 @@ import { IsString, IsEmail, IsOptional, IsObject } from 'class-validator';
 
 export class CreateTenantDto {
   @IsString()
-  name: string;
+  organization: string;
 
   @IsEmail()
-  adminEmail: string;
+  email: string;
 
   @IsString()
-  adminPassword: string;
+  password: string;
 
   @IsString()
-  adminName: string;
+  name: string;
 
   @IsOptional()
   @IsObject()

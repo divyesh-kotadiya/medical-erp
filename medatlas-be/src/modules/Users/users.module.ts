@@ -1,14 +1,14 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { JwtModule } from '@nestjs/jwt';
 import { User, UserSchema } from './schemas/user.schema';
 import { Tenant, TenantSchema } from '../Tenants/schemas/tenant.schema';
 import { Role, RoleSchema } from '../Role/schemas/roles.schema';
 import { UsersService } from './users.service';
 import { UsersController } from './users.controller';
-import { JwtGuard } from './jwt.guard';
 import { InvitesModule } from '../Invites/invites.module';
-import { EmailModule } from '../Email/email.module';
+import { HashModule } from 'src/common/hash/hash.module';
+import { EmailModule } from 'src/common/email/email.module';
+import { AuthModule } from 'src/common/auth/auth.module';
 
 @Module({
   imports: [
@@ -17,15 +17,13 @@ import { EmailModule } from '../Email/email.module';
       { name: Tenant.name, schema: TenantSchema },
       { name: Role.name, schema: RoleSchema },
     ]),
-    JwtModule.register({
-      secret: process.env.JWT_SECRET || 'your-secret-key',
-      signOptions: { expiresIn: '24h' },
-    }),
+    HashModule,
     InvitesModule,
     EmailModule,
+    AuthModule,
   ],
   controllers: [UsersController],
-  providers: [UsersService, JwtGuard],
-  exports: [UsersService, JwtGuard],
+  providers: [UsersService],
+  exports: [UsersService],
 })
 export class UsersModule {}

@@ -10,22 +10,25 @@ import {
   HttpCode,
   HttpStatus,
   Request,
+  All,
+  NotFoundException,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { User } from './schemas/user.schema';
-import { JwtGuard } from './jwt.guard';
 import { LoginDto } from './dto/login.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { JwtGuard } from 'src/common/auth/jwt.guard';
 
 @Controller('auth')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
-  @Post('register')
+  @Post('register-with-invite')
+  @HttpCode(HttpStatus.CREATED)
   async registerWithInvite(
     @Body('token') token: string,
-    @Body() dto: { name: string; phone: string; password: string },
+    @Body() dto: { name: string; password: string },
   ) {
     return this.usersService.registerWithInvite(token, dto);
   }
@@ -37,11 +40,13 @@ export class UsersController {
   }
 
   @Post('forgot-password')
+  @HttpCode(HttpStatus.OK)
   async forgotPassword(@Body('email') email: string) {
     return this.usersService.generateResetToken(email);
   }
 
   @Put('forgot-password/:token')
+  @HttpCode(HttpStatus.OK)
   async resetPassword(
     @Param('token') token: string,
     @Body() dto: ResetPasswordDto,
@@ -50,6 +55,7 @@ export class UsersController {
   }
 
   @UseGuards(JwtGuard)
+  @HttpCode(HttpStatus.OK)
   @Get()
   async findAll(): Promise<User[]> {
     return this.usersService.findAll();
@@ -62,15 +68,7 @@ export class UsersController {
   }
 
   @UseGuards(JwtGuard)
-  @Put(':id')
-  async update(
-    @Param('id') id: string,
-    @Body() updateData: Partial<User>,
-  ): Promise<User | null> {
-    return this.usersService.update(id, updateData);
-  }
-
-  @UseGuards(JwtGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':id')
   async remove(@Param('id') id: string): Promise<{ success: boolean }> {
     const success = await this.usersService.delete(id);
@@ -78,6 +76,7 @@ export class UsersController {
   }
 
   @UseGuards(JwtGuard)
+  @HttpCode(HttpStatus.OK)
   @Post('change-password')
   async changePassword(
     @Request() req: { user: { sub: string } },
@@ -88,5 +87,11 @@ export class UsersController {
       dto.currentPassword,
       dto.newPassword,
     );
+  }
+
+  @All('*')
+  @HttpCode(HttpStatus.NOT_FOUND)
+  handleNotFound() {
+    throw new NotFoundException('Route not found in auth module');
   }
 }

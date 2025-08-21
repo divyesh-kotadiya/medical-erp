@@ -14,6 +14,7 @@ import {
   ArrowRight,
   Star
 } from 'lucide-react';
+import { useAuthRedirect } from '@/hooks/useAuthRedirect';
 
 const features = [
   {
@@ -66,6 +67,7 @@ const testimonials = [
 ];
 
 export const LandingPage = () => {
+  useAuthRedirect();
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
@@ -110,7 +112,7 @@ export const LandingPage = () => {
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </Link>
-                <Button size="lg"  className="border-white text-white hover:bg-white/10">
+                <Button size="lg" className="border-white text-white hover:bg-white/10">
                   Watch Demo
                 </Button>
               </div>
@@ -141,7 +143,7 @@ export const LandingPage = () => {
               From staff scheduling to incident tracking, MedAtlas provides comprehensive tools designed specifically for healthcare environments.
             </p>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature, index) => (
               <Card key={index} className="group hover:shadow-elevated transition-all duration-300 border-border/50">
@@ -168,7 +170,7 @@ export const LandingPage = () => {
               Trusted by healthcare professionals
             </h2>
           </div>
-          
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-4xl mx-auto">
             {testimonials.map((testimonial, index) => (
               <Card key={index} className="bg-card shadow-card">
