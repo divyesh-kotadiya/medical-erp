@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -18,7 +18,7 @@ const inviteSchema = z.object({
 type InviteFormValues = z.infer<typeof inviteSchema>;
 
 export default function InviteStaffDialog() {
-  const { loading, message, error } = useAppSelector((state) => state.invite);
+  const { loading } = useAppSelector((state) => state.invite);
   const [open, setOpen] = useState(false);
   const dispatch = useAppDispatch();
   const [roleOpen, setRoleOpen] = useState(false);
@@ -30,23 +30,22 @@ export default function InviteStaffDialog() {
 
   const onSubmit = async (data: InviteFormValues) => {
     try {
-      dispatch(inviteMember(data))
-    }
-    catch (e) {
+      const resultAction = await dispatch(inviteMember(data));
+
+      if (inviteMember.fulfilled.match(resultAction)) {
+        enqueueSnackbar(resultAction.payload.message || "Invite sent successfully!", {
+          variant: "success",
+        });
+      } else if (inviteMember.rejected.match(resultAction)) {
+        enqueueSnackbar(resultAction.payload.message as string || "Something went wrong", {
+          variant: "error",
+        });
+      }
+    } catch (e) {
       enqueueSnackbar("Something went wrong", { variant: "error" });
     }
-  }
-  useEffect(() => {
-    if (message) {
-      enqueueSnackbar(message, { variant: 'success' });
-      setOpen(false);
-      reset();
-    }
-    if (error) {
-      const errorMessage = error.message || "Something went wrong";
-      enqueueSnackbar(errorMessage, { variant: 'error' });
-    }
-  }, [loading]);
+  };
+
 
   return (
     <div>

@@ -37,7 +37,7 @@ export default function LoginPage() {
     }
 
     if (password && password.length < 8) {
-      newErrors.password = 'Password must be at least 6 characters';
+      newErrors.password = 'Password must be at least 8 characters';
     }
 
     setErrors(newErrors);

@@ -26,6 +26,7 @@ import {
 import { useAppSelector } from '@/store/hooks';
 import InviteStaffDialog from '../layout/Dialog/InviteStaffDialog';
 import { UserRole } from '@/constants/UserRole/role';
+import InviteListDialog from '../layout/Dialog/InviteListDialog';
 
 const stats = [
   {
@@ -93,37 +94,6 @@ const recentActivities = [
   }
 ];
 
-const invitedStaffCount = 12; 
-
-const newstates = [
-  {
-    title: "Invite Member",
-    value: "",
-    change: "Send invitation to new staff",
-    icon: UserPlus,
-    component: <InviteStaffDialog />,
-  },
-  {
-    title: "Invited Member",
-    value: invitedStaffCount,
-    change: "Total invited member",
-    icon: Users,
-  },
-  {
-    title: "View Member",
-    value: "",
-    change: "See all Member",
-    icon: Eye,
-    button: true, 
-  },
-  {
-    title: "Manage Roles",
-    value: "",
-    change: "Update Member roles",
-    icon: UserPlus,
-    button: true,
-  },
-];
 
 const upcomingShifts = [
   {
@@ -164,6 +134,29 @@ const getStatusColor = (status: string) => {
 
 export const Dashboard = () => {
   const { user, tenant } = useAppSelector((state) => state.auth);
+  const { total } = useAppSelector((state) => state.invite)
+  const newstates = [
+    {
+      title: "Invite Member",
+      value: "",
+      change: "Send invitation to new staff",
+      icon: UserPlus,
+      component: <InviteStaffDialog />,
+    },
+    {
+      title: "Invited Member",
+      value: total || 0,
+      change: "Total invited member",
+      icon: Users,
+    },
+    {
+      title: "View Member",
+      value: "",
+      change: "See all Member",
+      icon: Eye,
+      component: <InviteListDialog />,
+    }
+  ];
   return (
     <div className="p-6 space-y-6 bg-background min-h-screen">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -301,7 +294,7 @@ export const Dashboard = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {newstates.map((stat, index) => (
                   <Card
                     key={index}
@@ -328,7 +321,7 @@ export const Dashboard = () => {
 
                           {stat.component && <div className="mt-3">{stat.component}</div>}
 
-                          {stat.button && (
+                          {stat?.button && (
                             <button className=" w-full bg-gradient-primary text-white py-2 px-4 rounded-lg shadow hover:shadow-lg transition">
                               {stat.title}
                             </button>

@@ -14,6 +14,7 @@ import { User } from '../Users/schemas/user.schema';
 import { CreateInviteDto } from './dto/create-invite.dto';
 import { randomBytes } from 'crypto';
 import { EmailService } from 'src/common/email/email.service';
+import { GetInviteListDto } from './dto/get-invites.dto';
 
 @Injectable()
 export class InvitesService {
@@ -133,10 +134,27 @@ export class InvitesService {
     await invite.save();
   }
 
-  async getInvitesByTenant(tenantId: string): Promise<Invite[]> {
-    return this.inviteModel
-      .find({ tenantId: new Types.ObjectId(tenantId) })
+  async getInvitesByTenant(
+    tenantId: string,
+    { page = 1, limit = 10 }: GetInviteListDto,
+  ) {
+    const query = { tenantId: new Types.ObjectId(tenantId) };
+
+    const invites = await this.inviteModel
+      .find(query)
+      .skip((page - 1) * limit)
+      .limit(limit)
       .exec();
+
+    const total = await this.inviteModel.countDocuments(query);
+
+    return {
+      data: invites,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+      total,
+    };
   }
 
   async deleteInvite(id: string): Promise<boolean> {

@@ -12,6 +12,7 @@ import {
 import { InvitesService } from './invites.service';
 import { CreateInviteDto } from './dto/create-invite.dto';
 import { JwtGuard } from 'src/common/auth/jwt.guard';
+import { GetInviteListDto } from './dto/get-invites.dto';
 
 @Controller('invites')
 export class InvitesController {
@@ -43,13 +44,19 @@ export class InvitesController {
   }
 
   @UseGuards(JwtGuard)
-  @Get()
-  async getInvitesByTenant(@Request() req: any) {
+  @Post('list')
+  async getInvitesByTenant(
+    @Request() req: any,
+    @Body() getInviteListDto: GetInviteListDto,
+  ) {
     if (!req.user.isTenantAdmin) {
       throw new Error('Only tenant admins can view invites');
     }
 
-    return this.invitesService.getInvitesByTenant(req.user.tenantId);
+    return this.invitesService.getInvitesByTenant(
+      req.user.tenantId,
+      getInviteListDto,
+    );
   }
 
   @UseGuards(JwtGuard)

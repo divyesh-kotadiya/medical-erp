@@ -225,7 +225,7 @@ export default function ResetPasswordPage() {
             </div>
 
             <Button 
-              className="w-full bg-gradient-to-r from-blue-500 to-emerald-500 hover:from-blue-600 hover:to-emerald-600 text-white py-3 rounded-lg transition-all duration-200 transform hover:scale-[1.02] shadow-md disabled:opacity-70 disabled:cursor-not-allowed" 
+              className="w-full bg-gradient-to-r from-blue-500 to-emerald-500 hover:from-blue-600 hover:to-emerald-600 text-white py-3 rounded-lg transition-all duration-200 transform shadow-md disabled:opacity-70 disabled:cursor-not-allowed" 
               onClick={onSubmit} 
               disabled={loading || !isFormValid}
             >

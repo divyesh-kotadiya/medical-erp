@@ -17,9 +17,8 @@ export default function ForgotPasswordPage() {
   });
   
   const dispatch = useAppDispatch();
-  const { error, loading } = useAppSelector((state) => state.auth);
+  const { loading } = useAppSelector((state) => state.auth);
 
-  // Validate form
   useEffect(() => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     let newErrors = {
@@ -56,8 +55,8 @@ export default function ForgotPasswordPage() {
       if (forgotPassword.fulfilled.match(resultAction)) {
         enqueueSnackbar("Password reset link sent to your email.", { variant: "success" });
       } else if (forgotPassword.rejected.match(resultAction)) {
-        const errorMessage = resultAction.payload || "Failed to send reset email. Please try again.";
-        enqueueSnackbar(errorMessage as string, { variant: "error" });
+        const errorMessage = resultAction?.payload || "Failed to send reset email. Please try again.";
+        enqueueSnackbar(errorMessage?.message as string, { variant: "error" });
       }
     } catch (err: any) {
       enqueueSnackbar(err.message || "Something went wrong", { variant: "error" });
@@ -66,7 +65,6 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2">
-      {/* Left Side - Branding */}
       <div className="hidden lg:flex flex-col items-center justify-center 
         bg-gradient-to-br from-blue-500 via-blue-600 to-emerald-500 
         text-white p-12 relative overflow-hidden w-full">
@@ -126,7 +124,6 @@ export default function ForgotPasswordPage() {
         <div className="absolute top-1/3 right-1/4 w-3 h-3 rounded-full bg-white/40 animate-pulse delay-700"></div>
       </div>
 
-      {/* Right Side - Form */}
       <div className="flex items-center justify-center p-6">
         <Card className="w-full max-w-md shadow-lg border-0">
           <CardHeader className="text-center">
@@ -153,7 +150,7 @@ export default function ForgotPasswordPage() {
             </div>
             
             <Button 
-              className="w-full bg-gradient-to-r from-blue-500 to-emerald-500 hover:from-blue-600 hover:to-emerald-600 text-white py-3 rounded-lg transition-all duration-200 transform hover:scale-[1.02] shadow-md disabled:opacity-70 disabled:cursor-not-allowed" 
+              className="w-full bg-gradient-to-r from-blue-500 to-emerald-500 hover:from-blue-600 hover:to-emerald-600 text-white py-3 rounded-lg transition-all duration-200 transform shadow-md disabled:opacity-70 disabled:cursor-not-allowed" 
               onClick={onSubmit}
               disabled={loading || !isFormValid}
             >
