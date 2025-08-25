@@ -1,4 +1,5 @@
-import { DashboardLayout } from '@/components/layout/DashboardLayout';
+import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
+
 
 export default function SettingsPage() {
   return (

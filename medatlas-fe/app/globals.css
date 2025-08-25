@@ -8,7 +8,41 @@ All colors MUST be HSL for proper theming.
 
 @layer base {
   :root {
-    /* Base Colors - Clean medical whites and grays */
+    --fc-small-font-size: 0.85em;
+    --fc-page-bg-color: var(--background, #fff);
+    --fc-neutral-bg-color: rgba(240, 240, 240, 0.5);
+    --fc-neutral-text-color: #6b7280;
+    --fc-border-color: #04b3ed;
+    --fc-button-text-color: #fff;
+    --fc-button-bg-color: #04b3ed;
+    --fc-button-border-color: #04b3ed;
+    --fc-button-hover-bg-color: #04b3ed;
+    --fc-button-hover-border-color: #04b3ed;
+    --fc-button-active-bg-color: #04b3ed;
+    
+
+    --fc-event-bg-color: linear-gradient(90deg, #3b82f6, #2563eb);
+    --fc-event-border-color: transparent;
+    --fc-event-text-color: #fff;
+    --fc-event-selected-overlay-color: rgba(0, 0, 0, 0.15);
+    --fc-event-border-radius: 0.75rem;
+    --fc-event-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+
+    --fc-more-link-bg-color: #e5e7eb;
+    --fc-more-link-text-color: #374151;
+
+    --fc-event-resizer-thickness: 8px;
+    --fc-event-resizer-dot-total-width: 8px;
+    --fc-event-resizer-dot-border-width: 1px;
+
+    --fc-non-business-color: rgba(229, 231, 235, 0.5);
+    --fc-bg-event-color: rgb(147, 197, 253);
+    --fc-bg-event-opacity: 0.25;
+    --fc-highlight-color: rgba(191, 219, 254, 0.4);
+    --fc-today-bg-color: rgba(253, 224, 71, 0.2);
+    --fc-now-indicator-color: #ef4444;
+
+
     --background: 210 20% 98%;
     --foreground: 213 27% 12%;
 
