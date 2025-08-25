@@ -48,7 +48,7 @@ export const Sidebar = () => {
       collapsed ? "w-20" : "w-64"
     )}>
       <div className="p-4 border-b border-sidebar-border">
-        <div className="flex items-center justify-between">
+        <div className={`flex items-centern justify-center ${!collapsed && 'justify-between'}`}>
           {!collapsed && (
             <div>
               <h2 className="text-lg font-semibold text-sidebar-foreground">MedAtlas</h2>
@@ -59,7 +59,7 @@ export const Sidebar = () => {
             variant="ghost"
             size="sm"
             onClick={() => setCollapsed(!collapsed)}
-            className="h-8 w-8 p-0  hover:bg-sidebar-primary"
+            className="h-10 w-10 p-0 hover:bg-white hover:text-black"
           >
             {collapsed ? <ChevronRight className="h-6 w-6" /> : <ChevronLeft className="h-6 w-6" />}
           </Button>
