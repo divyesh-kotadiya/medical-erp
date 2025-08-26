@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import { ListChecks } from 'lucide-react';
 
 export const TimesheetList = () => {
   const [submitted, setSubmitted] = useState(false);
@@ -17,11 +18,11 @@ export const TimesheetList = () => {
     <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 transition-all duration-300 hover:shadow-xl">
       <h2 className="text-xl font-semibold mb-6 text-gray-800 dark:text-gray-100 flex items-center">
         <span className="bg-blue-100 dark:bg-blue-900/30 p-2 rounded-lg mr-3">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-list-checks-icon lucide-list-checks  text-blue-600 dark:text-blue-400">
-            <path d="m3 17 2 2 4-4" /><path d="m3 7 2 2 4-4" /><path d="M13 6h8" /><path d="M13 12h8" /><path d="M13 18h8" /></svg>
+          <ListChecks className="text-blue-600 dark:text-blue-400" size={24} />
         </span>
-        Weekly TimeSheet Management
+        <span className="">Weekly TimeSheet Management</span>
       </h2>
+
       <div className="overflow-x-auto rounded-md border border-gray-200 dark:border-gray-700">
         <table className="w-full">
           <thead>

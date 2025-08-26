@@ -1,95 +1,131 @@
 'use client';
-import FullCalendar from '@fullcalendar/react';
-import dayGridPlugin from '@fullcalendar/daygrid';
-import interactionPlugin from '@fullcalendar/interaction';
-import { useState } from 'react';
+import React, { useRef, useEffect } from "react";
+import FullCalendar from "@fullcalendar/react";
+import { CalendarApi, DateSelectArg, EventClickArg, EventContentArg } from "@fullcalendar/core/index.js";
+import dayGridPlugin from "@fullcalendar/daygrid";
+import timeGridPlugin from "@fullcalendar/timegrid";
+import interactionPlugin from "@fullcalendar/interaction";
+import listPlugin from "@fullcalendar/list";
 
-interface Event {
+export interface Event {
   id: string;
   title: string;
-  date: string;
+  start: string;
+  end: string;
   staff?: string;
+  client?: string;
+  type?: string;
 }
 
 interface Props {
-  staffFilter?: string;
+  view?: "dayGridMonth" | "timeGridWeek" | "timeGridDay" | "listWeek";
+  next?: boolean;
+  prev?: boolean;
+  today?: boolean;
+  events: Event[];                             
+  addEvent: (event: Event) => void;           
+  updateEvent?: (event: Event) => void;        
+  removeEvent?: (eventId: string) => void;  
 }
 
-export const EnhancedSchedulingCalendar = ({ staffFilter }: Props) => {
-  const [events, setEvents] = useState<Event[]>([
-    { id: '1', title: 'Morning Shift – Home Visit (John Carter)', date: '2025-08-22', staff: 'Alicia Patel (RN)' },
-    { id: '2', title: 'Evening Shift – Medication Administration (Mary Wang)', date: '2025-08-22', staff: 'Brian Lee (CNA)' },
-    { id: '3', title: 'Overnight Shift – Hospice Care (John Carter)', date: '2025-08-23', staff: 'Chloe Singh (LPN)' },
-    { id: '4', title: 'Physical Therapy Session (Mary Wang)', date: '2025-08-24', staff: 'Alicia Patel (RN)' },
-    { id: '5', title: 'Daily Care – Home Assistance (John Carter)', date: '2025-08-25', staff: 'Brian Lee (CNA)' }
-  ]);
+export default function StaffSchedulingPage({ view = "timeGridWeek", next, prev, today, events, addEvent, updateEvent, removeEvent }: Props) {
+  const calendarRef = useRef<FullCalendar>(null);
 
-  const handleDateClick = (arg: any) => {
-    const title = prompt('Enter event title:');
-    if (title) {
-      const newEvent = {
-        id: String(new Date().getTime()),
-        title,
-        date: arg.dateStr
-      };
-      setEvents([...events, newEvent]);
+  const handleDateSelect = (selectInfo: DateSelectArg) => {
+    if (!addEvent) return;
+
+    const newEvent: Event = {
+      id: String(Date.now()),
+      title: "New Shift",
+      start: selectInfo.startStr,
+      end: selectInfo.endStr,
+    };
+
+    addEvent(newEvent);
+    calendarRef.current?.getApi().unselect();
+  };
+
+  const handleEventClick = (clickInfo: EventClickArg) => {
+    if (!removeEvent) return;
+
+    if (confirm(`Delete event '${clickInfo.event.title}'?`)) {
+      removeEvent(clickInfo.event.id);
     }
   };
 
-  const handleEventClick = (clickInfo: any) => {
-    const action = prompt(
-      `Edit title for '${clickInfo.event.title}' or type 'delete' to remove:`,
-      clickInfo.event.title
+  const handleEventDrop = (dropInfo: any) => {
+    if (!updateEvent) return;
+
+    const updatedEvent: Event = {
+      id: dropInfo.event.id,
+      title: dropInfo.event.title,
+      start: dropInfo.event.startStr,
+      end: dropInfo.event.endStr,
+      ...dropInfo.event.extendedProps,
+    };
+
+    updateEvent(updatedEvent);
+  };
+
+  const eventContent = (eventInfo: EventContentArg) => {
+    const start = eventInfo.event.start
+      ? new Date(eventInfo.event.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      : "";
+    const end = eventInfo.event.end
+      ? new Date(eventInfo.event.end).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      : "";
+
+    const bgColor = eventInfo.event.extendedProps.type === 'Consulting'
+      ? 'bg-blue-100'
+      : eventInfo.event.extendedProps.type === 'Support'
+        ? 'bg-green-100'
+        : 'bg-gray-100';
+
+    return (
+      <div className={`${bgColor} p-2 rounded-md border-l-4 border-blue-500`}>
+        <div className="font-semibold text-gray-800 truncate">{eventInfo.event.title}</div>
+        <div className="text-xs text-gray-600">{start} - {end}</div>
+        {eventInfo.event.extendedProps.staff && (
+          <div className="text-xs text-gray-700 truncate">Staff: {eventInfo.event.extendedProps.staff}</div>
+        )}
+        {eventInfo.event.extendedProps.client && (
+          <div className="text-xs text-gray-700 truncate">Client: {eventInfo.event.extendedProps.client}</div>
+        )}
+      </div>
     );
-
-    if (!action) return;
-
-    if (action.toLowerCase() === 'delete') {
-      clickInfo.event.remove();
-      setEvents(events.filter(e => e.id !== clickInfo.event.id));
-    } else {
-      clickInfo.event.setProp('title', action);
-      setEvents(events.map(e => e.id === clickInfo.event.id ? { ...e, title: action } : e));
-    }
   };
 
-  const handleEventChange = (changeInfo: any) => {
-    setEvents(events.map(e =>
-      e.id === changeInfo.event.id
-        ? { ...e, title: changeInfo.event.title, date: changeInfo.event.startStr }
-        : e
-    ));
-  };
+  useEffect(() => {
+    const calendarApi: CalendarApi | null | undefined = calendarRef.current?.getApi();
+    if (!calendarApi) return;
 
-  const filteredEvents = staffFilter ? events.filter(e => e.staff === staffFilter) : events;
+    setTimeout(() => {
+      if (view) calendarApi.changeView(view);
+      if (next) calendarApi.next();
+      if (prev) calendarApi.prev();
+      if (today) calendarApi.today();
+    }, 0);
+  }, [view, next, prev, today]);
 
   return (
-    <FullCalendar
-      plugins={[dayGridPlugin, interactionPlugin]}
-      initialView="dayGridMonth"
-      editable
-      selectable
-      events={filteredEvents}
-      dateClick={handleDateClick}
-      eventClick={handleEventClick}
-      eventChange={handleEventChange}
-      headerToolbar={{
-        left: 'prev,next today',
-        center: 'title',
-        right: 'dayGridMonth,dayGridWeek,dayGridDay'
-      }}
-      height="100%"
-      dayCellClassNames={(arg) =>
-        arg.isToday
-          ? 'bg-accent/20 rounded-xl font-semibold text-accent transition-all'
-          : 'hover:bg-muted/50 transition-all rounded-xl'
-      }
-      dayHeaderClassNames={() =>
-        'bg-card text-foreground font-semibold py-2 border-b border-border rounded-t-xl'
-      }
-      eventClassNames={() =>
-        'cursor-pointer bg-gradient-primary text-primary-foreground rounded-xl px-3 py-1 text-sm shadow hover:scale-105 transition-all'
-      }
-    />
+    <div className="p-6 bg-gray-50 min-h-screen">
+      <FullCalendar
+        ref={calendarRef}
+        plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin]}
+        initialView={view}
+        editable={true}
+        selectable={true}
+        selectMirror={true}
+        dayMaxEvents={true}
+        weekends={true}
+        events={events}                 
+        height="100vh"
+        select={handleDateSelect}
+        eventContent={eventContent}
+        eventClick={handleEventClick}
+        eventDrop={handleEventDrop}
+        headerToolbar={false}
+      />
+    </div>
   );
-};
+}
