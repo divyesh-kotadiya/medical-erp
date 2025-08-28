@@ -10,7 +10,7 @@ export default function UserProfile() {
     website: "https://johndoe.design"
   });
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setProfileData(prev => ({
       ...prev,
@@ -18,7 +18,7 @@ export default function UserProfile() {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     console.log("Profile updated:", profileData);
   };

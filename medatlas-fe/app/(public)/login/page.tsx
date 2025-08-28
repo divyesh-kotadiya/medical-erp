@@ -27,7 +27,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    let newErrors = {
+    const newErrors = {
       email: '',
       password: ''
     };
@@ -65,11 +65,12 @@ export default function LoginPage() {
       const resultAction = await dispatch(login({ email, password }));
 
       if (login.rejected.match(resultAction)) {
-        const errorMessage = resultAction?.payload?.message;
+        const errorMessage = (resultAction?.payload as { message?: string })?.message || "Login failed";
         enqueueSnackbar(errorMessage, { variant: "error" });
       }
-    } catch (err: any) {
-      enqueueSnackbar(err.message || "Something went wrong.", { variant: "error" });
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "Something went wrong.";
+      enqueueSnackbar(errorMessage, { variant: "error" });
     }
   };
 
@@ -216,7 +217,7 @@ export default function LoginPage() {
             </div>
 
             <div className="text-center text-sm text-muted-foreground pt-2">
-              Don't have an account?{' '}
+              Don&apos;t have an account?{' '}
               <Link href="/register" className="text-blue-500 hover:underline font-medium">
                 Sign up
               </Link>

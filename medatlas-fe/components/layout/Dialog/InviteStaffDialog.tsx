@@ -37,11 +37,12 @@ export default function InviteStaffDialog() {
           variant: "success",
         });
       } else if (inviteMember.rejected.match(resultAction)) {
-        enqueueSnackbar(resultAction.payload.message as string || "Something went wrong", {
+        const errorMessage = (resultAction.payload as { message?: string })?.message || "Something went wrong";
+        enqueueSnackbar(errorMessage, {
           variant: "error",
         });
       }
-    } catch (e) {
+    } catch {
       enqueueSnackbar("Something went wrong", { variant: "error" });
     }
   };

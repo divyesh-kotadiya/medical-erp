@@ -31,7 +31,7 @@ export default function RegisterPage() {
   useEffect(() => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    let newErrors = {
+    const newErrors = {
       email: '',
       password: ''
     };
@@ -86,7 +86,7 @@ export default function RegisterPage() {
       if (!createTenant.fulfilled.match(resultAction)) {
         enqueueSnackbar(error, { variant: "error" });
       }
-    } catch (err) {
+    } catch {
       enqueueSnackbar("Something went wrong.", { variant: "error" });
     }
   }

@@ -72,7 +72,7 @@ export default function InvitePage() {
       if (!registerWithInvite.fulfilled.match(resultAction)) {
         enqueueSnackbar(error || "Invite could not be accepted.", { variant: "error" });
       }
-    } catch (err) {
+    } catch{
       enqueueSnackbar("Something went wrong.", { variant: "error" });
     }
   }

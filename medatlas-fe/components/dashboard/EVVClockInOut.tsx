@@ -4,7 +4,7 @@ import { Clock, Download, Filter } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export const EVVClockInOut = () => {
-  const [timeEntries, setTimeEntries] = useState([
+  const [timeEntries] = useState([
     { id: 1, date: 'Nov 21, 2023', checkIn: '9:00 AM', checkOut: '5:00 PM', mealBreak: '1:00 hr', workingHours: '8:00 hrs', status: 'completed' },
     { id: 2, date: 'Nov 20, 2023', checkIn: '9:15 AM', checkOut: '5:30 PM', mealBreak: '1:15 hr', workingHours: '7:15 hrs', status: 'completed' },
     { id: 3, date: 'Nov 19, 2023', checkIn: '8:45 AM', checkOut: '4:45 PM', mealBreak: '0:45 hr', workingHours: '7:15 hrs', status: 'completed' },
@@ -17,7 +17,7 @@ export const EVVClockInOut = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isClockedIn, setIsClockedIn] = useState(true);
   const [isOnBreak, setIsOnBreak] = useState(false);
-  const [breakTime, setBreakTime] = useState(30);
+  const [breakTime] = useState(30);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -27,11 +27,11 @@ export const EVVClockInOut = () => {
     return () => clearInterval(timer);
   }, []);
 
-  const formatTime = (date) => {
+  const formatTime = (date: Date) => {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
-  const formatDate = (date) => {
+  const formatDate = (date: Date) => {
     return date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' });
   };
 

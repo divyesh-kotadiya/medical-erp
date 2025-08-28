@@ -1,14 +1,14 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Shift, ShiftSchema } from './schemas/shift.schema';
-import { ShiftsService } from './shifts.service';
-import { ShiftsController } from './shifts.controller';
+import { ShiftController } from './shifts.controller';
+import { ShiftService } from './shifts.service';
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Shift.name, schema: ShiftSchema }]),
   ],
-  controllers: [ShiftsController],
-  providers: [ShiftsService],
-  exports: [ShiftsService],
+  controllers: [ShiftController],
+  providers: [ShiftService],
+  exports: [ShiftService],
 })
 export class ShiftsModule {}

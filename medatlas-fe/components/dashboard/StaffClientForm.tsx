@@ -1,7 +1,13 @@
 'use client';
 import { useState } from 'react';
 
-export const StaffClientForm = ({ onSave }: { onSave: (data: any) => void }) => {
+interface FormData {
+  name: string;
+  email: string;
+  role: string;
+}
+
+export const StaffClientForm = ({ onSave }: { onSave: (data: FormData) => void }) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [role, setRole] = useState('');

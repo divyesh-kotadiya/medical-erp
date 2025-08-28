@@ -101,7 +101,7 @@ export const Sidebar = () => {
             collapsed && "px-2"
           )}
         >
-          <LogOut className="h-4 w-4" />
+          <LogOut className="h-4 w-4 text-white" />
           {!collapsed && <span className="ml-2 text-white">Logout</span>}
         </Button>
       </div>

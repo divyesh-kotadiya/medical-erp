@@ -14,7 +14,7 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
         router.replace(`/login?redirect=${encodeURIComponent(pathname)}`);
       }
     }
-  }, [isAuthenticated, loading, pathname]);
+  }, [isAuthenticated, loading, pathname, router]);
 
 
   return <>{children}</>;

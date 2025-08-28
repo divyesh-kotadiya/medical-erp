@@ -10,7 +10,7 @@ export const TimesheetList = () => {
     { date: '2025-08-20', checkIn: '08:30', checkOut: '16:30', mealBreak: '30m', workingHours: '7.5h' },
   ]);
 
-  const handleDelete = (index) => {
+  const handleDelete = (index: number) => {
     setTimeEntries((prev) => prev.filter((_, i) => i !== index));
   };
 

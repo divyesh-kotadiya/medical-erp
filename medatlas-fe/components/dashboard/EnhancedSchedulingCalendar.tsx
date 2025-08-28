@@ -53,7 +53,7 @@ export default function StaffSchedulingPage({ view = "timeGridWeek", next, prev,
     }
   };
 
-  const handleEventDrop = (dropInfo: any) => {
+  const handleEventDrop = (dropInfo: { event: { id: string; title: string; startStr: string; endStr: string; extendedProps: Record<string, unknown> } }) => {
     if (!updateEvent) return;
 
     const updatedEvent: Event = {

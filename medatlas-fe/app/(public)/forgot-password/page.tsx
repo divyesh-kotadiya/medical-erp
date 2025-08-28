@@ -21,7 +21,7 @@ export default function ForgotPasswordPage() {
 
   useEffect(() => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    let newErrors = {
+    const newErrors = {
       email: ''
     };
 
@@ -55,11 +55,12 @@ export default function ForgotPasswordPage() {
       if (forgotPassword.fulfilled.match(resultAction)) {
         enqueueSnackbar("Password reset link sent to your email.", { variant: "success" });
       } else if (forgotPassword.rejected.match(resultAction)) {
-        const errorMessage = resultAction?.payload || "Failed to send reset email. Please try again.";
-        enqueueSnackbar(errorMessage?.message as string, { variant: "error" });
+        const errorMessage = (resultAction?.payload as { message?: string })?.message || "Failed to send reset email. Please try again.";
+        enqueueSnackbar(errorMessage, { variant: "error" });
       }
-    } catch (err: any) {
-      enqueueSnackbar(err.message || "Something went wrong", { variant: "error" });
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Something went wrong";
+      enqueueSnackbar(errorMessage, { variant: "error" });
     }
   }
 

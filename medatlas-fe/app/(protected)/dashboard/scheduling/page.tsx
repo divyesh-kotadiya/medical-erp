@@ -123,7 +123,7 @@ export default function SchedulingPage() {
                 label=""
                 options={calendarOptions}
                 value={calendarView}
-                onChange={(val) => setCalendarView(val as any)}
+                onChange={(val) => setCalendarView(val as never)}
               />
             </div>
             <div className="h-[100%]">

@@ -320,12 +320,6 @@ export const Dashboard = () => {
                           )}
 
                           {stat.component && <div className="mt-3">{stat.component}</div>}
-
-                          {stat?.button && (
-                            <button className=" w-full bg-gradient-primary text-white py-2 px-4 rounded-lg shadow hover:shadow-lg transition">
-                              {stat.title}
-                            </button>
-                          )}
                         </div>
 
                         <div className="h-12 w-12 rounded-lg bg-gradient-primary flex items-center justify-center">

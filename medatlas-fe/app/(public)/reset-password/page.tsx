@@ -76,10 +76,12 @@ export default function ResetPasswordPage() {
         enqueueSnackbar("Password reset successfully.", { variant: "success" });
         router.push("/login");
       } else {
-        enqueueSnackbar(resultAction?.payload?.message || "Failed to reset password", { variant: "error" });
+        const errorMessage = (resultAction?.payload as { message?: string })?.message || "Failed to reset password";
+        enqueueSnackbar(errorMessage, { variant: "error" });
       }
-    } catch (err: any) {
-      enqueueSnackbar(err.message || "Something went wrong", { variant: "error" });
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "Something went wrong";
+      enqueueSnackbar(errorMessage, { variant: "error" });
     } finally {
       setLoading(false);
     }
