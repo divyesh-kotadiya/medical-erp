@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer';
+import { Type, Expose, Transform } from 'class-transformer';
 import {
   IsString,
   IsDate,
@@ -11,7 +11,7 @@ export class CreateShiftDto {
   @IsMongoId()
   tenantId: string;
 
-  @IsMongoId()
+  @IsOptional()
   staffId?: string;
 
   @IsDate()

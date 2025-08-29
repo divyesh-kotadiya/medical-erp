@@ -215,7 +215,12 @@ export class UsersService {
   }
 
   async findAll(): Promise<User[]> {
-    return this.userModel.find().exec();
+    return this.userModel
+      .find()
+      .select(
+        '-tenantId -password -createdAt -updatedAt -__v -roleId -isTenantAdmin -disabled',
+      )
+      .exec();
   }
 
   async findById(id: string): Promise<User | null> {

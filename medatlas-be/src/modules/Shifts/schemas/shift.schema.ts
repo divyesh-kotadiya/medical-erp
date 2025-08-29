@@ -10,6 +10,9 @@ export class Shift {
   @Prop({ type: Types.ObjectId, ref: 'User' })
   staffId?: Types.ObjectId;
 
+  @Prop()
+  title: string;
+
   @Prop({ required: true })
   start: Date;
 

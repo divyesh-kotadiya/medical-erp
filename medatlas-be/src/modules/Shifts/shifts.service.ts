@@ -16,25 +16,35 @@ export class ShiftService {
     return shift.save();
   }
 
-  findAll(): Promise<Shift[]> {
-    return this.shiftModel
-      .find()
-      .populate({
+  async findAll(): Promise<Shift[]> {
+    const shifts = await this.shiftModel.find().exec();
+
+    const shiftsWithStaff = shifts.filter(s => s.staffId);
+
+    if (shiftsWithStaff.length > 0) {
+      await this.shiftModel.populate(shiftsWithStaff, {
         path: 'staffId',
         select: '-password -roleId -_id -tenantId -createdAt -updatedAt -__v',
-      })
-      .exec();
+      });
+    }
+
+    return shifts;
   }
 
   async findOne(id: string): Promise<Shift> {
-    const shift = await this.shiftModel
-      .findById(id)
-      .populate({
+    const shift = await this.shiftModel.findById(id).exec();
+
+    if (!shift) {
+      throw new NotFoundException(`Shift with ID ${id} not found`);
+    }
+
+    if (shift.staffId) {
+      await shift.populate({
         path: 'staffId',
         select: '-password -roleId -_id -tenantId -createdAt -updatedAt -__v',
-      })
-      .exec();
-    if (!shift) throw new NotFoundException(`Shift with ID ${id} not found`);
+      });
+    }
+
     return shift;
   }
 
