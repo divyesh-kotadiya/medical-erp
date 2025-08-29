@@ -1,6 +1,12 @@
 import { createSlice, createAsyncThunk, PayloadAction, createSelector } from '@reduxjs/toolkit';
 import { api } from '@/lib/api/client';
 
+export interface Member {
+  department: string;
+  _id: string;
+  email: string;
+  name: string;
+}
 export interface AuthState {
   isAuthenticated: boolean;
   token?: string;
@@ -15,6 +21,7 @@ export interface AuthState {
     id: string;
     name: string;
   } | null;
+  members: Member[];
   loading: boolean;
   error?: string;
 }
@@ -42,6 +49,7 @@ const initialState: AuthState = {
   loading: false,
   user: null,
   tenant: null,
+  members: [],
   error: undefined,
 };
 
@@ -123,6 +131,21 @@ export const resetPassword = createAsyncThunk(
   }
 );
 
+export const fetchMembers = createAsyncThunk(
+  'auth/fetchMembers',
+  async (_, { rejectWithValue }) => {
+    try {
+      const { data } = await api.get('/auth');
+      return data;
+    } catch (e: any) {
+      if (e.response && e.response.data) {
+        return rejectWithValue(e.response.data);
+      }
+      return rejectWithValue('Network error');
+    }
+  }
+);
+
 const authSlice = createSlice({
   name: 'auth',
   initialState,
@@ -134,6 +157,7 @@ const authSlice = createSlice({
       state.tenant = null;
       state.error = undefined;
       state.loading = false;
+      state.members = [];
     },
   },
   extraReducers: (builder) => {
@@ -247,6 +271,7 @@ const authSlice = createSlice({
         state.loading = false;
         state.isAuthenticated = true;
         state.token = action.payload.userData.token;
+        console.log(action.payload.userData.token);
         localStorage.setItem("token", action.payload.userData.token);
         state.user = {
           id: action.payload.userData.id,
@@ -269,6 +294,23 @@ const authSlice = createSlice({
           state.error = (action.payload as any).message;
         } else {
           state.error = (action.payload as string) || action.error.message || "Registration with invite failed";
+        }
+      });
+    builder
+      .addCase(fetchMembers.pending, (state) => {
+        state.loading = true;
+        state.error = undefined;
+      })
+      .addCase(fetchMembers.fulfilled, (state, action: PayloadAction<Member[]>) => {
+        state.loading = false;
+        state.members = action.payload;
+      })
+      .addCase(fetchMembers.rejected, (state, action) => {
+        state.loading = false;
+        if (action.payload && typeof action.payload === "object" && "message" in action.payload) {
+          state.error = (action.payload as any).message;
+        } else {
+          state.error = (action.payload as string) || action.error.message || "Failed to fetch members";
         }
       });
   },

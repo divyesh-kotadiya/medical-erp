@@ -23,6 +23,7 @@ export default function InviteListDialog() {
     setOpen(false);
     setPage(1);
   }
+  if(error) return <div>{error}</div>
   return (
     <div>
       <button
@@ -60,14 +61,8 @@ export default function InviteListDialog() {
                         <Loader />
                       </td>
                     </tr>
-                  ) : error ? (
-                    <tr>
-                      <td colSpan={6} className="px-4 py-6 text-center text-red-500">
-                        {error}
-                      </td>
-                    </tr>
-                  ) : invites.length ? (
-                    invites.map((invite) => (
+                  ) : invites?.length ? (
+                    invites?.map((invite) => (
                       <tr key={invite._id} className="hover:bg-gray-50">
                         <td className="px-4 py-2">{invite.email}</td>
                         <td className="px-4 py-2">{invite.role}</td>
