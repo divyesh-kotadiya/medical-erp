@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk, PayloadAction, createSelector } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, PayloadAction, createSelector, isRejectedWithValue } from '@reduxjs/toolkit';
 import { api } from '@/lib/api/client';
 
 export interface Member {
@@ -15,6 +15,8 @@ export interface AuthState {
     email: string;
     name: string;
     role: string;
+    phone: string | undefined;
+    avatar: string | undefined;
     isTenantAdmin: boolean;
   } | null;
   tenant?: {
@@ -131,11 +133,60 @@ export const resetPassword = createAsyncThunk(
   }
 );
 
+export const changePassword = createAsyncThunk(
+  'auth/changePassword',
+  async (payload: { currentPassword: string, newPassword: string }, { rejectWithValue }) => {
+    try {
+      const { currentPassword, newPassword } = payload;
+      const { data } = await api.post('/auth/change-password', { currentPassword, newPassword });
+      return data;
+    } catch (e: any) {
+      if (e.response && e.response.data) {
+        return rejectWithValue(e.response.data);
+      }
+      return rejectWithValue('Network error');
+    }
+  }
+)
+
 export const fetchMembers = createAsyncThunk(
   'auth/fetchMembers',
   async (_, { rejectWithValue }) => {
     try {
       const { data } = await api.get('/auth');
+      return data;
+    } catch (e: any) {
+      if (e.response && e.response.data) {
+        return rejectWithValue(e.response.data);
+      }
+      return rejectWithValue('Network error');
+    }
+  }
+);
+
+
+export const updateProfile = createAsyncThunk(
+  'auth/updateProfile',
+  async (
+    payload: {
+      userId: string;
+      fields: { name?: string; email?: string; phone?: string };
+      avatarFile?: File | null;
+    },
+    { rejectWithValue }
+  ) => {
+    try {
+      const form = new FormData();
+      if (payload.fields.name) form.append('name', payload.fields.name);
+      if (payload.fields.email) form.append('email', payload.fields.email);
+      if (payload.fields.phone) form.append('phone', payload.fields.phone);
+      if (payload.avatarFile) form.append('avatar', payload.avatarFile);
+
+      const { data } = await api.put(
+        `/auth/${payload.userId}/profile`,
+        form,
+        { headers: { 'Content-Type': 'multipart/form-data' } }
+      );
       return data;
     } catch (e: any) {
       if (e.response && e.response.data) {
@@ -178,7 +229,9 @@ const authSlice = createSlice({
             email: action?.payload?.userData.email,
             name: action?.payload?.userData.user,
             role: action?.payload?.userData.role,
-            isTenantAdmin: action.payload.userData.isTenantAdmin,
+            phone: action?.payload?.userData.phone,
+            avatar: action?.payload?.userData.avatar,
+            isTenantAdmin: action?.payload?.userData.isTenantAdmin,
           };
 
           state.tenant = {
@@ -212,6 +265,8 @@ const authSlice = createSlice({
           email: action.payload.userData.email,
           name: action.payload.userData.user,
           role: action.payload.userData.role,
+          phone: action.payload.userData.phone,
+          avatar: action.payload.userData.avatar,
           isTenantAdmin: action.payload.userData.isTenantAdmin,
         };
 
@@ -278,6 +333,8 @@ const authSlice = createSlice({
           email: action.payload.userData.email,
           name: action.payload.userData.user,
           role: action.payload.userData.role,
+          phone: action.payload.userData.phone,
+          avatar: action.payload.userData.avatar,
           isTenantAdmin: action.payload.userData.isTenantAdmin,
         };
 
@@ -295,8 +352,7 @@ const authSlice = createSlice({
         } else {
           state.error = (action.payload as string) || action.error.message || "Registration with invite failed";
         }
-      });
-    builder
+      })
       .addCase(fetchMembers.pending, (state) => {
         state.loading = true;
         state.error = undefined;
@@ -311,6 +367,50 @@ const authSlice = createSlice({
           state.error = (action.payload as any).message;
         } else {
           state.error = (action.payload as string) || action.error.message || "Failed to fetch members";
+        }
+      })
+      .addCase(changePassword.pending, (state) => {
+        state.loading = true;
+        state.error = undefined;
+      })
+      .addCase(changePassword.fulfilled, (state) => {
+        state.loading = false;
+        state.error = undefined;
+      })
+      .addCase(changePassword.rejected, (state, action) => {
+        state.loading = false;
+
+        if (action.payload && typeof action.payload === "object" && "message" in action.payload) {
+          state.error = (action.payload as any).message;
+        } else {
+          state.error = (action.payload as string) || action.error.message || "Reset password failed";
+        }
+      })
+      .addCase(updateProfile.pending, (state) => {
+        state.loading = true;
+        state.error = undefined;
+      })
+      .addCase(
+        updateProfile.fulfilled,
+        (
+          state,
+          action: PayloadAction<{ message: string; user: { _id: string; name: string; email: string; phone?: string; avatar?: string } }>
+        ) => {
+          state.loading = false;
+          if (state.user) {
+            state.user.name = action.payload.user.name;
+            state.user.email = action.payload.user.email;
+            state.user.phone = action.payload.user.phone as string | undefined;
+            state.user.avatar = action.payload.user.avatar as string | undefined;
+          }
+        }
+      )
+      .addCase(updateProfile.rejected, (state, action) => {
+        state.loading = false;
+        if (action.payload && typeof action.payload === 'object' && 'message' in action.payload) {
+          state.error = (action.payload as any).message;
+        } else {
+          state.error = (action.payload as string) || action.error.message || 'Update profile failed';
         }
       });
   },

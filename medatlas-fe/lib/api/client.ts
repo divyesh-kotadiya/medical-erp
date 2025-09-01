@@ -2,9 +2,6 @@ import axios from 'axios';
 import { serverEndpoints } from './server/endpoints';
 export const api = axios.create({
   baseURL: serverEndpoints.root,
-  headers: {
-    'Content-Type': 'application/json',
-  },
 });
 
 api.interceptors.request.use(

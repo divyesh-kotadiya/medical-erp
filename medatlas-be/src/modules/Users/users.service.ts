@@ -15,10 +15,19 @@ import { InvitesService } from '../Invites/invites.service';
 import { randomBytes } from 'crypto';
 import { HashService } from 'src/common/hash/hash.service';
 import { EmailService } from 'src/common/email/email.service';
+import { MongoServerError } from 'mongodb';
+import { existsSync, unlinkSync } from 'fs';
+import { join } from 'path';
 
 @Injectable()
 export class UsersService {
   private readonly logger = new Logger(UsersService.name);
+  private isDuplicateEmailError(error: unknown): boolean {
+    const e = error as Partial<MongoServerError> & {
+      keyPattern?: Record<string, unknown>;
+    };
+    return !!e && e.code === 11000 && !!e.keyPattern?.email;
+  }
   constructor(
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     @InjectModel(Tenant.name) private tenantModel: Model<Tenant>,
@@ -27,7 +36,7 @@ export class UsersService {
     private invitesService: InvitesService,
     private emailService: EmailService,
     private hashService: HashService,
-  ) { }
+  ) {}
 
   async registerWithInvite(
     token: string,
@@ -46,7 +55,6 @@ export class UsersService {
 
     if (existingUser)
       throw new BadRequestException('User with this email already exists');
-
 
     const hashedPassword = await bcrypt.hash(dto.password, 10);
 
@@ -108,7 +116,6 @@ export class UsersService {
   }
 
   async login(loginDto: LoginDto) {
-
     if (!loginDto.email || !loginDto.password) {
       throw new BadRequestException('Email and password are required');
     }
@@ -156,14 +163,18 @@ export class UsersService {
       isTenantAdmin: boolean;
       disabled: any;
       token: string;
+      avatar: string | undefined;
+      phone: string | undefined;
     } = {
-      id: user.roleId,
+      id: user._id,
       user: user.name,
       email: user.email,
       role: role.role,
       isTenantAdmin: user.isTenantAdmin,
       disabled: user.tenantId,
       token: token,
+      avatar: user.avatar,
+      phone: user.phone,
     };
 
     return {
@@ -235,7 +246,6 @@ export class UsersService {
     token: string,
     newPassword: string,
   ): Promise<{ message: string }> {
-
     if (!token || !newPassword) {
       throw new BadRequestException('Token and new password are required');
     }
@@ -302,5 +312,76 @@ export class UsersService {
     }
     const result = await this.userModel.findByIdAndDelete(id).exec();
     return !!result;
+  }
+
+  async updateProfile(
+    userId: string,
+    update: Partial<Pick<User, 'name' | 'email' | 'phone' | 'avatar'>>,
+  ) {
+    if (!Types.ObjectId.isValid(userId)) {
+      throw new BadRequestException('Invalid user ID');
+    }
+
+    const allowed: Record<string, boolean> = {
+      name: true,
+      email: true,
+      phone: true,
+      avatar: true,
+    };
+
+    const sanitizedUpdate: Partial<User> = {};
+    Object.keys(update || {}).forEach((key) => {
+      if (allowed[key]) {
+        (sanitizedUpdate as Record<string, unknown>)[key] = (
+          update as Record<string, unknown>
+        )[key];
+      }
+    });
+
+    let user: User | null = null;
+    let previousAvatar: string | undefined;
+    if (update && typeof (update as Partial<User>).avatar === 'string') {
+      const existing = await this.userModel
+        .findById(userId)
+        .select('avatar')
+        .exec();
+      previousAvatar = (existing as unknown as { avatar?: string })?.avatar;
+    }
+    try {
+      user = await this.userModel
+        .findByIdAndUpdate(userId, { $set: sanitizedUpdate }, { new: true })
+        .select('-password')
+        .exec();
+    } catch (err) {
+      if (this.isDuplicateEmailError(err)) {
+        throw new BadRequestException('Email already in use');
+      }
+      throw err;
+    }
+
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+
+    const newAvatar = (sanitizedUpdate as { avatar?: string })?.avatar;
+    if (newAvatar && previousAvatar && previousAvatar !== newAvatar) {
+      if (previousAvatar.startsWith('/uploads/avatars/')) {
+        const relativeFromRoot = previousAvatar.replace(/^\//, '');
+        const absolutePath = join(process.cwd(), relativeFromRoot);
+        try {
+          if (existsSync(absolutePath)) {
+            unlinkSync(absolutePath);
+          }
+        } catch (e) {
+          this.logger.warn(
+            `Failed to delete old avatar at ${absolutePath}: ${
+              (e as Error).message
+            }`,
+          );
+        }
+      }
+    }
+
+    return user;
   }
 }

@@ -35,6 +35,9 @@ export class User {
   @Prop()
   resetPasswordExpires?: Date;
 
+  @Prop()
+  avatar?: string;
+
   _id: Types.ObjectId;
 }
 

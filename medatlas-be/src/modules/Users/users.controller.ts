@@ -19,10 +19,13 @@ import { LoginDto } from './dto/login.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { JwtGuard } from 'src/common/auth/jwt.guard';
+import { FileUploadService } from 'src/file-upload/file-upload.service';
+import { UseInterceptors, UploadedFile } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('auth')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) { }
+  constructor(private readonly usersService: UsersService) {}
 
   @Post('register-with-invite')
   @HttpCode(HttpStatus.CREATED)
@@ -87,6 +90,31 @@ export class UsersController {
       dto.currentPassword,
       dto.newPassword,
     );
+  }
+
+  @UseGuards(JwtGuard)
+  @Put(':id/profile')
+  @UseInterceptors(
+    FileInterceptor('avatar', {
+      ...new FileUploadService().getMulterOptions('avatars'),
+    }),
+  )
+  async updateProfile(
+    @Param('id') userId: string,
+    @Body()
+    body: { name?: string; email?: string; phone?: string; avatar?: string },
+    @UploadedFile() avatar?: Express.Multer.File,
+  ) {
+    const updateData = { ...body };
+    if (avatar) {
+      updateData.avatar = `/uploads/avatars/${avatar.filename}`;
+    }
+
+    const updatedUser = await this.usersService.updateProfile(
+      userId,
+      updateData,
+    );
+    return { message: 'Profile updated successfully', user: updatedUser };
   }
 
   @All('*')

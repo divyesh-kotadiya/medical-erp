@@ -1,66 +1,186 @@
-'use client'
-import { useState } from "react";
+'use client';
+
+import { useAppSelector, useAppDispatch } from "@/store/hooks";
+import { updateProfile } from "@/store/slices/auth";
+import { useSnackbar } from 'notistack';
+import { useState, useRef } from "react";
+import Image from "next/image";
 
 export default function UserProfile() {
+  const { user } = useAppSelector((state) => state.auth);
+  const dispatch = useAppDispatch();
+  const { enqueueSnackbar } = useSnackbar();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const [profileData, setProfileData] = useState({
-    name: "John Doe",
-    email: "john.doe@example.com",
-    bio: "UX Designer with 5+ years of experience creating beautiful interfaces.",
-    location: "San Francisco, CA",
-    website: "https://johndoe.design"
+    name: user?.name || "",
+    email: user?.email || "",
+    phone: user?.phone || "",
+    role: user?.role || "",
+    avatar: user?.avatar || "",
   });
+
+  const computeAvatarUrl = (raw: string): string | undefined => {
+    if (!raw || !raw.trim()) return undefined;
+    const trimmed = raw.trim();
+    if (trimmed.startsWith('blob:') || /^https?:\/\//i.test(trimmed)) {
+      return trimmed;
+    }
+    if (trimmed.startsWith('/')) {
+      const base = process.env.NEXT_PUBLIC_IMAGE_API_BASE_URL || '';
+      if (!base) return trimmed;
+      return `${base.replace(/\/$/, '')}${trimmed}`;
+    }
+    return trimmed;
+  };
+
+  const avatarUrl = computeAvatarUrl(profileData.avatar);
+  console.log(avatarUrl)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setProfileData(prev => ({
+    setProfileData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [updating, setUpdating] = useState(false);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const previewUrl = URL.createObjectURL(file);
+    setProfileData((prev) => ({ ...prev, avatar: previewUrl }));
+    setSelectedFile(file);
+  };
+
+  const handleRemoveAvatar = () => {
+    setProfileData((prev) => ({ ...prev, avatar: "" }));
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("Profile updated:", profileData);
+    if (!user?.id) return;
+    setUpdating(true);
+    try {
+      const res = await dispatch(
+        updateProfile({
+          userId: user.id,
+          fields: {
+            name: profileData.name,
+            email: profileData.email,
+            phone: profileData.phone,
+          },
+          avatarFile: selectedFile,
+        })
+      ).unwrap();
+      enqueueSnackbar(res?.message || 'Profile updated successfully', { variant: 'success' });
+    } catch (err: any) {
+      const msg = (err && typeof err === 'object' && 'message' in err)
+        ? (err as { message?: string }).message || 'Update failed'
+        : 'Update failed';
+      enqueueSnackbar(msg, { variant: 'error' });
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const getInitials = (fullName: string) => {
+    const parts = (fullName || '').trim().split(/\s+/);
+    const first = parts[0]?.[0] ?? '';
+    const last = parts.length > 1 ? parts[parts.length - 1]?.[0] ?? '' : '';
+    return (first + last).toUpperCase();
   };
 
   return (
     <div>
       <h2 className="text-xl font-semibold mb-6">Profile Information</h2>
 
+
       <div className="flex flex-col md:flex-row items-center mb-8 gap-6">
         <div className="relative group">
-          <div className="w-28 h-28 rounded-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center shadow-md ring-4 ring-white dark:ring-gray-800">
-            <span className="text-3xl font-bold text-blue-600">JD</span>
+          <div className="w-28 h-28 rounded-full overflow-hidden flex items-center justify-center shadow-md ring-4 ring-white dark:ring-gray-800 bg-gradient-to-br from-blue-100 to-purple-100">
+            {avatarUrl == undefined ? (
+              <div
+                className="w-full h-full flex items-center justify-center text-4xl font-bold text-blue-700 select-none"
+                aria-label={profileData.name || 'User'}
+                title={profileData.name || 'User'}
+              >
+                {getInitials(profileData.name || 'User')}
+              </div>
+            ) : (
+              <Image
+                width={100}
+                height={100}
+                unoptimized
+                priority
+                src={avatarUrl}
+                alt="User Avatar"
+                className="w-full h-full object-cover"
+              />
+            )}
           </div>
 
-          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <div className="w-28 h-28 rounded-full bg-black bg-opacity-40 flex items-center justify-center cursor-pointer">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-            </div>
+          {/* Hover overlay */}
+          <div
+            onClick={() => fileInputRef.current?.click()}
+            className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer bg-black/40 rounded-full"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-8 w-8 text-white"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+              />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
+              />
+            </svg>
           </div>
         </div>
 
+        {/* Upload & remove */}
         <div className="flex flex-col gap-3">
-          <div className="flex flex-col sm:flex-row gap-3">
-            <label htmlFor="avatar-upload" className="cursor-pointer">
-              <input type="file" id="avatar-upload" className="hidden" accept="image/*" />
-              <div className="flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2.5 rounded-md text-sm font-medium transition-colors shadow-sm">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                </svg>
-                Upload New Photo
-              </div>
-            </label>
+          <input
+            type="file"
+            ref={fileInputRef}
+            className="hidden"
+            accept="image/*"
+            onChange={handleFileChange}
+          />
 
-            <button className="flex items-center justify-center gap-2 border border-border hover:bg-muted px-4 py-2.5 rounded-md text-sm font-medium transition-colors">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-destructive" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              </svg>
-              Remove
+          <div className="flex flex-col sm:flex-row gap-3">
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2.5 rounded-md text-sm font-medium transition-colors shadow-sm"
+            >
+              Upload New Photo
             </button>
+
+            {profileData.avatar && (
+              <button
+                type="button"
+                onClick={handleRemoveAvatar}
+                className="flex items-center justify-center gap-2 border border-border hover:bg-muted px-4 py-2.5 rounded-md text-sm font-medium transition-colors"
+              >
+                Remove
+              </button>
+            )}
           </div>
 
           <p className="text-xs text-muted-foreground max-w-xs">
@@ -69,138 +189,100 @@ export default function UserProfile() {
         </div>
       </div>
 
+      {/* Profile Form */}
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Name */}
           <div className="space-y-2">
-            <label className="block text-sm font-medium mb-2 flex items-center" htmlFor="name">
-              Full Name
-              <span className="text-destructive ml-1">*</span>
+            <label htmlFor="name" className="block text-sm font-medium">
+              Full Name <span className="text-destructive">*</span>
             </label>
-            <div className="relative">
-              <input
-                type="text"
-                id="name"
-                name="name"
-                value={profileData.name}
-                onChange={handleChange}
-                required
-                className="w-full p-3.5 border border-border rounded-lg bg-background focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors duration-200 pl-10"
-                placeholder="Enter your full name"
-              />
-              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-              </div>
-            </div>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              value={profileData.name}
+              onChange={handleChange}
+              required
+              className="w-full p-3.5 border border-border rounded-lg bg-background focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
+              placeholder="Enter your full name"
+            />
           </div>
 
+          {/* Email */}
           <div className="space-y-2">
-            <label className="block text-sm font-medium mb-2 flex items-center" htmlFor="email">
-              Email Address
-              <span className="text-destructive ml-1">*</span>
+            <label htmlFor="email" className="block text-sm font-medium">
+              Email Address <span className="text-destructive">*</span>
             </label>
-            <div className="relative">
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={profileData.email}
-                onChange={handleChange}
-                required
-                className="w-full p-3.5 border border-border rounded-lg bg-background focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors duration-200 pl-10"
-                placeholder="your.email@example.com"
-              />
-              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
-              </div>
-            </div>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value={profileData.email}
+              onChange={handleChange}
+              required
+              className="w-full p-3.5 border border-border rounded-lg bg-background focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
+              placeholder="your.email@example.com"
+            />
           </div>
 
-          <div className="md:col-span-2 space-y-2">
-            <label className="block text-sm font-medium mb-2" htmlFor="bio">
-              Bio
+          {/* Phone */}
+          <div className="space-y-2">
+            <label htmlFor="phone" className="block text-sm font-medium">
+              Phone Number
             </label>
-            <div className="relative">
-              <textarea
-                id="bio"
-                name="bio"
-                value={profileData.bio}
-                onChange={handleChange}
-                rows={4}
-                className="w-full p-3.5 border border-border rounded-lg bg-background focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors duration-200 resize-none"
-                placeholder="Tell us a little about yourself..."
-              />
-              <div className="absolute bottom-3 right-3 text-xs text-muted-foreground">
-                {profileData.bio.length}/200
-              </div>
-            </div>
+            <input
+              type="text"
+              id="phone"
+              name="phone"
+              value={profileData.phone}
+              onChange={handleChange}
+              className="w-full p-3.5 border border-border rounded-lg bg-background focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
+              placeholder="Enter your phone number"
+            />
           </div>
 
+          {/* Role */}
           <div className="space-y-2">
-            <label className="block text-sm font-medium mb-2" htmlFor="location">
-              Location
+            <label htmlFor="role" className="block text-sm font-medium">
+              Role
             </label>
-            <div className="relative">
-              <input
-                type="text"
-                id="location"
-                name="location"
-                value={profileData.location}
-                onChange={handleChange}
-                className="w-full p-3.5 border border-border rounded-lg bg-background focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors duration-200 pl-10"
-                placeholder="City, Country"
-              />
-              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-              </div>
-            </div>
+            <input
+              type="text"
+              id="role"
+              name="role"
+              value={profileData.role}
+              readOnly
+              className="w-full p-3.5 border border-border rounded-lg bg-muted text-foreground cursor-not-allowed"
+            />
           </div>
 
-          <div className="space-y-2">
-            <label className="block text-sm font-medium mb-2" htmlFor="website">
-              Website
-            </label>
-            <div className="relative">
-              <input
-                type="url"
-                id="website"
-                name="website"
-                value={profileData.website}
-                onChange={handleChange}
-                className="w-full p-3.5 border border-border rounded-lg bg-background focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors duration-200 pl-10"
-                placeholder="https://example.com"
-              />
-              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                </svg>
-              </div>
-            </div>
-          </div>
+
         </div>
 
+        {/* Actions */}
         <div className="flex flex-col sm:flex-row justify-end items-center pt-4 border-t border-border">
           <div className="flex gap-3">
             <button
               type="button"
               className="px-5 py-2.5 border border-border rounded-lg font-medium hover:bg-muted transition-colors duration-200"
+              disabled={updating}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="bg-primary text-primary-foreground px-5 py-2.5 rounded-lg font-medium hover:bg-primary/90 transition-colors duration-200 flex items-center gap-2 shadow-sm"
+              className={`bg-primary text-primary-foreground px-5 py-2.5 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2 shadow-sm ${updating ? 'opacity-70 cursor-not-allowed' : 'hover:bg-primary/90'}`}
+              disabled={updating}
+              aria-busy={updating}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-              Save Changes
+              {updating && (
+                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                </svg>
+              )}
+              <span>{updating ? 'Saving…' : 'Save Changes'}</span>
             </button>
           </div>
         </div>

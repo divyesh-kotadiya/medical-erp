@@ -9,6 +9,7 @@ import { InvitesModule } from '../Invites/invites.module';
 import { HashModule } from 'src/common/hash/hash.module';
 import { EmailModule } from 'src/common/email/email.module';
 import { AuthModule } from 'src/common/auth/auth.module';
+import { FileUploadModule } from 'src/file-upload/file-upload.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { AuthModule } from 'src/common/auth/auth.module';
     InvitesModule,
     EmailModule,
     AuthModule,
+    FileUploadModule,
   ],
   controllers: [UsersController],
   providers: [UsersService],

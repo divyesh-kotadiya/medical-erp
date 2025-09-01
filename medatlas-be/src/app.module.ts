@@ -11,6 +11,7 @@ import { RolesModule } from './modules/Role/roles.module';
 import { InvitesModule } from './modules/Invites/invites.module';
 import { ConfigModule, ConfigService } from './config';
 import { EmailModule } from './common/email/email.module';
+import { FileUploadModule } from './file-upload/file-upload.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { EmailModule } from './common/email/email.module';
     TimesheetsModule,
     IncidentsModule,
     DocumentsModule,
+    FileUploadModule,
   ],
   controllers: [AppController],
   providers: [ConfigService],

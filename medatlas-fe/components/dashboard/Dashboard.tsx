@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import Image from 'next/image';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { fetchShifts } from '@/store/slices/shifts';
 import { fetchMembers } from '@/store/slices/auth';
@@ -48,19 +49,40 @@ export const Dashboard = () => {
     { title: "View Member", value: "", change: "See all Members", icon: Eye, component: <InviteListDialog /> },
   ];
 
-  const upcomingShifts = shifts?.map((s) => ({
+  const upcomingShifts = shifts?.slice(0, 6).map((s) => ({
     id: s.id,
     staff: s.staffId?.name || 'Not Assigned',
     department: s?.department || 'Unknown',
     start: s.start,
-    end: s.end
-    , date: new Date(s.start).toLocaleDateString(),
+    end: s.end,
+    date: new Date(s.start).toLocaleDateString(),
     status: s.cancelled ? 'cancel' : 'pending',
   }));
 
-  const recentActivities = members?.slice(0, 5).map((m, idx) => ({
+  const computeAvatarUrl = (raw?: string): string => {
+    if (!raw) return '';
+    const trimmed = raw.trim();
+    if (trimmed.startsWith('blob:') || /^https?:\/\//i.test(trimmed)) return trimmed;
+    if (trimmed.startsWith('/')) {
+      const base = process.env.NEXT_PUBLIC_IMAGE_API_BASE_URL || '';
+      if (!base) return trimmed;
+      return `${base.replace(/\/$/, '')}${trimmed}`;
+    }
+    return trimmed;
+  };
+
+  const getInitials = (fullName?: string): string => {
+    if (!fullName) return '';
+    const parts = fullName.trim().split(/\s+/);
+    const first = parts[0]?.[0] ?? '';
+    const last = parts.length > 1 ? parts[parts.length - 1]?.[0] ?? '' : '';
+    return (first + last).toUpperCase();
+  };
+
+  const recentActivities = members?.slice(0, 4).map((m, idx) => ({
     id: idx,
     user: m.name,
+    avatar: computeAvatarUrl((m as unknown as { avatar?: string }).avatar),
     action: 'Updated profile',
     department: m.department || 'General',
     time: 'Just now',
@@ -114,10 +136,30 @@ export const Dashboard = () => {
           <CardContent className="space-y-4">
             {recentActivities?.map((activity) => (
               <div key={activity?.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
-                <div>
-                  <p className="font-medium text-foreground">{activity.user}</p>
-                  <p className="text-sm text-muted-foreground">{activity.action} ({activity.department})</p>
-                  <p className="text-xs text-muted-foreground">{activity.time}</p>
+                <div className="flex items-center gap-3">
+                  {activity.avatar == "" ? (
+                    <div
+                      className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-100 to-purple-100 ring-2 ring-white dark:ring-gray-800 shadow flex items-center justify-center text-[15px] font-bold text-blue-700"
+                      aria-label={activity.user}
+                      title={activity.user}
+                    >
+                      {getInitials(activity.user)}
+                    </div>
+                  ) : (
+                    <Image
+                      src={activity.avatar}
+                      alt={activity.user}
+                      width={36}
+                      height={36}
+                      className="rounded-full w-12 h-12 object-cover"
+                      unoptimized
+                    />
+                  )}
+                  <div>
+                    <p className="font-medium text-foreground">{activity.user}</p>
+                    <p className="text-sm text-muted-foreground">{activity.action} ({activity.department})</p>
+                    <p className="text-xs text-muted-foreground">{activity.time}</p>
+                  </div>
                 </div>
                 <Badge className={getStatusColor(activity.status)}>{activity.status}</Badge>
               </div>
