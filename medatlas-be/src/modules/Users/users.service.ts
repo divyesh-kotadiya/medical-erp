@@ -63,6 +63,7 @@ export class UsersService {
       email: invite.email,
       name: dto.name,
       password: hashedPassword,
+      isTenantAdmin: invite?.role === UserRole.ADMIN ? true : false,
     });
 
     await user.save();
@@ -374,8 +375,7 @@ export class UsersService {
           }
         } catch (e) {
           this.logger.warn(
-            `Failed to delete old avatar at ${absolutePath}: ${
-              (e as Error).message
+            `Failed to delete old avatar at ${absolutePath}: ${(e as Error).message
             }`,
           );
         }

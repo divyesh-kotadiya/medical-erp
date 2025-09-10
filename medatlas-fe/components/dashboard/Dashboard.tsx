@@ -7,7 +7,6 @@ import { fetchShifts } from '@/store/slices/shifts';
 import { fetchMembers } from '@/store/slices/auth';
 import { UserRole } from '@/constants/UserRole/role';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Users, Calendar, Clock, AlertTriangle, TrendingUp, Activity, UserCheck, Bell, Eye, UserPlus } from 'lucide-react';
@@ -26,15 +25,6 @@ export const Dashboard = () => {
     dispatch(fetchMembers());
   }, [dispatch]);
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed': return 'bg-success text-success-foreground hover:bg-success';
-      case 'pending': return 'bg-warning text-warning-foreground hover:bg-warning';
-      case 'urgent': return 'bg-destructive text-destructive-foreground';
-      case 'confirmed': return 'bg-primary text-primary-foreground';
-      default: return 'bg-muted text-muted-foreground';
-    }
-  };
 
   const stats = [
     { title: 'Active Staff', value: members?.length, change: '+5 this week', icon: Users, color: 'text-primary' },
@@ -111,20 +101,32 @@ export const Dashboard = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats?.map((stat, i) => (
-          <Card key={i} className="bg-gradient-card border-border/50 hover:shadow-card transition-all duration-300">
-            <CardContent className="p-6 flex justify-between items-center">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">{stat.title}</p>
-                <p className="text-2xl font-bold text-foreground">{stat.value}</p>
-                <p className="text-xs text-muted-foreground mt-1">{stat.change}</p>
-              </div>
-              <div className="h-12 w-12 rounded-lg bg-gradient-primary flex items-center justify-center">
-                <stat.icon className="h-6 w-6 text-white" />
-              </div>
+        {stats && stats.length > 0 ? (
+          stats.map((stat, i) => (
+            <Card
+              key={i}
+              className="bg-gradient-card border-border/50 hover:shadow-card transition-all duration-300"
+            >
+              <CardContent className="p-6 flex justify-between items-center">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">{stat.title}</p>
+                  <p className="text-2xl font-bold text-foreground">{stat.value}</p>
+                  <p className="text-xs text-muted-foreground mt-1">{stat.change}</p>
+                </div>
+                <div className="h-12 w-12 rounded-lg bg-gradient-primary flex items-center justify-center">
+                  <stat.icon className="h-6 w-6 text-white" />
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        ) : (
+          <Card className="bg-gradient-card border-border/50">
+            <CardContent className="p-6 flex items-center justify-center text-muted-foreground">
+              No data found
             </CardContent>
           </Card>
-        ))}
+        )}
+
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -133,7 +135,7 @@ export const Dashboard = () => {
             <CardTitle className="flex items-center space-x-2"><Activity className="h-5 w-5 text-primary" /><span>Recent Activities</span></CardTitle>
             <CardDescription>Latest actions from your team members</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 cursor-pointer">
             {recentActivities?.map((activity) => (
               <div key={activity?.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
                 <div className="flex items-center gap-3">
@@ -161,7 +163,6 @@ export const Dashboard = () => {
                     <p className="text-xs text-muted-foreground">{activity.time}</p>
                   </div>
                 </div>
-                <Badge className={getStatusColor(activity.status)}>{activity.status}</Badge>
               </div>
             ))}
           </CardContent>
@@ -179,29 +180,36 @@ export const Dashboard = () => {
                   <TableHead>Staff</TableHead>
                   <TableHead>Date</TableHead>
                   <TableHead>Time</TableHead>
-                  <TableHead>Status</TableHead>
                 </TableRow>
               </TableHeader>
-              <TableBody>
-                {upcomingShifts?.map((shift) => (
-                  <TableRow key={shift?.date}>
-                    <TableCell>
-                      <div>
-                        <p className="font-medium">{shift.staff}</p>
-                      </div>
+              <TableBody className="cursor-pointer">
+                {upcomingShifts && upcomingShifts.length > 0 ? (
+                  upcomingShifts.map((shift) => (
+                    <TableRow key={shift?.id}>
+                      <TableCell>
+                        <div>
+                          <p className="font-medium">{shift.staff}</p>
+                        </div>
+                      </TableCell>
+                      <TableCell>{shift?.date}</TableCell>
+                      <TableCell>{formatTimeRange(shift.start, shift.end)}</TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={4} className="text-center max text-muted-foreground py-6">
+                      No data found
                     </TableCell>
-                    <TableCell>{shift?.date}</TableCell>
-                    <TableCell>{formatTimeRange(shift.start, shift.end)}</TableCell>
-                    <TableCell><Badge className={getStatusColor(shift.status)}>{shift.status}</Badge></TableCell>
                   </TableRow>
-                ))}
+                )}
               </TableBody>
+
             </Table>
           </CardContent>
         </Card>
       </div>
 
-      {user?.role === UserRole.ADMIN && (
+      {(user?.role === UserRole.ADMIN) && (user?.isTenantAdmin === true) && (
         <Card className="border border-border/50 shadow-lg rounded-lg">
           <CardHeader>
             <CardTitle className="text-lg font-semibold">Quick Actions</CardTitle>

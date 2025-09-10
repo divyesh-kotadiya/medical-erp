@@ -35,7 +35,7 @@ export const inviteMember = createAsyncThunk(
   async (payload: { email: string; role?: string }, { rejectWithValue }) => {
     try {
       const { data } = await api.post('/invites', payload);
-      return data; // expecting { message: string }
+      return data;
     } catch (e: any) {
       if (e.response && e.response.data) {
         return rejectWithValue(e.response.data);

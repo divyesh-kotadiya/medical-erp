@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk, PayloadAction, createSelector, isRejectedWithValue } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, PayloadAction, createSelector } from '@reduxjs/toolkit';
 import { api } from '@/lib/api/client';
 
 export interface Member {
@@ -69,6 +69,7 @@ export const login = createAsyncThunk(
     }
   }
 );
+
 
 export const createTenant = createAsyncThunk(
   'auth/createTenantAndLogin',
@@ -326,7 +327,6 @@ const authSlice = createSlice({
         state.loading = false;
         state.isAuthenticated = true;
         state.token = action.payload.userData.token;
-        console.log(action.payload.userData.token);
         localStorage.setItem("token", action.payload.userData.token);
         state.user = {
           id: action.payload.userData.id,

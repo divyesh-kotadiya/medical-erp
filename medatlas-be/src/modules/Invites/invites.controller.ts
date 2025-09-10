@@ -8,15 +8,22 @@ import {
   Param,
   UseGuards,
   Request,
+  BadRequestException,
 } from '@nestjs/common';
 import { InvitesService } from './invites.service';
 import { CreateInviteDto } from './dto/create-invite.dto';
 import { JwtGuard } from 'src/common/auth/jwt.guard';
 import { GetInviteListDto } from './dto/get-invites.dto';
+import { Model } from 'mongoose';
+import { User, UserDocument } from '../Users/schemas/user.schema';
+import { InjectModel } from '@nestjs/mongoose';
 
 @Controller('invites')
 export class InvitesController {
-  constructor(private readonly invitesService: InvitesService) {}
+  constructor(
+    private readonly invitesService: InvitesService,
+    @InjectModel(User.name) private userModel: Model<UserDocument>,
+  ) { }
   @Get(':token')
   async getInviteByToken(@Param('token') token: string) {
     const invite = await this.invitesService.findByToken(token);
@@ -33,9 +40,6 @@ export class InvitesController {
     @Body() createInviteDto: CreateInviteDto,
     @Request() req: any,
   ) {
-    if (!req.user.isTenantAdmin) {
-      throw new Error('Only tenant admins can create invites');
-    }
     return this.invitesService.createInvite(
       createInviteDto,
       req.user.tenantId,
@@ -50,7 +54,7 @@ export class InvitesController {
     @Body() getInviteListDto: GetInviteListDto,
   ) {
     if (!req.user.isTenantAdmin) {
-      throw new Error('Only tenant admins can view invites');
+      throw new BadRequestException('Only tenant admins can view invites');
     }
 
     return this.invitesService.getInvitesByTenant(
@@ -63,7 +67,7 @@ export class InvitesController {
   @Delete(':id')
   async deleteInvite(@Param('id') id: string, @Request() req: any) {
     if (!req.user.isTenantAdmin) {
-      throw new Error('Only tenant admins can delete invites');
+      throw new BadRequestException('Only tenant admins can delete invites');
     }
 
     const success = await this.invitesService.deleteInvite(id);

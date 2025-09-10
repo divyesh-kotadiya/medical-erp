@@ -35,7 +35,6 @@ export default function UserProfile() {
   };
 
   const avatarUrl = computeAvatarUrl(profileData.avatar);
-  console.log(avatarUrl)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -125,7 +124,6 @@ export default function UserProfile() {
             )}
           </div>
 
-          {/* Hover overlay */}
           <div
             onClick={() => fileInputRef.current?.click()}
             className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer bg-black/40 rounded-full"
@@ -153,7 +151,6 @@ export default function UserProfile() {
           </div>
         </div>
 
-        {/* Upload & remove */}
         <div className="flex flex-col gap-3">
           <input
             type="file"
@@ -189,7 +186,6 @@ export default function UserProfile() {
         </div>
       </div>
 
-      {/* Profile Form */}
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Name */}
@@ -209,7 +205,6 @@ export default function UserProfile() {
             />
           </div>
 
-          {/* Email */}
           <div className="space-y-2">
             <label htmlFor="email" className="block text-sm font-medium">
               Email Address <span className="text-destructive">*</span>
@@ -226,7 +221,6 @@ export default function UserProfile() {
             />
           </div>
 
-          {/* Phone */}
           <div className="space-y-2">
             <label htmlFor="phone" className="block text-sm font-medium">
               Phone Number
@@ -242,7 +236,6 @@ export default function UserProfile() {
             />
           </div>
 
-          {/* Role */}
           <div className="space-y-2">
             <label htmlFor="role" className="block text-sm font-medium">
               Role
@@ -260,7 +253,6 @@ export default function UserProfile() {
 
         </div>
 
-        {/* Actions */}
         <div className="flex flex-col sm:flex-row justify-end items-center pt-4 border-t border-border">
           <div className="flex gap-3">
             <button

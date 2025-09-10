@@ -4,6 +4,7 @@ import { Users } from 'lucide-react';
 import Loader from '@/components/loader';
 import { fetchInvites } from '@/store/slices/invite';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { enqueueSnackbar } from 'notistack';
 
 export default function InviteListDialog() {
   const [open, setOpen] = useState(false);
@@ -23,7 +24,16 @@ export default function InviteListDialog() {
     setOpen(false);
     setPage(1);
   }
-  if(error) return <div>{error}</div>
+  useEffect(() => {
+    if (error) {
+      const message =
+        typeof error === "string"
+          ? error
+          : error?.message;
+
+      enqueueSnackbar(message, { variant: "error" });
+    }
+  }, [error]);
   return (
     <div>
       <button
