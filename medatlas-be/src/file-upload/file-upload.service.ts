@@ -31,7 +31,7 @@ export class FileUploadService {
         file: { mimetype: string },
         cb: (error: any, acceptFile: boolean) => void,
       ) => {
-        if (!file.mimetype.match(/\/(jpg|jpeg|png|gif)$/)) {
+        if (!file.mimetype.match(/\/(jpg|jpeg|png|gif|csv)$/)) {
           return cb(
             new BadRequestException('Only image files are allowed!'),
             false,

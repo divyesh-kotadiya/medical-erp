@@ -1,0 +1,5 @@
+"id","date","checkIn","checkOut","mealBreak","workingHours","status","staffName"
+"68bfb0da9d1ac062a661e0d2","Today","10:15","--:--","0 min","2:08 hrs","in-progress","Unknown"
+"68bebabe3bf128f5691eb018","Mon, Sep 8, 2025","16:45","18:52","0 min","2:07 hrs","completed","Unknown"
+"68be7d5db4f32339871d7dfa","Mon, Sep 8, 2025","12:23","16:22","103 min","2:17 hrs","completed","Unknown"
+"68b56ff18b69b4d16c4d35d7","Mon, Sep 1, 2025","15:35","19:15","32 min","3:08 hrs","completed","Unknown"

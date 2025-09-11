@@ -12,7 +12,14 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
 
   app.enableCors(configService.getCorsConfig());
-  app.useGlobalPipes(new ValidationPipe({ transform: true }));
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  );
+
   app.setGlobalPrefix(configService.getGlobalAPIPrefix());
   app.useStaticAssets(join(process.cwd(), 'uploads'), {
     prefix: '/uploads/',
