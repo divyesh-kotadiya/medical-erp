@@ -11,7 +11,7 @@ export default {
   ],
   prefix: "",
   theme: {
-    container: {  
+    container: {
       center: true,
       padding: '2rem',
       screens: {
@@ -32,6 +32,7 @@ export default {
         },
         secondary: {
           DEFAULT: 'hsl(var(--secondary))',
+          hover: 'hsl(var(-primary-hover))',
           foreground: 'hsl(var(--secondary-foreground))'
         },
         destructive: {
@@ -50,8 +51,14 @@ export default {
           DEFAULT: 'hsl(var(--success))',
           foreground: 'hsl(var(--success-foreground))'
         },
+        danger: {
+          DEFAULT: 'hsl(var(--danger))',
+          hover: 'hsl(var(--danger-hover))',
+          foreground: 'hsl(var(--danger-foreground))'
+        },
         warning: {
           DEFAULT: 'hsl(var(--warning))',
+          hover: 'hsl(var(--warning-hover))',
           foreground: 'hsl(var(--warning-foreground))'
         },
         popover: {

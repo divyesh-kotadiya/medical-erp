@@ -1,7 +1,8 @@
 'use client';
 
+import MobileNav from "../layout/MobileNav";
 import { Sidebar } from "../layout/Sidebar";
-import MobileNav from "../MobileNav";
+
 
 export const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   return (

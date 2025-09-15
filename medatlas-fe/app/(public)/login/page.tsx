@@ -2,6 +2,7 @@
 
 import { useState, FormEvent, useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { useRouter } from 'next/navigation'
 import { login, selectAuth } from '@/store/slices/auth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,6 +12,7 @@ import { useAuthRedirect } from '@/hooks/useAuthRedirect';
 import { enqueueSnackbar } from 'notistack';
 import Loader from '@/components/loader';
 export default function LoginPage() {
+  const router = useRouter()
   const dispatch = useAppDispatch();
   const { loading } = useAppSelector(selectAuth);
 
@@ -24,6 +26,10 @@ export default function LoginPage() {
   });
 
   useAuthRedirect();
+
+  useEffect(() => {
+    router.prefetch('/dashboard');
+  }, [router]);
 
   useEffect(() => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -51,7 +57,6 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-
     if (!isFormValid) {
       if (!email) {
         enqueueSnackbar("Please enter your email", { variant: "warning" });

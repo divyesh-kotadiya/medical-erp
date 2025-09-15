@@ -49,7 +49,7 @@ const initialState: TimesheetsState = {
   weeklyHours: 0,
   lastSubmittedTimesheetId: null,
   submittedList: [],
-  submissionStatus: undefined,
+  submissionStatus: 'REJECTED',
   submissionMessage: undefined,
   loading: false,
   error: undefined,
@@ -534,7 +534,7 @@ const timesheetsSlice = createSlice({
       })
       .addCase(submitWeek.rejected, (state, action) => {
         state.loading = false;
-        state.submissionStatus = 'idle';
+        state.submissionStatus = 'REJECTED';
         if (action.payload && typeof action.payload === 'object' && 'message' in action.payload) {
           state.error = (action.payload as { message: string }).message;
         } else {

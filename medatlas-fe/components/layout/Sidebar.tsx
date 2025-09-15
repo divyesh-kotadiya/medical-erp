@@ -25,8 +25,7 @@ export const Sidebar = () => {
   const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
   const { user } = useAppSelector((state) => state.auth);
-  const isActive = (path: string) => pathname === path;
-
+  const isActive = (path: string) => pathname.startsWith(path);
   const dispatch = useAppDispatch();
 
   const handleLogout = () => {
@@ -35,12 +34,12 @@ export const Sidebar = () => {
   }
   const navigationItems = [
     { title: 'Dashboard', url: '/dashboard', icon: LayoutDashboard },
-    { title: 'Scheduling', url: '/dashboard/scheduling', icon: Calendar },
-    { title: 'Timesheets', url: '/dashboard/timesheets', icon: Clock },
-    { title: 'Incidents', url: '/dashboard/incidents', icon: AlertTriangle },
-    { title: 'Documents', url: '/dashboard/documents', icon: FileText },
-    { title: 'Reports', url: '/dashboard/reports', icon: BarChart3 },
-    { title: 'Settings', url: '/dashboard/settings', icon: Settings }
+    { title: 'Scheduling', url: '/scheduling', icon: Calendar },
+    { title: 'Timesheets', url: '/timesheets', icon: Clock },
+    { title: 'Incidents', url: '/incidents', icon: AlertTriangle },
+    { title: 'Documents', url: '/documents', icon: FileText },
+    { title: 'Reports', url: '/reports', icon: BarChart3 },
+    { title: 'Settings', url: '/settings', icon: Settings }
   ];
   return (
     <div className={cn(
@@ -71,6 +70,7 @@ export const Sidebar = () => {
           <Link
             key={item.title}
             href={item.url}
+            prefetch
             className={cn(
               "flex items-center space-x-4 px-3 py-3 rounded-lg transition-all duration-200",
               isActive(item.url)

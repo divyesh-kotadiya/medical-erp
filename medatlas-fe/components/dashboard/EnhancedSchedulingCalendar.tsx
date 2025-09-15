@@ -9,6 +9,7 @@ import listPlugin from "@fullcalendar/list";
 import { useAppDispatch } from "@/store/hooks";
 import { deleteShift } from "@/store/slices/shifts";
 import { Calendar, Clock, Edit, FileText, Trash, User, X } from "lucide-react";
+import Button from "../layout/Button/Button";
 
 export interface Event {
   id: string;
@@ -112,13 +113,13 @@ export default function StaffSchedulingPage({
       : "";
 
     const bgColor = eventInfo.event.extendedProps.type === 'Consulting'
-      ? 'bg-blue-100'
+      ? 'bg-primary'
       : eventInfo.event.extendedProps.type === 'Support'
         ? 'bg-green-100'
         : 'bg-gray-100';
 
     return (
-      <div className={`${bgColor} p-2 rounded-md border-l-4 border-blue-500`}>
+      <div className={`${bgColor} p-2 rounded-md border-l-4 border-primary`}>
         <div className="font-semibold text-gray-800 truncate">{eventInfo.event.title}</div>
         <div className="text-xs text-gray-600">{start} - {end}</div>
       </div>
@@ -195,7 +196,7 @@ export default function StaffSchedulingPage({
           <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-2xl mx-4 border border-gray-100 transform transition-all" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-8">
               <div className="flex items-center">
-                <div className="w-2 h-6 bg-blue-500 rounded-full mr-3"></div>
+                <div className="w-2 h-6 bg-primary rounded-full mr-3"></div>
                 <h3 className="text-2xl font-bold text-gray-800">Shift Details</h3>
               </div>
               <button className="p-2 hover:bg-gray-100 rounded-full transition-colors" onClick={() => setSelectedEvent(null)}>
@@ -262,17 +263,14 @@ export default function StaffSchedulingPage({
             </div>
 
             <div className="flex gap-3">
-              <button className="flex items-center justify-center px-6 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-all transform flex-1 shadow-md" onClick={handleUpdate}>
+              <Button variant="secondary" className="flex items-center justify-center px-6 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-all transform flex-1 shadow-md" onClick={handleUpdate}>
                 <Edit size={18} className="mr-2" />
                 Edit
-              </button>
-              <button className="flex items-center justify-center px-6 py-3 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-all transform flex-1 shadow-md" onClick={handleDelete}>
+              </Button>
+              <Button variant="danger" className="flex items-center justify-center px-6 py-3 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-all transform flex-1 shadow-md" onClick={handleDelete}>
                 <Trash size={18} className="mr-2" />
                 Delete
-              </button>
-              <button className="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition-all flex-1 shadow-md" onClick={() => setSelectedEvent(null)}>
-                Close
-              </button>
+              </Button>
             </div>
           </div>
         </div>

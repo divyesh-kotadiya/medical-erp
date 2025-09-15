@@ -12,6 +12,9 @@ export class CreateShiftDto {
   tenantId: string;
 
   @IsOptional()
+  title?: string;
+
+  @IsOptional()
   staffId?: string;
 
   @IsDate()

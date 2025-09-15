@@ -19,7 +19,7 @@ All colors MUST be HSL for proper theming.
     --fc-button-hover-bg-color: #04b3ed;
     --fc-button-hover-border-color: #04b3ed;
     --fc-button-active-bg-color: #04b3ed;
-    
+
 
     --fc-event-bg-color: linear-gradient(90deg, #3b82f6, #2563eb);
     --fc-event-border-color: transparent;
@@ -41,7 +41,6 @@ All colors MUST be HSL for proper theming.
     --fc-highlight-color: rgba(191, 219, 254, 0.4);
     --fc-today-bg-color: rgba(253, 224, 71, 0.2);
     --fc-now-indicator-color: #ef4444;
-
 
     --background: 210 20% 98%;
     --foreground: 213 27% 12%;
@@ -76,6 +75,12 @@ All colors MUST be HSL for proper theming.
     --success-foreground: 0 0% 100%;
     --warning: 43 96% 56%;
     --warning-foreground: 0 0% 100%;
+    --warning-hover: 43 96% 46%;
+    /* Base danger red */
+    --danger: 0 84% 60%;
+    --danger-foreground: 0 0% 100%;
+    --danger-hover: 0 84% 50%;
+
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 

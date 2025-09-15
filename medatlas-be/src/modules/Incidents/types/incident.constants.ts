@@ -34,3 +34,8 @@ export interface Attachment {
   name: string;
   url: string;
 }
+
+export type PaginationFilter = {
+  page?: number;
+  limit?: number;
+};

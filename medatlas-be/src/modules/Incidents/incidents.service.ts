@@ -21,7 +21,25 @@ export class IncidentService {
   }
 
   async findAll(filter: SearchIncidentDto) {
-    return this.incidentModel.find(filter).sort({ createdAt: -1 });
+    const { page = 1, limit = 10, ...conditions } = filter;
+
+    const skip = (page - 1) * limit;
+
+    const incident = await this.incidentModel
+      .find(conditions)
+      .skip(skip)
+      .limit(limit)
+      .exec();
+
+    const total = await this.incidentModel.countDocuments(conditions);
+
+    return {
+      incident,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+      total,
+    };
   }
 
   async findOne(id: string) {

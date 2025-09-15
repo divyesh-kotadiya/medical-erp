@@ -27,7 +27,7 @@ export class IncidentController {
   constructor(
     private readonly incidentService: IncidentService,
     private readonly fileUploadService: FileUploadService,
-  ) {}
+  ) { }
 
   @Post()
   create(@Body() dto: CreateIncidentDto) {
@@ -73,7 +73,7 @@ export class IncidentController {
     return this.incidentService.addAttachment(id, attachment);
   }
 
-  @Get(':incidentId/attachment/:attachmentId/download')
+  @Get(':incidentId/attachment/:attachmentId')
   async downloadAttachment(
     @Param('incidentId') incidentId: string,
     @Param('attachmentId') attachmentId: string,
@@ -90,6 +90,8 @@ export class IncidentController {
     }
 
     const filePath = join(process.cwd(), attachment.url);
+
+    res.setHeader('Content-Type', 'text/csv');
     return res.download(filePath, attachment.name);
   }
 
