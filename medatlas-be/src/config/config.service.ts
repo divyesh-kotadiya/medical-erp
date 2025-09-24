@@ -54,13 +54,23 @@ export class ConfigService {
   }
 
   getJWTSecretKey(): string {
-    const secret = this.envConfig['JWT_SECRET'];
+    const secret = this.envConfig['JWT_ACCESS_SECRET'];
     if (!secret) {
-      throw new Error('JWT_SECRET is not defined in environment variables');
+      throw new Error(
+        'JWT_ACCESS_SECRET is not defined in environment variables',
+      );
     }
     return secret;
   }
-
+  getJWTExpireAt(): string {
+    const secret = this.envConfig['ACCESS_TOKEN_EXPIRES_IN'];
+    if (!secret) {
+      throw new Error(
+        'ACCESS_TOKEN_EXPIRES_IN is not defined in environment variables',
+      );
+    }
+    return secret;
+  }
   getPort(): string {
     return this.envConfig['PORT']!;
   }
@@ -119,7 +129,7 @@ export class ConfigService {
   getJwtConfig() {
     return {
       secret: this.getJWTSecretKey(),
-      signOptions: { expiresIn: '1h' },
+      signOptions: { expiresIn: this.getJWTExpireAt() },
     };
   }
 

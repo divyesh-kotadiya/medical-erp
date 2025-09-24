@@ -12,15 +12,11 @@ export class Role {
   @Prop({ type: Types.ObjectId, ref: 'Tenant', required: true })
   tenantId: Types.ObjectId;
 
-  @Prop({ type: String, enum: UserRole, required: true })
+  @Prop({ type: String, required: true })
   role: UserRole;
-
-  @Prop({ type: Types.ObjectId, ref: 'User', required: false })
-  userId?: Types.ObjectId;
-
-  @Prop({ type: String, required: false })
-  name?: string;
 }
 
 export type RoleDocument = Role & Document;
 export const RoleSchema = SchemaFactory.createForClass(Role);
+
+RoleSchema.index({ tenantId: 1, role: 1 }, { unique: true });

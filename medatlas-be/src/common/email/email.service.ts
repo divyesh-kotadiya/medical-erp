@@ -4,6 +4,7 @@ import { ConfigService } from '../../config/config.service';
 import { loadTemplate, renderTemplate } from './utils/email-template.util';
 import {
   InviteEmailData,
+  OtpEmailData,
   PasswordResetEmailData,
 } from './interface/email.interface';
 
@@ -13,10 +14,14 @@ export class EmailService {
   private transporter: nodemailer.Transporter;
 
   private inviteTemplate?: string;
+  private otpTemplate?: string;
+  private resetSuccessTemplate?: string;
   private resetTemplate?: string;
 
-  constructor(private configService: ConfigService) {
-    void this.initializeTransporter();
+  constructor(private configService: ConfigService) {}
+
+  async onModuleInit() {
+    await this.initializeTransporter();
     this.loadTemplates();
   }
 
@@ -48,7 +53,9 @@ export class EmailService {
 
   private loadTemplates() {
     this.inviteTemplate = loadTemplate('invite-email.html');
-    this.resetTemplate = loadTemplate('reset-password-email.html');
+    this.otpTemplate = loadTemplate('otp-email.html');
+    this.resetSuccessTemplate = loadTemplate('reset-password-success.html');
+    this.resetTemplate = loadTemplate('forgot-password.html');
   }
 
   async sendInviteEmail(data: InviteEmailData): Promise<boolean> {
@@ -65,14 +72,45 @@ export class EmailService {
     return this.sendMail(data.to, subject, html);
   }
 
-  async sendPasswordResetEmail(data: PasswordResetEmailData): Promise<boolean> {
-    const subject = 'Reset your password';
+  async sendResetPasswordEmail(data: PasswordResetEmailData): Promise<boolean> {
+    const subject = 'Your Reset Password (OTP)';
     const html = this.resetTemplate
       ? renderTemplate(this.resetTemplate, {
           userName: data.userName || 'there',
-          resetUrl: data.resetUrl,
+          otp: data.otp,
+          expiresIn: data.expiresIn || '1 minutes',
+          currentYear: new Date().getFullYear().toString(),
         })
-      : this.generateFallbackReset(data);
+      : this.generateFallbackOtp(data);
+    return this.sendMail(data.to, subject, html);
+  }
+
+  async sendPasswordResetSuccessEmail(
+    to: string,
+    userName: string,
+    resetUrl: string,
+  ): Promise<boolean> {
+    const subject = 'Your Password Has Been Reset';
+    const html = this.resetSuccessTemplate
+      ? renderTemplate(this.resetSuccessTemplate, {
+          userName: userName || 'there',
+          currentYear: new Date().getFullYear().toString(),
+          resetUrl,
+        })
+      : this.generateFallbackPasswordResetSuccess(userName);
+    return this.sendMail(to, subject, html);
+  }
+
+  async sendOtpEmail(data: OtpEmailData): Promise<boolean> {
+    const subject = 'Your One-Time Password (OTP)';
+    const html = this.otpTemplate
+      ? renderTemplate(this.otpTemplate, {
+          userName: data.userName || 'there',
+          otp: data.otp,
+          expiresIn: data.expiresIn || '5 minutes',
+          currentYear: new Date().getFullYear().toString(),
+        })
+      : this.generateFallbackOtp(data);
 
     return this.sendMail(data.to, subject, html);
   }
@@ -89,7 +127,7 @@ export class EmailService {
         subject,
         html,
       });
-      this.logger.log(`Email sent to ${to}`);
+      this.logger.log(`Email sent to ${to} with subject "${subject}"`);
       return true;
     } catch (error) {
       this.logger.error(`Failed to send email to ${to}`, error);
@@ -106,12 +144,21 @@ export class EmailService {
     `;
   }
 
-  private generateFallbackReset(data: PasswordResetEmailData): string {
+  private generateFallbackOtp(data: OtpEmailData): string {
     return `
-      <h2>Password Reset Request</h2>
+      <h2>Your OTP Code</h2>
       <p>Hello ${data.userName || 'there'},</p>
-      <p>Click the link below to reset your password:</p>
-      <p><a href="${data.resetUrl}">Reset Password</a></p>
+      <p>Your OTP is: <strong>${data.otp}</strong></p>
+      <p>It will expire in ${data.expiresIn || '5 minutes'}.</p>
+    `;
+  }
+
+  private generateFallbackPasswordResetSuccess(userName: string): string {
+    return `
+      <h2>Password Reset Successful</h2>
+      <p>Hello ${userName || 'there'},</p>
+      <p>Your password has been successfully reset. If you did not perform this action, please contact support immediately.</p>
+      <p>Best regards,<br/>The Team</p>
     `;
   }
 }

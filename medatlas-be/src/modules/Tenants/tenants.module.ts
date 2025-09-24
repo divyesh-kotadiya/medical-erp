@@ -8,11 +8,13 @@ import { TenantsController } from './tenants.controller';
 import { JwtModule } from '@nestjs/jwt';
 import { HashModule } from 'src/common/hash/hash.module';
 import { AuthModule } from 'src/common/auth/auth.module';
+import { TenantMember, TenantMemberSchema } from './schemas/members.schema';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: Tenant.name, schema: TenantSchema },
+      { name: TenantMember.name, schema: TenantMemberSchema },
       { name: Role.name, schema: RoleSchema },
       { name: User.name, schema: UserSchema },
     ]),

@@ -9,17 +9,17 @@ import { Shift, ShiftDocument } from './schemas/shift.schema';
 export class ShiftService {
   constructor(
     @InjectModel(Shift.name) private shiftModel: Model<ShiftDocument>,
-  ) { }
+  ) {}
 
   create(createShiftDto: CreateShiftDto): Promise<Shift> {
     const shift = new this.shiftModel(createShiftDto);
     return shift.save();
   }
 
-  async findAll(): Promise<Shift[]> {
-    const shifts = await this.shiftModel.find().exec();
+  async findAllByTenant(tenantId: string): Promise<Shift[]> {
+    const shifts = await this.shiftModel.find({ tenantId }).exec();
 
-    const shiftsWithStaff = shifts.filter(s => s.staffId);
+    const shiftsWithStaff = shifts.filter((s) => s.staffId);
 
     if (shiftsWithStaff.length > 0) {
       await this.shiftModel.populate(shiftsWithStaff, {

@@ -6,8 +6,8 @@ import {
   Param,
   Patch,
   Query,
-  UseInterceptors,
-  UploadedFile,
+  // UseInterceptors,
+  // UploadedFile,
   Res,
   NotFoundException,
   Delete,
@@ -17,7 +17,7 @@ import { UpdateStepDto } from './dto/update-step.dto';
 import { SearchIncidentDto } from './dto/search-incident.dto';
 import { IncidentService } from './incidents.service';
 import { FileUploadService } from 'src/file-upload/file-upload.service';
-import { FileInterceptor } from '@nestjs/platform-express';
+// import { FileInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
 import { join } from 'path';
 import { Attachment } from './types/incident.constants';
@@ -54,24 +54,24 @@ export class IncidentController {
     return this.incidentService.updateStatus(id, status);
   }
 
-  @Patch(':id/attachment/upload')
-  @UseInterceptors(
-    FileInterceptor(
-      'file',
-      new FileUploadService().getMulterOptions('incident-attachments'),
-    ),
-  )
-  async uploadAttachment(
-    @Param('id') id: string,
-    @UploadedFile() file: Express.Multer.File,
-  ) {
-    if (!file) throw new Error('No File Uploded');
-    const attachment = {
-      name: file.originalname,
-      url: `/uploads/incident-attachments/${file.filename}`,
-    };
-    return this.incidentService.addAttachment(id, attachment);
-  }
+  // @Patch(':id/attachment/upload')
+  // @UseInterceptors(
+  //   FileInterceptor(
+  //     'file',
+  //     new FileUploadService().getMulterOptions('incident-attachments'),
+  //   ),
+  // )
+  // async uploadAttachment(
+  //   @Param('id') id: string,
+  //   @UploadedFile() file: Express.Multer.File,
+  // ) {
+  //   if (!file) throw new Error('No File Uploded');
+  //   const attachment = {
+  //     name: file.originalname,
+  //     url: `/uploads/incident-attachments/${file.filename}`,
+  //   };
+  //   return this.incidentService.addAttachment(id, attachment);
+  // }
 
   @Get(':incidentId/attachment/:attachmentId')
   async downloadAttachment(

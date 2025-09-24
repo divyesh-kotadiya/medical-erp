@@ -7,143 +7,330 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { Invite, InviteDocument } from './schemas/invite.schema';
-import { Role, UserRole } from '../Role/schemas/roles.schema';
+import { Invite, InviteDocument, InviteStatus } from './schemas/invite.schema';
+import { Role, RoleDocument, UserRole } from '../Role/schemas/roles.schema';
 import { Tenant } from '../Tenants/schemas/tenant.schema';
-import { User } from '../Users/schemas/user.schema';
+import { User, UserDocument } from '../Users/schemas/user.schema';
+import {
+  TenantMember,
+  TenantMemberDocument,
+} from '../Tenants/schemas/members.schema';
 import { CreateInviteDto } from './dto/create-invite.dto';
 import { randomBytes } from 'crypto';
 import { EmailService } from 'src/common/email/email.service';
-import { GetInviteListDto } from './dto/get-invites.dto';
+import { UserInviteListDto } from './dto/user-invite.dto';
 
 @Injectable()
 export class InvitesService {
   constructor(
     @InjectModel(Invite.name) private inviteModel: Model<InviteDocument>,
-    @InjectModel(Role.name) private roleModel: Model<Role>,
+    @InjectModel(Role.name) private roleModel: Model<RoleDocument>,
     @InjectModel(Tenant.name) private tenantModel: Model<Tenant>,
-    @InjectModel(User.name) private userModel: Model<User>,
+    @InjectModel(User.name) private userModel: Model<UserDocument>,
+    @InjectModel(TenantMember.name)
+    private tenantMemberModel: Model<TenantMemberDocument>,
     private emailService: EmailService,
-  ) {}
+  ) { }
 
-  async createInvite(
-    createInviteDto: CreateInviteDto,
-    tenantId: string,
-    adminUserId: string,
-  ) {
-    const { email, role } = createInviteDto;
+  async createInvite(createInviteDto: CreateInviteDto, adminUserId: string) {
+    const {
+      email: rawEmail,
+      role: rawRole,
+      tenantId: rawTenantId,
+    } = createInviteDto;
 
-    const existingInvite = await this.inviteModel.findOne({
-      email,
-      tenantId: new Types.ObjectId(tenantId),
-    });
-
-    const exitstingUser = await this.userModel.findOne({
-      email,
-      tenantId: new Types.ObjectId(tenantId),
-    });
-
-    const admin = await this.userModel.findById(adminUserId).exec();
-
-    if (email === admin?.email) {
-      throw new HttpException(
-        'You cannot invite yourself',
-        HttpStatus.BAD_REQUEST,
-      );
+    if (!rawEmail) {
+      throw new HttpException('Email is required', HttpStatus.BAD_REQUEST);
     }
-    if (existingInvite) {
+    if (!rawTenantId) {
+      throw new HttpException('tenantId is required', HttpStatus.BAD_REQUEST);
+    }
+
+    const email = rawEmail.trim().toLowerCase();
+    const tenantObjectId = new Types.ObjectId(rawTenantId);
+
+    const adminMembership = await this.tenantMemberModel
+      .findOne({
+        userId: new Types.ObjectId(adminUserId),
+        tenantId: tenantObjectId,
+        isTenantAdmin: true,
+        disabled: false,
+      })
+      .exec();
+
+    if (!adminMembership) {
+      throw new BadRequestException('Only tenant admins can send invites');
+    }
+
+    const tenant = await this.tenantModel.findById(tenantObjectId).exec();
+    if (!tenant) {
+      throw new HttpException('Tenant not found', HttpStatus.NOT_FOUND);
+    }
+
+    const now = new Date();
+    const existingInvite = await this.inviteModel
+      .findOne({
+        tenantId: tenantObjectId,
+        email,
+      })
+      .exec();
+
+    if (
+      existingInvite &&
+      existingInvite.status === InviteStatus.PENDING &&
+      !(existingInvite.expiresAt < now)
+    ) {
       throw new HttpException(
         'Invite already exists for this email',
         HttpStatus.BAD_REQUEST,
       );
     }
-    if (exitstingUser) {
+
+    const existingUser = await this.userModel.findOne({ email }).exec();
+
+    if (existingUser) {
+      const existingUserMembership = await this.tenantMemberModel
+        .findOne({
+          tenantId: tenantObjectId,
+          userId: existingUser._id,
+        })
+        .exec();
+
+      if (existingUserMembership) {
+        throw new HttpException(
+          'User already belongs to this tenant',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+    }
+
+    const adminUser = await this.userModel.findById(adminUserId).exec();
+    if (
+      adminUser &&
+      adminUser.email &&
+      adminUser.email.toLowerCase().trim() === email
+    ) {
       throw new HttpException(
-        'User already exists with this email',
+        'You cannot invite yourself',
         HttpStatus.BAD_REQUEST,
       );
     }
 
-    const tenant = await this.tenantModel.findById(tenantId).exec();
-
-    if (!tenant) {
-      throw new HttpException('Tenant not found', HttpStatus.NOT_FOUND);
+    let desiredRole: UserRole = UserRole.STAFF;
+    if (rawRole && Object.values(UserRole).includes(rawRole as UserRole)) {
+      desiredRole = rawRole as UserRole;
     }
 
     const token = randomBytes(32).toString('hex');
-
     const expiresAt = new Date();
-
     expiresAt.setDate(expiresAt.getDate() + 7);
 
-    const tenantObjectId = new Types.ObjectId(tenantId);
+    try {
+      let inviteDoc: InviteDocument;
+      if (existingInvite) {
+        existingInvite.token = token;
+        existingInvite.expiresAt = expiresAt;
+        existingInvite.role = desiredRole;
+        existingInvite.status = InviteStatus.PENDING;
+        await existingInvite.save();
+        inviteDoc = existingInvite;
+      } else {
+        inviteDoc = new this.inviteModel({
+          tenantId: tenantObjectId,
+          role: desiredRole,
+          email,
+          token,
+          expiresAt,
+          status: InviteStatus.PENDING,
+        });
+        await inviteDoc.save();
+      }
 
-    const desiredRole: UserRole = role ? (role as UserRole) : UserRole.STAFF;
+      // 8) send email
+      const inviteUrl = `${process.env.FRONTEND_URL}/invite?token=${token}`;
+      await this.emailService.sendInviteEmail({
+        to: email,
+        organizationName: `${tenant.name} Organization`,
+        inviteUrl,
+        adminName: adminUser?.name || 'Admin',
+        expiresIn: '7 days',
+      });
 
-    const invite = new this.inviteModel({
-      tenantId: tenantObjectId,
-      role: desiredRole,
-      email,
-      token,
-      expiresAt,
-      accepted: false,
-    });
+      return { message: `Invite sent successfully to ${email}` };
+    } catch (err: any) {
+      if (err?.code === 11000) {
+        throw new HttpException(
+          'Invite already exists (race)',
+          HttpStatus.CONFLICT,
+        );
+      }
+      console.error('createInvite error', err);
+      throw new HttpException(
+        'Failed to create invite',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
 
+  async acceptInvite(token: string, userId: string) {
+    const invite = await this.inviteModel.findOne({ token }).exec();
+    if (!invite) throw new NotFoundException('Invite not found');
+
+    invite.status = InviteStatus.PENDING;
+    invite.acceptedAt = new Date();
     await invite.save();
 
-    const inviteUrl = `${process.env.FRONTEND_URL}/invite?token=${token}`;
-    await this.emailService.sendInviteEmail({
-      to: email,
-      organizationName: `${tenant?.name} Organization`,
-      inviteUrl,
-      adminName: admin?.name || 'Admin',
-      expiresIn: '7 days',
-    });
+    const user = await this.userModel
+      .findById(new Types.ObjectId(userId))
+      .exec();
+    if (!user) throw new NotFoundException('User not found');
+
+    if (user.email.toLowerCase().trim() !== invite.email.toLowerCase().trim()) {
+      throw new BadRequestException(
+        'Logged-in user email does not match invite email',
+      );
+    }
+
+    const existingMembership = await this.tenantMemberModel
+      .findOne({
+        tenantId: invite.tenantId,
+        userId: user._id,
+      })
+      .exec();
+
+    if (existingMembership) {
+      invite.status = InviteStatus.ACCEPTED;
+      invite.acceptedAt = new Date();
+      await invite.save();
+      throw new BadRequestException('User is already a member of this tenant');
+    }
+
+    let role = await this.roleModel
+      .findOne({
+        tenantId: invite.tenantId,
+        role: invite.role,
+      })
+      .exec();
+
+    if (!role) {
+      try {
+        role = await this.roleModel.create({
+          tenantId: invite.tenantId,
+          role: invite.role,
+        });
+      } catch (err: any) {
+        if (err?.code === 11000) {
+          role = await this.roleModel
+            .findOne({
+              tenantId: invite.tenantId,
+              role: invite.role,
+            })
+            .exec();
+        } else {
+          throw err;
+        }
+      }
+    }
+
+    if (!role) {
+      throw new HttpException(
+        'Failed to resolve role',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+
+    try {
+      await this.tenantMemberModel.create({
+        tenantId: invite.tenantId,
+        userId: user._id,
+        roleId: role._id,
+        isTenantAdmin: invite.role === UserRole.ADMIN,
+        invitedBy: invite._id,
+        disabled: false,
+      });
+    } catch (err: any) {
+      if (err?.code === 11000) {
+        invite.status = InviteStatus.ACCEPTED;
+        invite.acceptedAt = new Date();
+        await invite.save();
+        throw new BadRequestException('User is already a member (race)');
+      }
+      console.error('Failed to create TenantMember', err);
+      throw new HttpException(
+        'Failed to create membership',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+
+    invite.status = InviteStatus.ACCEPTED;
+    invite.acceptedAt = new Date();
+    await invite.save();
+
+    return { message: 'Invite accepted successfully' };
+  }
+
+  async getInvitesForUser(
+    userId: string,
+    { page = 1, limit = 10 }: UserInviteListDto = {},
+  ) {
+    const user = await this.userModel.findById(userId).exec();
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const query = { email: user.email.toLowerCase().trim() };
+    const invites = await this.inviteModel
+      .find(query)
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .sort({ createdAt: -1 })
+      .populate('tenantId', 'name')
+      .exec();
+
+    const total = await this.inviteModel.countDocuments(query);
 
     return {
-      message: `Invite send successfully User Email will be ${email}`,
+      data: invites || [],
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+      total,
     };
-  }
-
-  async findByToken(token: string): Promise<InviteDocument> {
-    const invite = await this.inviteModel.findOne({ token }).exec();
-
-    if (!invite) {
-      throw new NotFoundException('Invite not found');
-    }
-
-    if (invite.accepted) {
-      throw new BadRequestException('Invite has already been accepted');
-    }
-
-    if (invite.expiresAt < new Date()) {
-      throw new BadRequestException('Invite has expired');
-    }
-
-    return invite;
-  }
-
-  async markAsAccepted(token: string): Promise<void> {
-    const invite = await this.inviteModel.findOne({ token }).exec();
-
-    if (!invite) {
-      throw new NotFoundException('Invite not found');
-    }
-
-    invite.accepted = true;
-    await invite.save();
   }
 
   async getInvitesByTenant(
     tenantId: string,
-    { page = 1, limit = 10 }: GetInviteListDto,
+    { page = 1, limit = 10 },
+    adminUserId?: string,
   ) {
-    const query = { tenantId: new Types.ObjectId(tenantId) };
+    const tenantObjectId = new Types.ObjectId(tenantId);
+
+    if (adminUserId) {
+      const membership = await this.tenantMemberModel
+        .findOne({
+          tenantId: tenantObjectId,
+          userId: new Types.ObjectId(adminUserId),
+          isTenantAdmin: true,
+          disabled: false,
+        })
+        .exec();
+
+      if (!membership) {
+        throw new BadRequestException(
+          'Only tenant admins can view invites for this tenant',
+        );
+      }
+    }
+
+    const query = { tenantId: tenantObjectId };
 
     const invites = await this.inviteModel
       .find(query)
       .skip((page - 1) * limit)
       .limit(limit)
+      .sort({ createdAt: -1 })
+      .populate('tenantId', 'name')
       .exec();
 
     const total = await this.inviteModel.countDocuments(query);
@@ -157,7 +344,55 @@ export class InvitesService {
     };
   }
 
-  async deleteInvite(id: string): Promise<boolean> {
+  async rejectInvite(token: string, userId: string) {
+    const invite = await this.inviteModel.findOne({ token }).exec();
+    if (!invite) throw new NotFoundException('Invite not found');
+
+    if (invite.status === InviteStatus.ACCEPTED)
+      throw new BadRequestException('Invite already accepted');
+    if (invite.status === InviteStatus.REJECTED)
+      throw new BadRequestException('Invite already rejected');
+    if (invite.expiresAt < new Date())
+      throw new BadRequestException('Invite expired');
+
+    const user = await this.userModel
+      .findById(new Types.ObjectId(userId))
+      .exec();
+    if (!user) throw new NotFoundException('User not found');
+
+    if (user.email.toLowerCase().trim() !== invite.email.toLowerCase().trim()) {
+      throw new BadRequestException(
+        'Logged-in user email does not match invite email',
+      );
+    }
+
+    invite.status = InviteStatus.REJECTED;
+    invite.rejectedAt = new Date();
+    invite.rejectedBy = user._id;
+    await invite.save();
+
+    return { message: 'Invite rejected' };
+  }
+
+  async deleteInvite(id: string, adminUserId?: string): Promise<boolean> {
+    const invite = await this.inviteModel.findById(id).exec();
+    if (!invite) return false;
+
+    if (adminUserId) {
+      const membership = await this.tenantMemberModel
+        .findOne({
+          tenantId: invite.tenantId,
+          userId: new Types.ObjectId(adminUserId),
+          isTenantAdmin: true,
+          disabled: false,
+        })
+        .exec();
+
+      if (!membership) {
+        throw new BadRequestException('Only tenant admins can delete invites');
+      }
+    }
+
     const result = await this.inviteModel.findByIdAndDelete(id).exec();
     return !!result;
   }

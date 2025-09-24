@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Confirm your email address</title>
+  <style>
+    /* Reset and base styles */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background-color: #f6f8fa;
+      color: #2c3e50;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    
+    /* Container and layout */
+    .container {
+      max-width: 600px;
+      margin: 40px auto;
+      background-color: #ffffff;
+      padding-top: 20px;
+      padding-bottom: 20px;
+      border-radius: 30px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      overflow: hidden;
+    }
+    
+    .content {
+      padding: 40px 30px;
+    }
+    
+    /* Header section */
+    .header {
+      text-align: center;
+      padding: 30px;
+      background: linear-gradient(135deg, #611f69 0%, #8e44ad 100%);
+      color: white;
+    }
+    
+    .logo {
+      max-height: 80px;
+      max-width: 80px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+    }
+    
+    h1 {
+      color: white;
+      font-size: 28px;
+      font-weight: 700;
+      margin: 0;
+      letter-spacing: -0.5px;
+    }
+    
+    /* Typography */
+    h2 {
+      color: #2c3e50;
+      font-size: 22px;
+      font-weight: 600;
+      margin: 24px 0 16px;
+    }
+    
+    p {
+      font-size: 16px;
+      line-height: 1.6;
+      margin: 16px 0;
+      color: #4a5568;
+    }
+    
+    /* Confirmation code */
+    .confirmation-code {
+      display: inline-block;
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+      color: #611f69;
+      font-size: 28px;
+      font-weight: 700;
+      padding: 16px 24px;
+      border-radius: 10px;
+      margin: 24px 0;
+      letter-spacing: 3px;
+      text-align: center;
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px dashed #d1d5db;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+    
+    /* Button */
+    .button {
+      display: inline-block;
+      background: linear-gradient(135deg, #611f69 0%, #8e44ad 100%);
+      color: white;
+      font-size: 17px;
+      font-weight: 600;
+      padding: 14px 28px;
+      border-radius: 8px;
+      text-decoration: none;
+      text-align: center;
+      margin: 24px 0;
+      width: 100%;
+      box-sizing: border-box;
+      box-shadow: 0 4px 8px rgba(97, 31, 105, 0.2);
+      transition: all 0.3s ease;
+    }
+    
+    .button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(97, 31, 105, 0.3);
+    }
+    
+    /* Divider */
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0) 100%);
+      margin: 30px 0;
+    }
+    
+    /* Footer */
+    .footer {
+      font-size: 13px;
+      color: #718096;
+      margin-top: 30px;
+      text-align: center;
+      padding: 0 30px 30px;
+    }
+    
+    .social-icons {
+      margin: 24px 0;
+      text-align: center;
+    }
+    
+    .social-icons a {
+      display: inline-block;
+      width: 36px;
+      height: 36px;
+      line-height: 36px;
+      margin: 0 8px;
+      color: white;
+      background-color: #611f69;
+      text-decoration: none;
+      border-radius: 50%;
+      text-align: center;
+      font-size: 16px;
+      transition: all 0.3s ease;
+    }
+    
+    .social-icons a:hover {
+      background-color: #8e44ad;
+      transform: translateY(-2px);
+    }
+    
+    .disclaimer {
+      margin-top: 24px;
+      font-size: 13px;
+      color: #718096;
+      padding: 16px;
+      background-color: #f8f9fa;
+      border-radius: 8px;
+      border-left: 4px solid #611f69;
+    }
+    
+    .copyright {
+      margin-top: 20px;
+      font-size: 12px;
+      color: #a0aec0;
+    }
+    
+    /* Responsive adjustments */
+    @media only screen and (max-width: 600px) {
+      .container {
+        margin: 20px 10px;
+        border-radius: 8px;
+      }
+      
+      .content {
+        padding: 30px 20px;
+      }
+      
+      .header {
+        padding: 20px;
+      }
+      
+      h1 {
+        font-size: 24px;
+      }
+      
+      .confirmation-code {
+        font-size: 24px;
+        padding: 14px 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <img src="https://t4.ftcdn.net/jpg/16/45/63/41/240_F_1645634160_rOUoUWrv7nGQxfiVTGPOdsWX7rFiwtsd.jpg" alt="MedAtles" class="logo">
+      <h1>Confirm your email address</h1>
+    </div>
+    
+    <div class="content">
+      <p>Hello <strong>{{userName}}</strong>,</p>
+      <p>Thanks for signing up! Please use the confirmation code below to verify your email address:</p>
+      
+      <div class="confirmation-code">{{otp}}</div>
+      
+      <p>Having trouble? You can also copy and paste the code into the application.</p>
+      
+      <div class="divider"></div>
+      
+      <p class="disclaimer">
+        <strong>Security note:</strong> If you did not request this email, please ignore it. This confirmation code will expire in {{expiresIn}}.
+      </p>
+    </div>
+    
+    <div class="footer">
+      <div class="social-icons">
+        <a href="#" title="Twitter">𝕏</a>
+        <a href="#" title="Facebook">f</a>
+        <a href="#" title="LinkedIn">in</a>
+      </div>
+      <p class="copyright">&copy; {{currentYear}} MedAtles, LLC. All rights reserved.</p>
+      <p>123 Healthcare Ave, Medical District, CA 94105, USA</p>
+    </div>
+  </div>
+</body>
+</html>

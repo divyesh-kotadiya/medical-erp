@@ -6,6 +6,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
   const tabs = [
     { label: 'Profile', href: siteConfig.baseLinks.setting.profile, icon: null },
     { label: 'Account', href: siteConfig.baseLinks.setting.account, icon: null },
+    { label: 'Invites', href: siteConfig.baseLinks.setting.invites, icon: null }
   ];
 
   return (

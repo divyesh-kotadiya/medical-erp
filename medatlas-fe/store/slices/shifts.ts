@@ -37,9 +37,9 @@ export const createShift = createAsyncThunk(
 
 export const fetchShifts = createAsyncThunk(
   "shifts/fetchAll",
-  async (_, { rejectWithValue }) => {
+  async (tenantId: string, { rejectWithValue }) => {
     try {
-      const res = await api.get("/shifts");
+      const res = await api.post("/shifts/by-tenant", { tenantId });
       return res.data;
     } catch (err: any) {
       return rejectWithValue(err.response?.data || "Failed to fetch shifts");

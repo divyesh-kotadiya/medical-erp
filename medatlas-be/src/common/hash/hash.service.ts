@@ -7,7 +7,7 @@ import { User } from 'src/modules/Users/schemas/user.schema';
 export class HashService {
   private readonly SALT_ROUNDS = 10;
 
-  constructor(private readonly jwtService: JwtService) {}
+  constructor(private readonly jwtService: JwtService) { }
 
   async hashPassword(password: string): Promise<string> {
     return bcrypt.hash(password, this.SALT_ROUNDS);
@@ -17,18 +17,11 @@ export class HashService {
     return bcrypt.compare(password, hash);
   }
 
-  generateToken(user: User): string {
-    const payload = {
-      sub: user._id.toString(),
-      email: user.email,
-      tenantId: user.tenantId?.toString(),
-      roleId: user.roleId?.toString(),
-      isTenantAdmin: user.isTenantAdmin,
-    };
-
+  generateAccessToken(user: User): string {
+    const payload = { sub: user._id.toString(), email: user.email };
     return this.jwtService.sign(payload, {
-      expiresIn: '1d',
-      secret: process.env.JWT_SECRET,
+      expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN,
+      secret: process.env.JWT_ACCESS_SECRET,
     });
   }
 }

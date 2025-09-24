@@ -80,7 +80,6 @@ export const clockIn = createAsyncThunk(
   'timesheets/clockIn',
   async ({ tenantId }: { tenantId: string }, { rejectWithValue }) => {
     try {
-      console.log("tenantID in api", tenantId)
       const { data } = await api.post('/timesheets/clock-in', { tenantId });
       return data;
     } catch (e: unknown) {

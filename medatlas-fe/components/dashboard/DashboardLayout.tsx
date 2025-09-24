@@ -1,8 +1,7 @@
 'use client';
 
-import MobileNav from "../layout/MobileNav";
-import { Sidebar } from "../layout/Sidebar";
-
+import { Sidebar } from '../layout/Sidebar/Sidebar';
+import MobileNav from '../layout/Sidebar/MobileNav';
 
 export const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   return (
@@ -13,10 +12,7 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
 
       <div className="flex-1 flex flex-col min-w-0">
         <header className="md:hidden flex items-center justify-between p-4 border-b border-border bg-card">
-          <div>
-            <h1 className="text-lg font-semibold">MedAtlas</h1>
-            <p className="text-sm text-muted-foreground">Healthcare Management</p>
-          </div>
+          <h1 className="text-lg font-semibold">MedAtlas</h1>
           <MobileNav />
         </header>
 

@@ -1,387 +1,240 @@
+import { ensureValidObjectId } from 'src/common/utils/mongo.util';
 import {
   Injectable,
   BadRequestException,
   UnauthorizedException,
   Logger,
 } from '@nestjs/common';
+import { Response } from 'express';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
-import * as bcrypt from 'bcryptjs';
+import { Model } from 'mongoose';
 import { User, UserDocument } from './schemas/user.schema';
-import { Tenant } from '../Tenants/schemas/tenant.schema';
-import { Role, UserRole } from '../Role/schemas/roles.schema';
 import { LoginDto } from './dto/login.dto';
-import { InvitesService } from '../Invites/invites.service';
-import { randomBytes } from 'crypto';
+import { VerifyOtpDto } from './dto/otp-login.dto';
+import { randomInt } from 'crypto';
 import { HashService } from 'src/common/hash/hash.service';
 import { EmailService } from 'src/common/email/email.service';
-import { MongoServerError } from 'mongodb';
-import { existsSync, unlinkSync } from 'fs';
-import { join } from 'path';
-
+import { RegisterDto } from './dto/register.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
 @Injectable()
 export class UsersService {
   private readonly logger = new Logger(UsersService.name);
-  private isDuplicateEmailError(error: unknown): boolean {
-    const e = error as Partial<MongoServerError> & {
-      keyPattern?: Record<string, unknown>;
-    };
-    return !!e && e.code === 11000 && !!e.keyPattern?.email;
-  }
+
   constructor(
     @InjectModel(User.name) private userModel: Model<UserDocument>,
-    @InjectModel(Tenant.name) private tenantModel: Model<Tenant>,
-    @InjectModel(Role.name) private roleModel: Model<Role>,
-
-    private invitesService: InvitesService,
-    private emailService: EmailService,
     private hashService: HashService,
-  ) {}
+    private emailService: EmailService,
+  ) { }
 
-  async registerWithInvite(
-    token: string,
-    dto: { name: string; password: string },
-  ) {
-    if (!token) throw new BadRequestException('Invite token is required');
+  async loginOtp(dto: LoginDto) {
+    const { email, password } = dto;
+    const user = await this.userModel.findOne({ email });
+    if (!user)
+      throw new BadRequestException({
+        message: 'User not found',
+        code: 'USER_NOT_FOUND',
+      });
 
-    const invite = await this.invitesService.findByToken(token);
-
-    if (!invite) throw new BadRequestException('Invalid or expired invite');
-
-    if (invite.accepted)
-      throw new BadRequestException('Invite has already been accepted');
-
-    const existingUser = await this.findByEmail(invite.email);
-
-    if (existingUser)
-      throw new BadRequestException('User with this email already exists');
-
-    const hashedPassword = await bcrypt.hash(dto.password, 10);
-
-    const user = new this.userModel({
-      tenantId: invite.tenantId,
-      email: invite.email,
-      name: dto.name,
-      password: hashedPassword,
-      isTenantAdmin: invite?.role === UserRole.ADMIN ? true : false,
-    });
-
-    await user.save();
-
-    const createdRole = await this.roleModel.create({
-      tenantId: invite.tenantId,
-      role: invite.role,
-      userId: user._id,
-      name: `${user._id.toString()}:${invite.role}`,
-    });
-
-    user.roleId = new Types.ObjectId(createdRole._id);
-
-    await user.save();
-
-    await this.invitesService.markAsAccepted(token);
-
-    const tenant = await this.tenantModel.findById(invite.tenantId).exec();
-
-    if (!tenant) {
-      throw new BadRequestException('Tenant not found');
+    if (!user.password) {
+      throw new UnauthorizedException('Password not set for this user');
     }
 
-    const userData: {
-      id: any;
-      user: string;
-      email: string;
-      role: UserRole;
-      isTenantAdmin: boolean;
-      disabled: any;
-      token: string;
-    } = {
-      id: user.roleId,
-      user: user.name,
-      email: user.email,
-      role: createdRole.role,
-      isTenantAdmin: user.isTenantAdmin,
-      disabled: user.tenantId,
-      token: token,
-    };
-
-    return {
-      message: 'Registration successful',
-      tenant: {
-        _id: tenant._id,
-        name: tenant.name,
-        metadata: tenant.metadata,
-      },
-      userData,
-    };
-  }
-
-  async login(loginDto: LoginDto) {
-    if (!loginDto.email || !loginDto.password) {
-      throw new BadRequestException('Email and password are required');
-    }
-
-    const user = await this.findByEmail(loginDto.email);
-
-    if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
-
-    if (user.disabled) {
-      throw new UnauthorizedException('Account is disabled');
-    }
-
-    const isPasswordValid = await this.verifyPassword(
-      user as UserDocument,
-      loginDto.password,
+    const isPasswordValid = await this.hashService.verifyPassword(
+      password,
+      user.password,
     );
 
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const role = await this.roleModel.findById(user.roleId).exec();
-    if (!role) {
-      throw new BadRequestException('Role not found');
-    }
+    const otp = randomInt(100000, 999999).toString();
+    const expiresMinutes = 1;
+    const expiresAt = new Date(Date.now() + expiresMinutes * 60 * 1000);
 
-    const tenant = await this.tenantModel.findById(user.tenantId).exec();
+    user.otpCode = otp;
+    user.otpExpiresAt = expiresAt;
+    await user.save();
 
-    if (!tenant) {
-      throw new BadRequestException('Tenant not found');
-    }
-
-    const token = this.hashService.generateToken(user);
-
-    if (!token) {
-      throw new BadRequestException('Failed to generate token');
-    }
-    const userData: {
-      id: any;
-      user: string;
-      email: string;
-      role: UserRole;
-      isTenantAdmin: boolean;
-      disabled: any;
-      token: string;
-      avatar: string | undefined;
-      phone: string | undefined;
-    } = {
-      id: user._id,
-      user: user.name,
-      email: user.email,
-      role: role.role,
-      isTenantAdmin: user.isTenantAdmin,
-      disabled: user.tenantId,
-      token: token,
-      avatar: user.avatar,
-      phone: user.phone,
-    };
+    await this.emailService.sendOtpEmail({
+      to: user.email,
+      userName: user.name,
+      otp,
+      expiresIn: `${expiresMinutes} minutes`,
+    });
 
     return {
-      tenant: {
-        _id: tenant._id,
-        name: tenant.name,
-        metadata: tenant.metadata,
-      },
-      userData,
+      message: `OTP sent to ${user.email}. It will expire in ${expiresMinutes} minutes.`,
+      userId: user._id,
     };
   }
 
-  async generateResetToken(email: string): Promise<{ message: string }> {
-    const user = await this.findByEmail(email);
+  async resendOtp(userId: string) {
+    if (!userId) {
+      throw new BadRequestException({
+        message: 'User ID is required',
+        code: 'USER_ID_REQUIRED',
+      });
+    }
+    const user = await this.userModel?.findOne({ _id: userId });
+    if (!user)
+      throw new BadRequestException({
+        message: 'User not found',
+        code: 'USER_NOT_FOUND',
+      });
 
-    if (!user) {
-      throw new BadRequestException('User with this email does not exist');
+    const otp = randomInt(100000, 999999).toString();
+    const expiresMinutes = 0.5;
+    const expiresAt = new Date(Date.now() + expiresMinutes * 60 * 1000);
+
+    user.otpCode = otp;
+    user.otpExpiresAt = expiresAt;
+    await user.save();
+
+    await this.emailService.sendOtpEmail({
+      to: user.email,
+      userName: user.name,
+      otp,
+      expiresIn: `${expiresMinutes} minutes`,
+    });
+    return {
+      message: `OTP resent to ${user.email}. It will expire in ${expiresMinutes} minutes.`,
+    };
+  }
+
+  async verifyOtp(dto: VerifyOtpDto, res: Response) {
+    const { userId, otp } = dto;
+
+    const user = await this.userModel.findOne({ _id: userId });
+    if (!user || user.disabled) throw new UnauthorizedException('Invalid user');
+
+    if (!user.otpCode || !user.otpExpiresAt)
+      throw new UnauthorizedException('OTP not generated');
+
+    if (user.otpCode !== otp || user.otpExpiresAt.getTime() < Date.now())
+      throw new UnauthorizedException('Invalid or expired OTP');
+
+    user.otpCode = undefined;
+    user.otpExpiresAt = undefined;
+    await user.save();
+
+    const accessToken = this.hashService.generateAccessToken(user);
+
+    this.logger.log(`User ${user.email} logged in successfully`);
+    return {
+      data: { id: user._id, name: user.name, email: user.email },
+      accessToken,
+    };
+  }
+
+  async register(dto: RegisterDto) {
+    const { email, password, name } = dto;
+
+    if (!email || !password) {
+      throw new BadRequestException({
+        message: 'Email and password are required',
+        code: 'EMAIL_PASSWORD_REQUIRED',
+      });
     }
 
-    const token = randomBytes(32).toString('hex');
+    const existingUser = await this.userModel.findOne({ email });
+    if (existingUser) {
+      throw new BadRequestException({
+        message: 'User already exists',
+        code: 'USER_ALREADY_EXISTS',
+      });
+    }
 
-    const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
+    const hashedPassword = await this.hashService.hashPassword(password);
 
-    await this.userModel
-      .findByIdAndUpdate(
-        (user as UserDocument)._id,
-        { resetPasswordToken: token, resetPasswordExpires: expiresAt },
-        { new: true },
-      )
-      .exec();
+    const user = await this.userModel.create({
+      email,
+      password: hashedPassword,
+      name: name || email.split('@')[0],
+    });
+
+    const otp = randomInt(100000, 999999).toString();
+    const expiresMinutes = 1;
+    user.otpCode = otp;
+    user.otpExpiresAt = new Date(Date.now() + expiresMinutes * 60 * 1000);
+    await user.save();
+    await this.emailService.sendOtpEmail({
+      to: user.email,
+      userName: user.name,
+      otp,
+      expiresIn: `${expiresMinutes} minutes`,
+    });
+
+    return {
+      message: `Registration successful. OTP sent to ${user.email}`,
+      userId: user._id,
+    };
+  }
+
+  async forgotPassword(dto: ForgotPasswordDto) {
+    const { email } = dto;
+
+    const user = await this.userModel.findOne({ email });
+    if (!user) {
+      throw new BadRequestException({
+        message: 'User not found',
+        code: 'USER_NOT_FOUND',
+      });
+    }
+
+    const otp = randomInt(100000, 999999).toString();
+    const expiresMinutes = 0.5;
+    user.otpCode = otp;
+    user.otpExpiresAt = new Date(Date.now() + expiresMinutes * 60 * 1000);
+    await user.save();
+
+    await this.emailService.sendResetPasswordEmail({
+      to: user.email,
+      userName: user.name,
+      otp,
+      expiresIn: `${expiresMinutes} minutes`,
+    });
+
+    return {
+      message: `Password reset OTP sent to ${user.email}. Expires in ${expiresMinutes} minutes.`,
+      userId: user._id,
+    };
+  }
+
+  async resetPassword(dto: ResetPasswordDto) {
+    const { userId, otp, newPassword } = dto;
+
+    const user = await this.userModel.findById(userId);
+    if (!user) throw new UnauthorizedException('Invalid user');
+
+    if (!user.otpCode || !user.otpExpiresAt) {
+      throw new UnauthorizedException('No OTP generated');
+    }
+
+    if (user.otpCode !== otp || user.otpExpiresAt.getTime() < Date.now()) {
+      throw new UnauthorizedException('Invalid or expired OTP');
+    }
+
+    const hashedPassword = await this.hashService.hashPassword(newPassword);
+    user.password = hashedPassword;
+
+    user.otpCode = undefined;
+    user.otpExpiresAt = undefined;
+    await user.save();
+
+    this.logger.log(`User ${user.email} reset password successfully`);
 
     const baseUrl = process.env.FRONTEND_URL;
 
-    const resetUrl = `${baseUrl}/reset-password?token=${encodeURIComponent(token)}`;
+    const resetUrl = `${baseUrl}/login`;
 
-    await this.emailService.sendPasswordResetEmail({
-      to: user.email,
-      userName: user.name,
+    await this.emailService.sendPasswordResetSuccessEmail(
+      user.email,
+      user.name,
       resetUrl,
-    });
-
-    return {
-      message: 'Reset link sent to your email.',
-    };
-  }
-
-  async findByEmail(email: string): Promise<User | null> {
-    return this.userModel.findOne({ email }).exec();
-  }
-
-  async findAll(): Promise<User[]> {
-    return this.userModel
-      .find()
-      .select(
-        '-tenantId -password -createdAt -updatedAt -__v -roleId -isTenantAdmin -disabled',
-      )
-      .exec();
-  }
-
-  async findById(id: string): Promise<User | null> {
-    return this.userModel.findById(id).exec();
-  }
-
-  async verifyPassword(user: UserDocument, password: string): Promise<boolean> {
-    return bcrypt.compare(password, user.password);
-  }
-
-  async resetPasswordWithToken(
-    token: string,
-    newPassword: string,
-  ): Promise<{ message: string }> {
-    if (!token || !newPassword) {
-      throw new BadRequestException('Token and new password are required');
-    }
-
-    const encodedToken = decodeURIComponent(token);
-    if (!encodedToken) {
-      throw new BadRequestException('Invalid token format');
-    }
-
-    const user = await this.userModel.findOne({
-      resetPasswordToken: encodedToken,
-      resetPasswordExpires: { $gt: new Date() },
-      disabled: false,
-    });
-
-    if (!user) {
-      throw new BadRequestException('Invalid or expired token');
-    }
-
-    const hashed = await this.hashService.hashPassword(newPassword);
-    user.password = hashed;
-    user.resetPasswordToken = undefined;
-    user.resetPasswordExpires = undefined;
-    await user.save();
-
-    return { message: 'Password has been reset successfully' };
-  }
-
-  async changePassword(
-    userId: string,
-    currentPassword: string,
-    newPassword: string,
-  ): Promise<{ message: string }> {
-    const user = await this.userModel.findById(userId).exec();
-
-    if (!user) {
-      throw new BadRequestException('User not found');
-    }
-
-    if (!currentPassword || !newPassword) {
-      throw new BadRequestException('Current and new passwords are required');
-    }
-    const valid = await this.hashService.verifyPassword(
-      currentPassword,
-      user?.password,
     );
 
-    if (!valid) {
-      throw new BadRequestException('Current password is incorrect');
-    }
-
-    const hashed = await this.hashService.hashPassword(newPassword);
-
-    user.password = hashed;
-
-    await user.save();
-
-    return { message: 'Password updated successfully' };
-  }
-
-  async delete(id: string): Promise<boolean> {
-    if (!Types.ObjectId.isValid(id)) {
-      throw new BadRequestException('Invalid user ID');
-    }
-    const result = await this.userModel.findByIdAndDelete(id).exec();
-    return !!result;
-  }
-
-  async updateProfile(
-    userId: string,
-    update: Partial<Pick<User, 'name' | 'email' | 'phone' | 'avatar'>>,
-  ) {
-    if (!Types.ObjectId.isValid(userId)) {
-      throw new BadRequestException('Invalid user ID');
-    }
-
-    const allowed: Record<string, boolean> = {
-      name: true,
-      email: true,
-      phone: true,
-      avatar: true,
-    };
-
-    const sanitizedUpdate: Partial<User> = {};
-    Object.keys(update || {}).forEach((key) => {
-      if (allowed[key]) {
-        (sanitizedUpdate as Record<string, unknown>)[key] = (
-          update as Record<string, unknown>
-        )[key];
-      }
-    });
-
-    let user: User | null = null;
-    let previousAvatar: string | undefined;
-    if (update && typeof (update as Partial<User>).avatar === 'string') {
-      const existing = await this.userModel
-        .findById(userId)
-        .select('avatar')
-        .exec();
-      previousAvatar = (existing as unknown as { avatar?: string })?.avatar;
-    }
-    try {
-      user = await this.userModel
-        .findByIdAndUpdate(userId, { $set: sanitizedUpdate }, { new: true })
-        .select('-password')
-        .exec();
-    } catch (err) {
-      if (this.isDuplicateEmailError(err)) {
-        throw new BadRequestException('Email already in use');
-      }
-      throw err;
-    }
-
-    if (!user) {
-      throw new BadRequestException('User not found');
-    }
-
-    const newAvatar = (sanitizedUpdate as { avatar?: string })?.avatar;
-    if (newAvatar && previousAvatar && previousAvatar !== newAvatar) {
-      if (previousAvatar.startsWith('/uploads/avatars/')) {
-        const relativeFromRoot = previousAvatar.replace(/^\//, '');
-        const absolutePath = join(process.cwd(), relativeFromRoot);
-        try {
-          if (existsSync(absolutePath)) {
-            unlinkSync(absolutePath);
-          }
-        } catch (e) {
-          this.logger.warn(
-            `Failed to delete old avatar at ${absolutePath}: ${(e as Error).message
-            }`,
-          );
-        }
-      }
-    }
-
-    return user;
+    return { message: 'Password reset successful' };
   }
 }

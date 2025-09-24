@@ -1,14 +1,4 @@
-/* eslint-disable no-useless-catch */
-import {
-  Controller,
-  Get,
-  Post,
-  Put,
-  Delete,
-  Body,
-  Param,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Post, Body, Get, Req, UseGuards } from '@nestjs/common';
 import { TenantsService } from './tenants.service';
 import { CreateTenantDto } from './dto/create-tenant.dto';
 import { Tenant } from './schemas/tenant.schema';
@@ -16,42 +6,32 @@ import { JwtGuard } from 'src/common/auth/jwt.guard';
 
 @Controller('tenants')
 export class TenantsController {
-  constructor(private readonly tenantsService: TenantsService) {}
+  constructor(private readonly tenantsService: TenantsService) { }
 
-  @Post()
-  async createTenant(@Body() createTenantDto: CreateTenantDto) {
-    try {
-      return this.tenantsService.createTenantWithAdmin(createTenantDto);
-    } catch (error) {
-      throw error;
+  @Post('create')
+  @UseGuards(JwtGuard)
+  async createTenant(
+    @Body() createTenantDto: CreateTenantDto,
+    @Req() req: any,
+  ): Promise<Tenant> {
+    const userId = req.user.userId || req.user.sub;
+    return this.tenantsService.createTenant(createTenantDto, userId);
+  }
+
+  @Get('my')
+  @UseGuards(JwtGuard)
+  async getUserTenants(@Req() req: any) {
+    const userId = req.user?.sub;
+    if (!userId) {
+      throw new Error('User ID not found in request');
     }
+
+    return this.tenantsService.findUserTenants(userId);
   }
 
+  @Post('users')
   @UseGuards(JwtGuard)
-  @Get()
-  async findAll(): Promise<Tenant[]> {
-    return this.tenantsService.findAll();
-  }
-
-  @UseGuards(JwtGuard)
-  @Get(':id')
-  async findOne(@Param('id') id: string): Promise<Tenant | null> {
-    return this.tenantsService.findById(id);
-  }
-
-  @UseGuards(JwtGuard)
-  @Put(':id')
-  async update(
-    @Param('id') id: string,
-    @Body() updateData: Partial<Tenant>,
-  ): Promise<Tenant | null> {
-    return this.tenantsService.update(id, updateData);
-  }
-
-  @UseGuards(JwtGuard)
-  @Delete(':id')
-  async remove(@Param('id') id: string): Promise<{ success: boolean }> {
-    const success = await this.tenantsService.delete(id);
-    return { success };
+  async getAllTenantUsers(@Body('tenantId') tenantId: string) {
+    return this.tenantsService.fetchTenantMemebers(tenantId);
   }
 }

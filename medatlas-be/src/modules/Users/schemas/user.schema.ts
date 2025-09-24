@@ -5,13 +5,7 @@ export type UserDocument = User & Document;
 
 @Schema({ timestamps: true })
 export class User {
-  @Prop({ type: Types.ObjectId, ref: 'Tenant', required: true })
-  tenantId: Types.ObjectId;
-
-  @Prop({ type: Types.ObjectId, ref: 'Role' })
-  roleId: Types.ObjectId;
-
-  @Prop({ required: true, unique: true, lowercase: true })
+  @Prop({ required: true, unique: true, lowercase: true, trim: true })
   email: string;
 
   @Prop()
@@ -21,19 +15,19 @@ export class User {
   phone: string;
 
   @Prop()
-  password: string;
+  password?: string;
 
   @Prop({ default: false })
   disabled: boolean;
 
-  @Prop({ default: false })
-  isTenantAdmin: boolean;
+  @Prop()
+  otpCode?: string;
 
   @Prop()
-  resetPasswordToken?: string;
+  otpExpiresAt?: Date;
 
   @Prop()
-  resetPasswordExpires?: Date;
+  lastLoginAt?: Date;
 
   @Prop()
   avatar?: string;

@@ -1,6 +1,6 @@
 'use client'
 
-import { Clock, Download, Filter } from "lucide-react";
+import { Clock } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
@@ -21,7 +21,7 @@ import {
 
 export default function Verification() {
   const dispatch = useAppDispatch();
-  const { tenant } = useAppSelector((state) => state.auth)
+  const { currentOrganization } = useAppSelector((state) => state.organizations)
   const { entries, status, dailySummary, loading, error } = useAppSelector(
     (state) => state.timesheets
   );
@@ -63,9 +63,8 @@ export default function Verification() {
     if (status.isClockedIn) {
       dispatch(clockOut());
     } else {
-      if (tenant && tenant?.id) {
-        console.log(tenant.id)
-        dispatch(clockIn({ tenantId: tenant.id }));
+      if (currentOrganization && currentOrganization?.id) {
+        dispatch(clockIn({ tenantId: currentOrganization.id }));
       }
     }}
 

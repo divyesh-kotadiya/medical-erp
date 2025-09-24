@@ -16,18 +16,17 @@ import { JwtGuard } from 'src/common/auth/jwt.guard';
 @UseGuards(JwtGuard)
 @Controller('shifts')
 export class ShiftController {
-  constructor(private readonly shiftService: ShiftService) { }
+  constructor(private readonly shiftService: ShiftService) {}
 
   @Post()
   async create(@Body() createShiftDto: CreateShiftDto): Promise<Shift> {
     return this.shiftService.create(createShiftDto);
   }
 
-  @Get()
-  async findAll(): Promise<Shift[]> {
-    return this.shiftService.findAll();
+  @Post('by-tenant')
+  async findAllByTenant(@Body('tenantId') tenantId: string): Promise<Shift[]> {
+    return this.shiftService.findAllByTenant(tenantId);
   }
-
   @Get(':id')
   async findOne(@Param('id') id: string): Promise<Shift> {
     return this.shiftService.findOne(id);

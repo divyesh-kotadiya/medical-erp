@@ -1,119 +1,197 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { api } from '@/lib/api/client';
-export interface InviteState {
-  loading: boolean;
-  error?: string;
-  message?: string;
-  invites: Invite[];
-  page: number;
-  limit: number;
-  totalPages: number;
-  total: number;
-}
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { api } from "@/lib/api/client";
+
 export interface Invite {
-  _id: string;
+  status: string;
+  token: string;
   email: string;
   role: string;
-  expiresAt: string;
+  organizationName?: string;
   createdAt: string;
-  accepted: boolean;
+}
+
+interface InviteState {
+  invites: Invite[];
+  myInvites: Invite[];
+  loading: boolean;
+  creating: boolean;
+  error?: string;
+  total?: number;
+  totalPages?: number;
 }
 
 const initialState: InviteState = {
-  loading: false,
-  error: undefined,
-  message: undefined,
   invites: [],
-  page: 1,
-  limit: 10,
-  totalPages: 0,
+  myInvites: [],
+  loading: false,
+  creating: false,
+  error: undefined,
   total: 0,
+  totalPages: 0,
 };
 
 export const inviteMember = createAsyncThunk(
-  'invite/inviteMember',
-  async (payload: { email: string; role?: string }, { rejectWithValue }) => {
+  "invite/inviteMember",
+  async (
+    { email, role, tenantId }: { email: string; role?: string; tenantId: string },
+    { rejectWithValue }
+  ) => {
     try {
-      const { data } = await api.post('/invites', payload);
+      const { data } = await api.post("/invites", { email, role, tenantId });
       return data;
     } catch (e: any) {
-      if (e.response && e.response.data) {
-        return rejectWithValue(e.response.data);
-      }
-      return rejectWithValue('Network error');
+      if (e.response?.data) return rejectWithValue(e.response.data);
+      return rejectWithValue("Network error");
     }
   }
 );
 
+
 export const fetchInvites = createAsyncThunk(
-  'invite/fetchInvites',
-  async ({ page, limit }: { page: number; limit: number }, { rejectWithValue }) => {
+  "invite/fetchInvites",
+  async (
+    { page, limit, tenantId }: { page: number; limit: number; tenantId: string },
+    { rejectWithValue }
+  ) => {
     try {
-      const { data } = await api.post('/invites/list', { page, limit });
+      const { data } = await api.post("/invites/tenant/list", { page, limit, tenantId });
       return data;
     } catch (e: any) {
-      if (e.response && e.response.data) {
-        return rejectWithValue(e.response.data);
-      }
-      return rejectWithValue('Network error');
+      if (e.response?.data) return rejectWithValue(e.response.data);
+      return rejectWithValue("Network error");
+    }
+  }
+);
+
+export const fetchMyInvites = createAsyncThunk(
+  "invite/fetchMyInvites",
+  async (
+    { page = 1, limit = 10 }: { page?: number; limit?: number } = {},
+    { rejectWithValue }
+  ) => {
+    try {
+      const { data } = await api.get("/invites/me", { page, limit });
+
+      return data;
+    } catch (e: any) {
+      return rejectWithValue(e.response?.data || "Network error");
+    }
+  }
+);
+
+
+export const acceptInvite = createAsyncThunk(
+  "invite/acceptInvite",
+  async (token: string, { rejectWithValue }) => {
+    try {
+      const { data } = await api.post("/invites/accept", { token });
+      return data;
+    } catch (e: any) {
+      if (e.response?.data) return rejectWithValue(e.response.data);
+      return rejectWithValue("Network error");
+    }
+  }
+);
+
+export const rejectInvite = createAsyncThunk(
+  "invite/rejectInvite",
+  async (token: string, { rejectWithValue }) => {
+    try {
+      const { data } = await api.post("/invites/reject", { token });
+      return data;
+    } catch (e: any) {
+      if (e.response?.data) return rejectWithValue(e.response.data);
+      return rejectWithValue("Network error");
     }
   }
 );
 
 const inviteSlice = createSlice({
-  name: 'invite',
+  name: "invite",
   initialState,
   reducers: {
-    resetInviteState(state) {
-      state.loading = false;
+    clearInvites: (state) => {
+      state.invites = [];
+      state.myInvites = [];
       state.error = undefined;
-      state.message = undefined;
     },
   },
   extraReducers: (builder) => {
-    builder
-      .addCase(inviteMember.pending, (state) => {
-        state.loading = true;
-        state.error = undefined;
-        state.message = undefined;
-      })
-      .addCase(inviteMember.fulfilled, (state, action: PayloadAction<{ message: string }>) => {
-        state.loading = false;
-        state.error = undefined;
-        state.message = action.payload.message;
-      })
-      .addCase(inviteMember.rejected, (state, action) => {
-        state.loading = false;
-        state.error = (action.payload as string) || action.error.message || "Invite member failed";
-        state.message = undefined;
-      }).addCase(fetchInvites.pending, (state) => {
-        state.loading = true;
-        state.message = undefined;
-        state.error = undefined;
-      })
-      .addCase(fetchInvites.fulfilled, (state, action: PayloadAction<{
-        data: Invite[];
-        page: number;
-        limit: number;
-        totalPages: number;
-        total: number;
-      }>) => {
-        state.loading = false;
-        state.error = undefined;
-        state.invites = action.payload.data;
-        state.page = action.payload.page;
-        state.limit = action.payload.limit;
-        state.totalPages = action.payload.totalPages;
-        state.total = action.payload.total;
-      })
-      .addCase(fetchInvites.rejected, (state, action) => {
-        state.loading = false;
-        state.error = (action.payload as string) || action.error.message || "Failed to fetch invites";
-      });
+    builder.addCase(inviteMember.pending, (state) => {
+      state.loading = true
+      state.creating = true;
+      state.error = undefined;
+    });
+    builder.addCase(inviteMember.fulfilled, (state, action) => {
+      state.loading =  false;
+      state.creating = false;
+      state.invites.unshift(action.payload);
+    });
+    builder.addCase(inviteMember.rejected, (state, action) => {
+      state.loading = false;
+      state.creating = false;
+      state.error = action.payload as string;
+    });
+
+    builder.addCase(fetchInvites.pending, (state) => {
+      state.loading = true;
+      state.error = undefined;
+    });
+    builder.addCase(fetchInvites.fulfilled, (state, action) => {
+      state.loading = false;
+      state.invites = action.payload.data;
+      state.total = action.payload?.total;
+      state.totalPages = action.payload.totalPages;
+    });
+    builder.addCase(fetchInvites.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload as string;
+    });
+
+    builder.addCase(fetchMyInvites.pending, (state) => {
+      state.loading = true;
+      state.error = undefined;
+    });
+    builder.addCase(fetchMyInvites.fulfilled, (state, action) => {
+      state.loading = false;
+      state.myInvites = action.payload.data;
+    });
+    builder.addCase(fetchMyInvites.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload as string;
+    });
+
+    builder.addCase(acceptInvite.pending, (state) => {
+      state.loading = true;
+      state.error = undefined;
+    });
+    builder.addCase(acceptInvite.fulfilled, (state, action) => {
+      state.loading = false;
+      const token = action.meta.arg;
+      state.invites = state.invites.filter((inv) => inv.token !== token);
+      state.myInvites = state.myInvites.filter((inv) => inv.token !== token);
+    });
+    builder.addCase(acceptInvite.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload as string;
+    });
+
+    builder.addCase(rejectInvite.pending, (state) => {
+      state.loading = true;
+      state.error = undefined;
+    });
+    builder.addCase(rejectInvite.fulfilled, (state, action) => {
+      state.loading = false;
+      const token = action.meta.arg;
+      state.invites = state.invites.filter((inv) => inv.token !== token);
+      state.myInvites = state.myInvites.filter((inv) => inv.token !== token);
+    });
+    builder.addCase(rejectInvite.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload as string;
+    });
   },
 });
 
-export const { resetInviteState } = inviteSlice.actions;
-export const selectInvite = (state: { invite: InviteState }) => state.invite;
-
+export const { clearInvites } = inviteSlice.actions;
 export default inviteSlice.reducer;

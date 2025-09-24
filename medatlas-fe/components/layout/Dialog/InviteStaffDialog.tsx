@@ -26,11 +26,18 @@ export default function InviteStaffDialog() {
     resolver: zodResolver(inviteSchema),
   });
 
+  const { currentOrganization } = useAppSelector((state) => state.organizations)
   const selectedRole = watch('role');
 
   const onSubmit = async (data: InviteFormValues) => {
     try {
-      const resultAction = await dispatch(inviteMember(data));
+      const resultAction = await dispatch(
+        inviteMember({
+          ...data,
+          tenantId: currentOrganization?.id,
+        })
+      );
+
 
       if (inviteMember.fulfilled.match(resultAction)) {
         enqueueSnackbar(resultAction.payload.message || "Invite sent successfully!", {

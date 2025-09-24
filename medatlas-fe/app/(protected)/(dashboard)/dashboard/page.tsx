@@ -1,10 +1,8 @@
 'use client';
 
 import { useEffect } from 'react';
-import Image from 'next/image';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { fetchShifts } from '@/store/slices/shifts';
-import { fetchMembers } from '@/store/slices/auth';
 import { UserRole } from '@/constants/UserRole/role';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -14,20 +12,22 @@ import InviteStaffDialog from '@/components/layout/Dialog/InviteStaffDialog';
 import InviteListDialog from '@/components/layout/Dialog/InviteListDialog';
 
 
-export default function Dashboard(){
+export default function Dashboard() {
   const dispatch = useAppDispatch();
-  const { user, tenant, members } = useAppSelector((state) => state.auth);
+  const { user } = useAppSelector((state) => state.auth);
+  const { currentOrganization } = useAppSelector((state) => state.organizations);
   const { total } = useAppSelector((state) => state.invite);
   const { shifts } = useAppSelector((state) => state.shifts);
 
   useEffect(() => {
-    dispatch(fetchShifts());
-    dispatch(fetchMembers());
-  }, [dispatch]);
+    if (currentOrganization?.id)
+      dispatch(fetchShifts(currentOrganization?.id));
+
+  }, [currentOrganization?.id, dispatch]);
 
 
   const stats = [
-    { title: 'Active Staff', value: members?.length, change: '+5 this week', icon: Users, color: 'text-primary' },
+    { title: 'Active Staff', value: '5', change: '+5 this week', icon: Users, color: 'text-primary' },
     { title: "Today's Shifts", value: shifts?.length, change: '12 remaining', icon: Calendar, color: 'text-accent' },
     { title: 'Hours This Week', value: '2,847', change: '+12% vs last week', icon: Clock, color: 'text-warning' },
     { title: 'Open Incidents', value: '3', change: '-2 from yesterday', icon: AlertTriangle, color: 'text-destructive' },
@@ -35,7 +35,7 @@ export default function Dashboard(){
 
   const quickActions = [
     { title: "Invite Member", value: "", change: "Send invitation to new staff", icon: UserPlus, component: <InviteStaffDialog /> },
-    { title: "Invited Member", value: total || 0, change: "Total invited member", icon: Users },
+    { title: "Invited Member", value: total, change: "Total invited member", icon: Users },
     { title: "View Member", value: "", change: "See all Members", icon: Eye, component: <InviteListDialog /> },
   ];
 
@@ -69,15 +69,15 @@ export default function Dashboard(){
     return (first + last).toUpperCase();
   };
 
-  const recentActivities = members?.slice(0, 4).map((m, idx) => ({
-    id: idx,
-    user: m.name,
-    avatar: computeAvatarUrl((m as unknown as { avatar?: string }).avatar),
-    action: 'Updated profile',
-    department: m.department || 'General',
-    time: 'Just now',
-    status: 'completed',
-  }));
+  // const recentActivities = members?.slice(0, 4).map((m, idx) => ({
+  //   id: idx,
+  //   user: m.name,
+  //   avatar: computeAvatarUrl((m as unknown as { avatar?: string }).avatar),
+  //   action: 'Updated profile',
+  //   department: m.department || 'General',
+  //   time: 'Just now',
+  //   status: 'completed',
+  // }));
 
   const formatTimeRange = (start: string, end: string) => {
     const startTime = new Date(start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -91,7 +91,7 @@ export default function Dashboard(){
         <div className="flex flex-col space-y-2">
           <h1 className="text-3xl font-bold text-foreground">Welcome back, {user?.name ?? "Guest"}</h1>
           <p className="text-muted-foreground">
-            Here&apos;s what&apos;s happening at <span className="font-semibold text-primary">{tenant?.name ?? "MedAtlas"}</span> today.
+            Here&apos;s what&apos;s happening at <span className="font-semibold text-primary">{currentOrganization?.name ?? "MedAtlas"}</span> today.
           </p>
         </div>
         <div className="flex items-center space-x-2">
@@ -136,7 +136,7 @@ export default function Dashboard(){
             <CardDescription>Latest actions from your team members</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 cursor-pointer">
-            {recentActivities?.map((activity) => (
+            {/* {recentActivities?.map((activity) => (
               <div key={activity?.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
                 <div className="flex items-center gap-3">
                   {activity.avatar == "" ? (
@@ -164,7 +164,7 @@ export default function Dashboard(){
                   </div>
                 </div>
               </div>
-            ))}
+            ))} */}
           </CardContent>
         </Card>
 
@@ -209,7 +209,7 @@ export default function Dashboard(){
         </Card>
       </div>
 
-      {(user?.role === UserRole.ADMIN) && (user?.isTenantAdmin === true) && (
+      {currentOrganization?.role === UserRole.ADMIN && (
         <Card className="border border-border/50 shadow-lg rounded-lg">
           <CardHeader>
             <CardTitle className="text-lg font-semibold">Quick Actions</CardTitle>
@@ -218,11 +218,16 @@ export default function Dashboard(){
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {quickActions.map((action, i) => (
-                <Card key={i} className="bg-gradient-card border-border/50 hover:shadow-card transition-all duration-300">
+                <Card
+                  key={i}
+                  className="bg-gradient-card border-border/50 hover:shadow-card transition-all duration-300"
+                >
                   <CardContent className="p-6 flex justify-between items-center">
                     <div className="flex flex-col space-y-2">
                       <p className="text-sm font-medium text-muted-foreground">{action.title}</p>
-                      {action.value !== "" && <p className="text-2xl font-bold text-foreground">{action.value}</p>}
+                      {action.value !== "" && (
+                        <p className="text-2xl font-bold text-foreground">{action.value}</p>
+                      )}
                       {action.change && <p className="text-xs text-muted-foreground">{action.change}</p>}
                       {action.component && <div>{action.component}</div>}
                     </div>
@@ -236,6 +241,7 @@ export default function Dashboard(){
           </CardContent>
         </Card>
       )}
+
     </div>
   );
 };

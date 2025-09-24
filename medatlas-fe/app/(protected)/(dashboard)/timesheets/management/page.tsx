@@ -134,7 +134,6 @@ export default function TimesheetList() {
   }, []);
 
   const weekStatus = useMemo<'SUBMITTED' | 'APPROVED' | 'REJECTED' | 'NOT_SUBMITTED'>(() => {
-    console.log(submissionStatus, submittedList)
     if (submittedList?.length) {
       const match = submittedList.find(
         (t) =>

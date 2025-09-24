@@ -1,35 +1,13 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-import {
-  IsBoolean,
-  IsEmail,
-  IsMongoId,
-  IsString,
-  IsOptional,
-} from 'class-validator';
+import { IsEmail, IsNotEmpty, IsOptional, MinLength } from 'class-validator';
 
 export class RegisterDto {
-  @IsMongoId()
-  tenantId: string;
-
-  @IsMongoId()
-  @IsOptional()
-  roleId?: string;
-
-  @IsEmail()
+  @IsEmail({}, { message: 'Invalid email address' })
   email: string;
 
-  @IsString()
-  @IsOptional()
-  name?: string;
-
-  @IsString()
-  @IsOptional()
-  phone?: string;
-
-  @IsString()
+  @IsNotEmpty({ message: 'Password is required' })
+  @MinLength(6, { message: 'Password must be at least 6 characters' })
   password: string;
 
-  @IsBoolean()
   @IsOptional()
-  disabled?: boolean;
+  name?: string;
 }

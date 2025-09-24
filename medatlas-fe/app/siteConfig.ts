@@ -16,7 +16,8 @@ export const siteConfig = {
     },
     setting:{
       profile: "/settings",
-      account: "/settings/account"
+      account: "/settings/account",
+      invites: "/settings/invited"
     }
   },
 } as const

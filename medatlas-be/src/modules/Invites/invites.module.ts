@@ -9,6 +9,10 @@ import { User, UserSchema } from '../Users/schemas/user.schema';
 import { JwtModule } from '@nestjs/jwt';
 import { EmailModule } from 'src/common/email/email.module';
 import { AuthModule } from 'src/common/auth/auth.module';
+import {
+  TenantMember,
+  TenantMemberSchema,
+} from '../Tenants/schemas/members.schema';
 
 @Module({
   imports: [
@@ -17,6 +21,7 @@ import { AuthModule } from 'src/common/auth/auth.module';
       { name: Role.name, schema: RoleSchema },
       { name: Tenant.name, schema: TenantSchema },
       { name: User.name, schema: UserSchema },
+      { name: TenantMember.name, schema: TenantMemberSchema },
     ]),
     EmailModule,
     JwtModule,
