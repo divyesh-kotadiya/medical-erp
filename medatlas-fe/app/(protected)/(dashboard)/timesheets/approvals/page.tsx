@@ -6,13 +6,13 @@ import { fetchSubmittedTimesheets, approveTimesheet, rejectTimesheet } from '@/s
 export const ApprovalsList = () => {
   const dispatch = useAppDispatch();
   const { submittedList, loading } = useAppSelector((s) => s.timesheets);
-
+  const { currentOrganization } = useAppSelector((state) => state.organizations)
   useEffect(() => {
     dispatch(fetchSubmittedTimesheets({}));
-  }, [dispatch]);
+  }, [dispatch, currentOrganization?.id]);
 
   const handleApprove = async (id: string) => {
-    await dispatch(approveTimesheet({ timesheetId: id, approvedBy: 'admin' }));
+    await dispatch(approveTimesheet({ timesheetId: id, approvedBy: 'admin', }));
     dispatch(fetchSubmittedTimesheets({}));
   };
   const handleReject = async (id: string) => {

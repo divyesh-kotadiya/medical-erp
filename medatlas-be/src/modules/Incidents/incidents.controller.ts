@@ -6,28 +6,28 @@ import {
   Param,
   Patch,
   Query,
-  // UseInterceptors,
-  // UploadedFile,
   Res,
   NotFoundException,
   Delete,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import { CreateIncidentDto } from './dto/create-incident.dto';
 import { UpdateStepDto } from './dto/update-step.dto';
 import { SearchIncidentDto } from './dto/search-incident.dto';
 import { IncidentService } from './incidents.service';
 import { FileUploadService } from 'src/file-upload/file-upload.service';
-// import { FileInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
 import { join } from 'path';
 import { Attachment } from './types/incident.constants';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('incidents')
 export class IncidentController {
   constructor(
     private readonly incidentService: IncidentService,
     private readonly fileUploadService: FileUploadService,
-  ) { }
+  ) {}
 
   @Post()
   create(@Body() dto: CreateIncidentDto) {
@@ -54,24 +54,29 @@ export class IncidentController {
     return this.incidentService.updateStatus(id, status);
   }
 
-  // @Patch(':id/attachment/upload')
-  // @UseInterceptors(
-  //   FileInterceptor(
-  //     'file',
-  //     new FileUploadService().getMulterOptions('incident-attachments'),
-  //   ),
-  // )
-  // async uploadAttachment(
-  //   @Param('id') id: string,
-  //   @UploadedFile() file: Express.Multer.File,
-  // ) {
-  //   if (!file) throw new Error('No File Uploded');
-  //   const attachment = {
-  //     name: file.originalname,
-  //     url: `/uploads/incident-attachments/${file.filename}`,
-  //   };
-  //   return this.incidentService.addAttachment(id, attachment);
-  // }
+  @Patch(':id/attachment/upload')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadAttachment(
+    @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    if (!file) {
+      throw new Error('No File Uploaded');
+    }
+
+    // let service handle saving file + path
+    const savedFile = this.fileUploadService.handleFileUpload(
+      file,
+      'incident-attachments',
+    );
+
+    const attachment = {
+      name: file.originalname,
+      url: savedFile.path,
+    };
+
+    return this.incidentService.addAttachment(id, attachment);
+  }
 
   @Get(':incidentId/attachment/:attachmentId')
   async downloadAttachment(
@@ -91,7 +96,7 @@ export class IncidentController {
 
     const filePath = join(process.cwd(), attachment.url);
 
-    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Type', 'application/octet-stream');
     return res.download(filePath, attachment.name);
   }
 

@@ -9,6 +9,7 @@ import {
   fetchSubmittedTimesheets,
   checkSubmissionStatus,
   downloadTimesheet,
+  resetTimesheetState,
 } from '@/store/slices/timesheets';
 import { mapEntryToDisplay } from '@/lib/time';
 import CustomDropdown from '@/components/layout/Dropdown/Dropdown';
@@ -19,6 +20,7 @@ export default function TimesheetList() {
   const { entries, loading, submittedList, submissionStatus } = useAppSelector(
     (state) => state.timesheets
   );
+  const { currentOrganization } = useAppSelector((state) => state.organizations);
   const { user } = useAppSelector((state) => state.auth)
   const [anchorDate, setAnchorDate] = useState<Date>(new Date());
 
@@ -36,6 +38,7 @@ export default function TimesheetList() {
   }, [anchorDate]);
 
   useEffect(() => {
+    dispatch(resetTimesheetState());
     dispatch(
       fetchEntries({
         periodStart: periodStart.toISOString(),
@@ -61,7 +64,7 @@ export default function TimesheetList() {
         periodEnd: periodEnd.toISOString(),
       })
     );
-  }, [dispatch, periodStart, periodEnd, user?.id]);
+  }, [dispatch, periodStart, periodEnd, user?.id, currentOrganization?.id]);
 
 
   const formatTimeEntries = () => entries.map((entry) => mapEntryToDisplay(entry));
@@ -140,7 +143,7 @@ export default function TimesheetList() {
           new Date(t.periodStart).toISOString() === periodStart.toISOString() &&
           new Date(t.periodEnd).toISOString() === periodEnd.toISOString()
       );
-
+      
       if (match?.status) {
         return match.status.toUpperCase() as 'SUBMITTED' | 'APPROVED' | 'REJECTED';
       }
@@ -151,7 +154,7 @@ export default function TimesheetList() {
     }
 
     return 'NOT_SUBMITTED';
-  }, [submittedList, submissionStatus, periodStart, periodEnd]);
+  }, [submittedList, submissionStatus, periodStart, periodEnd, currentOrganization?.id]);
 
 
   const handleWeekChange = async (value: string) => {

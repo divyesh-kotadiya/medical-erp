@@ -5,7 +5,7 @@ import { useAppSelector } from '@/store/hooks';
 import { CheckCircle, Settings, ThumbsUp } from 'lucide-react';
 
 export default function TimesheetLayout({ children }: { children: React.ReactNode }) {
-  const { user } = useAppSelector((state) => state.auth);
+  const { currentOrganization } = useAppSelector((state) => state.organizations);
 
   const baseTabs = [
     {
@@ -21,7 +21,7 @@ export default function TimesheetLayout({ children }: { children: React.ReactNod
   ];
 
   const adminTabs =
-    user?.role === 'ADMIN'
+    currentOrganization?.role === 'ADMIN'
       ? [
         {
           label: 'Approvals',

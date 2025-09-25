@@ -29,6 +29,7 @@ export interface Organization {
   updatedAt: string;
   memberCount?: number;
   role?: UserRole;
+  accessToken: string;
 }
 
 interface TenantMember {
@@ -65,7 +66,6 @@ const initialState: OrganizationState = {
 };
 
 interface FetchTenantMembersResponse {
-  tenantId: string;
   members: TenantMember[];
 }
 
@@ -76,18 +76,21 @@ export const fetchOrganizations = createAsyncThunk<
 >('organizations/fetchOrganizations', async (_, { rejectWithValue }) => {
   try {
     const { data } = await api.get('/tenants/my');
-    const organizations: Organization[] = (data || []).map((item: any) => ({
-      id: item.tenantId._id,
-      name: item.tenantId.name,
-      description: item.tenantId.description,
-      type: item.tenantId.type,
-      address: item.tenantId.address,
-      contact: item.tenantId.contact,
-      settings: item.tenantId.settings,
-      isActive: !item.disabled,
-      createdAt: item.tenantId.createdAt,
-      updatedAt: item.tenantId.updatedAt,
-      role: item.roleId?.role,
+
+    const organizations: Organization[] = data.map((item: any) => ({
+      id: item.tenant._id,
+      name: item.tenant.name,
+      description: item.tenant.description,
+      type: item.tenant.type,
+      address: item.tenant.address,
+      contact: item.tenant.contact,
+      settings: item.tenant.settings,
+      isActive: true,
+      createdAt: item.tenant.createdAt,
+      updatedAt: item.tenant.updatedAt,
+      role: item.role?.role,
+      isTenantAdmin: item.isTenantAdmin,
+      accessToken: item.accessToken,
       memberCount: item.memberCount || 0,
     }));
 
@@ -96,6 +99,7 @@ export const fetchOrganizations = createAsyncThunk<
     return rejectWithValue(error?.response?.data?.message || 'Network error');
   }
 });
+
 
 export const createOrganization = createAsyncThunk<
   Organization,
@@ -129,11 +133,10 @@ export const fetchTenantMembers = createAsyncThunk<
   { rejectValue: string }
 >(
   'tenants/fetchMembers',
-  async (tenantId, { rejectWithValue }) => {
+  async (_, { rejectWithValue }) => {
     try {
-      const response = await api.post('/tenants/users', { tenantId });
+      const response = await api.post('/tenants/users');
       return {
-        tenantId,
         members: response.data,
       };
     } catch (error: any) {
@@ -149,6 +152,7 @@ const organizationsSlice = createSlice({
     setCurrentOrganizationById: (state, action: PayloadAction<string>) => {
       const org = state.organizations.find((o) => o.id === action.payload) || null;
       state.currentOrganization = org;
+      localStorage.setItem('token', org?.accessToken);
     },
     clearOrganizations: (state) => {
       state.organizations = [];

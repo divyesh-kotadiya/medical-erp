@@ -361,7 +361,7 @@ export const deleteEntry = createAsyncThunk(
 );
 
 export const downloadTimesheet = createAsyncThunk<
-  Blob, 
+  Blob,
   { userId?: string; periodStart: string; periodEnd: string },
   { rejectValue: string }
 >(
@@ -396,6 +396,12 @@ const timesheetsSlice = createSlice({
   reducers: {
     clearError(state) {
       state.error = undefined;
+    },
+    resetTimesheetState(state) {
+      state.status = { isClockedIn: false, isOnBreak: false };
+      state.entries = [];
+      state.dailySummary = { hours: 0 };
+      state.loading = false;
     },
   },
   extraReducers: (builder) => {
@@ -631,5 +637,5 @@ const timesheetsSlice = createSlice({
   },
 });
 
-export const { clearError } = timesheetsSlice.actions;
+export const { clearError, resetTimesheetState } = timesheetsSlice.actions;
 export default timesheetsSlice.reducer;

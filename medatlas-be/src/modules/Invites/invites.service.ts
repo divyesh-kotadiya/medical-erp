@@ -30,24 +30,24 @@ export class InvitesService {
     @InjectModel(TenantMember.name)
     private tenantMemberModel: Model<TenantMemberDocument>,
     private emailService: EmailService,
-  ) { }
+  ) {}
 
-  async createInvite(createInviteDto: CreateInviteDto, adminUserId: string) {
-    const {
-      email: rawEmail,
-      role: rawRole,
-      tenantId: rawTenantId,
-    } = createInviteDto;
+  async createInvite(
+    createInviteDto: CreateInviteDto,
+    adminUserId: string,
+    tenantId: string,
+  ) {
+    const { email: rawEmail, role: rawRole } = createInviteDto;
 
     if (!rawEmail) {
       throw new HttpException('Email is required', HttpStatus.BAD_REQUEST);
     }
-    if (!rawTenantId) {
+    if (!tenantId) {
       throw new HttpException('tenantId is required', HttpStatus.BAD_REQUEST);
     }
 
     const email = rawEmail.trim().toLowerCase();
-    const tenantObjectId = new Types.ObjectId(rawTenantId);
+    const tenantObjectId = new Types.ObjectId(tenantId);
 
     const adminMembership = await this.tenantMemberModel
       .findOne({
@@ -146,7 +146,6 @@ export class InvitesService {
         await inviteDoc.save();
       }
 
-      // 8) send email
       const inviteUrl = `${process.env.FRONTEND_URL}/invite?token=${token}`;
       await this.emailService.sendInviteEmail({
         to: email,

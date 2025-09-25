@@ -19,18 +19,19 @@ export class TimesheetsService {
     @InjectModel(Timesheet.name)
     private readonly timesheetModel: Model<TimesheetDocument>,
     private readonly csvService: CsvService,
-  ) { }
+  ) {}
 
   async clockIn(tenantId: string, userId: string) {
     const staffId = ensureValidObjectId(userId);
 
+    if (!tenantId) throw new BadRequestException('Tenant ID not provided');
+
     const existingOpen = await this.timeEntryModel.findOne({
       staffId,
+      tenantId,
       clockOut: { $exists: false },
     });
     if (existingOpen) throw new BadRequestException('Already clocked in');
-
-    if (!tenantId) throw new BadRequestException('Tenant ID not provided');
 
     return this.timeEntryModel.create({
       staffId,
@@ -40,10 +41,14 @@ export class TimesheetsService {
     });
   }
 
-  async clockOut(userId: string) {
+  async clockOut(tenantId: string, userId: string) {
     const staffId = ensureValidObjectId(userId);
+
+    if (!tenantId) throw new BadRequestException('Tenant ID not provided');
+
     const open = await this.timeEntryModel.findOne({
       staffId,
+      tenantId,
       clockOut: { $exists: false },
     });
     if (!open) throw new BadRequestException('Not clocked in');
@@ -58,10 +63,14 @@ export class TimesheetsService {
     return open;
   }
 
-  async startBreak(userId: string) {
+  async startBreak(tenantId: string, userId: string) {
     const staffId = ensureValidObjectId(userId);
+
+    if (!tenantId) throw new BadRequestException('Tenant ID not provided');
+
     const open = await this.timeEntryModel.findOne({
       staffId,
+      tenantId,
       clockOut: { $exists: false },
     });
     if (!open) throw new BadRequestException('Not clocked in');
@@ -74,10 +83,14 @@ export class TimesheetsService {
     return open;
   }
 
-  async endBreak(userId: string) {
+  async endBreak(tenantId: string, userId: string) {
     const staffId = ensureValidObjectId(userId);
+
+    if (!tenantId) throw new BadRequestException('Tenant ID not provided');
+
     const open = await this.timeEntryModel.findOne({
       staffId,
+      tenantId,
       clockOut: { $exists: false },
     });
     if (!open) throw new BadRequestException('Not clocked in');
@@ -90,11 +103,18 @@ export class TimesheetsService {
     return open;
   }
 
-  async getStatus(userId: string, periodStart: string, periodEnd: string) {
-    const staffId = ensureValidObjectId(userId);
+  async getStatus(
+    tenantId: string,
+    userId: string,
+    periodStart: string,
+    periodEnd: string,
+  ) {
+    const staffObjectId = ensureValidObjectId(userId);
+    const tenantObjectId = ensureValidObjectId(tenantId);
 
     const open = await this.timeEntryModel.findOne({
-      staffId,
+      staffId: staffObjectId,
+      tenantId: tenantObjectId,
       clockOut: { $exists: false },
     });
 
@@ -112,7 +132,8 @@ export class TimesheetsService {
     }
 
     const submission = await this.timesheetModel.findOne({
-      staffId,
+      staffId: staffObjectId,
+      tenantId: tenantObjectId,
       periodStart: { $eq: parsedStart },
       periodEnd: { $eq: parsedEnd },
     });
@@ -144,9 +165,18 @@ export class TimesheetsService {
     return { hours: Math.round((totalMs / 3600000) * 100) / 100 };
   }
 
-  async getEntries(userId: string, periodStart?: Date, periodEnd?: Date) {
-    const staffId = ensureValidObjectId(userId);
-    const filter: any = { staffId };
+  async getEntries(
+    tenantId: string,
+    userId: string,
+    periodStart?: Date,
+    periodEnd?: Date,
+  ) {
+    const staffId = new Types.ObjectId(userId);
+
+    const filter: any = {
+      tenantId,
+      staffId,
+    };
 
     if (periodStart && periodEnd) {
       filter.clockIn = {
@@ -155,7 +185,12 @@ export class TimesheetsService {
       };
     }
 
-    return this.timeEntryModel.find(filter).sort({ clockIn: -1 });
+    const entries = await this.timeEntryModel
+      .find(filter)
+      .sort({ clockIn: -1 })
+      .exec();
+
+    return entries;
   }
 
   async getWeeklyTotal(userId: string, periodStart: Date, periodEnd: Date) {
@@ -214,8 +249,9 @@ export class TimesheetsService {
       staffId,
       clockOut: { $exists: false },
     });
-    if (open)
+    if (open) {
       throw new BadRequestException('Cannot submit while a session is open');
+    }
 
     const entries = await this.timeEntryModel.find({
       staffId,
@@ -228,11 +264,13 @@ export class TimesheetsService {
     );
     const hours = Math.round((totalMs / 3600000) * 100) / 100;
 
-    const existing = await this.timesheetModel.findOne({
-      staffId,
-      periodStart,
-      periodEnd,
-    });
+    const query: any = { staffId, periodStart, periodEnd };
+    if (tenantId && Types.ObjectId.isValid(tenantId)) {
+      query.tenantId = new Types.ObjectId(tenantId);
+    }
+
+    let existing = await this.timesheetModel.findOne(query);
+
     if (existing) {
       existing.hours = hours;
       existing.status = 'SUBMITTED';
@@ -257,11 +295,16 @@ export class TimesheetsService {
   }
 
   async approve(timesheetId: string, approvedBy: string) {
-    if (!Types.ObjectId.isValid(timesheetId))
+    if (!Types.ObjectId.isValid(timesheetId)) {
       throw new BadRequestException('Invalid timesheet ID');
+    }
 
     const ts = await this.timesheetModel.findById(timesheetId);
     if (!ts) throw new NotFoundException('Timesheet not found');
+
+    if (ts.status === 'APPROVED') {
+      return ts;
+    }
 
     ts.status = 'APPROVED';
 
@@ -294,11 +337,20 @@ export class TimesheetsService {
   }
 
   async reject(timesheetId: string, rejectedBy: string, reason?: string) {
-    if (!Types.ObjectId.isValid(timesheetId))
+    if (!Types.ObjectId.isValid(timesheetId)) {
       throw new BadRequestException('Invalid timesheet ID');
+    }
 
     const ts = await this.timesheetModel.findById(timesheetId);
     if (!ts) throw new NotFoundException('Timesheet not found');
+
+    if (ts.status === 'REJECTED') {
+      return ts;
+    }
+
+    if (ts.status === 'APPROVED') {
+      throw new BadRequestException('Cannot reject an approved timesheet');
+    }
 
     ts.status = 'REJECTED';
 
@@ -337,7 +389,9 @@ export class TimesheetsService {
       limit?: number;
     },
   ) {
-    const query: FilterQuery<TimesheetDocument> = { status: 'SUBMITTED' };
+    const query: FilterQuery<TimesheetDocument> = {
+      status: 'SUBMITTED',
+    };
 
     if (tenantId && Types.ObjectId.isValid(tenantId)) {
       query.tenantId = new Types.ObjectId(tenantId);
@@ -346,7 +400,7 @@ export class TimesheetsService {
       query.staffId = new Types.ObjectId(params.userId);
     }
     if (params.from || params.to) {
-      query.periodStart = {};
+      query.periodStart = query.periodStart || {};
       if (params.from) query.periodStart.$gte = params.from;
       if (params.to) query.periodStart.$lte = params.to;
     }
@@ -376,8 +430,14 @@ export class TimesheetsService {
     userId: string,
     periodStart: Date,
     periodEnd: Date,
+    tenantId: string,
   ): Promise<Buffer> {
-    const entries = await this.getEntries(userId, periodStart, periodEnd);
+    const entries = await this.getEntries(
+      tenantId,
+      userId,
+      periodStart,
+      periodEnd,
+    );
 
     const formatted = entries.map((entry) => ({
       Date: new Date(entry.clockIn).toLocaleDateString(),

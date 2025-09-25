@@ -21,7 +21,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (currentOrganization?.id)
-      dispatch(fetchShifts(currentOrganization?.id));
+      dispatch(fetchShifts());
 
   }, [currentOrganization?.id, dispatch]);
 

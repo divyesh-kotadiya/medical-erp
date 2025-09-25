@@ -65,7 +65,26 @@ export class TenantsService {
       .populate('tenantId userId roleId isTenantAdmin')
       .exec();
 
-    return memberships;
+    const results = memberships.map((m: any) => {
+      const user = {
+        _id: m.userId._id,
+        email: m.userId.email,
+      } as User;
+
+      const token = this.hashService.generateAccessToken(
+        user,
+        m.tenantId._id.toString(),
+      );
+
+      return {
+        tenant: m.tenantId,
+        role: m.roleId,
+        isTenantAdmin: m.isTenantAdmin,
+        accessToken: token,
+      };
+    });
+
+    return results;
   }
 
   async fetchTenantMemebers(tenantId: string) {

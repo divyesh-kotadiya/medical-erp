@@ -23,7 +23,7 @@ export default function IncidentsPage() {
   const loading = useAppSelector(selectIncidentsLoading);
   const error = useAppSelector(selectIncidentsError);
   const pagination = useAppSelector(selectIncidentsPagination);
-  const { tenant } = useAppSelector((state) => state.auth);
+  const { currentOrganization } = useAppSelector((state) => state.organizations);
 
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
@@ -40,10 +40,10 @@ export default function IncidentsPage() {
   const hasActiveFilters = statusFilter || stepFilter || typeFilter;
 
   useEffect(() => {
-    if (tenant?.id) {
+    if (currentOrganization?.id) {
       dispatch(
         fetchIncidents({
-          tenantId: tenant.id,
+          tenantId: currentOrganization.id,
           status: statusFilter || undefined,
           step: stepFilter || undefined,
           incidentType: typeFilter || undefined,
@@ -52,7 +52,7 @@ export default function IncidentsPage() {
         })
       );
     }
-  }, [tenant, statusFilter, stepFilter, typeFilter, page, limit, dispatch]);
+  }, [currentOrganization, statusFilter, stepFilter, typeFilter, page, limit, dispatch]);
 
   useEffect(() => {
     return () => {

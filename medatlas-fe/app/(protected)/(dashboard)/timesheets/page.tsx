@@ -12,6 +12,7 @@ import {
   fetchDailySummary,
   fetchEntries,
   clearError,
+  resetTimesheetState,
 } from "@/store/slices/timesheets";
 import {
   formatHoursAsHhMm,
@@ -37,10 +38,13 @@ export default function Verification() {
   }, []);
 
   useEffect(() => {
-    dispatch(fetchStatus());
-    dispatch(fetchDailySummary());
-    dispatch(fetchEntries());
-  }, [dispatch]);
+    if (currentOrganization?.id) {
+      dispatch(resetTimesheetState());
+      dispatch(fetchStatus());
+      dispatch(fetchDailySummary());
+      dispatch(fetchEntries());
+    }
+  }, [dispatch, currentOrganization?.id]);
 
   useEffect(() => {
     if (error) {
@@ -66,7 +70,8 @@ export default function Verification() {
       if (currentOrganization && currentOrganization?.id) {
         dispatch(clockIn({ tenantId: currentOrganization.id }));
       }
-    }}
+    }
+  }
 
   const handleBreakAction = async () => {
     if (status.isOnBreak) {
@@ -113,7 +118,7 @@ export default function Verification() {
             </span>
             <button
               onClick={handleClockAction}
-              disabled={loading}
+              disabled={loading || !currentOrganization?.id}
               className={`py-1.5 px-4 border border-transparent rounded-md text-sm font-medium text-white transition-colors disabled:opacity-50 ${status.isClockedIn ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'}`}
             >
               {loading ? 'Loading...' : status.isClockedIn ? 'Clock Out' : 'Clock In'}

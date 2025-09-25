@@ -50,11 +50,11 @@ export const inviteMember = createAsyncThunk(
 export const fetchInvites = createAsyncThunk(
   "invite/fetchInvites",
   async (
-    { page, limit, tenantId }: { page: number; limit: number; tenantId: string },
+    { page, limit }: { page: number; limit: number;},
     { rejectWithValue }
   ) => {
     try {
-      const { data } = await api.post("/invites/tenant/list", { page, limit, tenantId });
+      const { data } = await api.post("/invites/tenant/list", { page, limit });
       return data;
     } catch (e: any) {
       if (e.response?.data) return rejectWithValue(e.response.data);

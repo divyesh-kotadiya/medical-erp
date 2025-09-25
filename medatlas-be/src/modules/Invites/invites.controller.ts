@@ -28,10 +28,20 @@ export class InvitesController {
     @Request() req: any,
   ) {
     const adminUserId = (req.user as JwtPayload & { sub?: string })?.sub;
+    const tenantId = (req.user as JwtPayload & { tenantId?: string }).tenantId;
+    if (!adminUserId) {
+      throw new BadRequestException('Not authenticated');
+    }
 
-    if (!adminUserId) throw new BadRequestException('Not authenticated');
+    if (!tenantId) {
+      throw new BadRequestException('Tenant ID not found in token');
+    }
 
-    return this.invitesService.createInvite(createInviteDto, adminUserId);
+    return this.invitesService.createInvite(
+      createInviteDto,
+      adminUserId,
+      tenantId,
+    );
   }
 
   @UseGuards(JwtGuard)
@@ -41,15 +51,18 @@ export class InvitesController {
     @Body() getInviteListDto: GetInviteListDto,
   ) {
     const adminUserId = (req.user as JwtPayload & { sub?: string })?.sub;
+    const tenantId = (req.user as JwtPayload & { tenantId?: string }).tenantId;
 
-    if (!adminUserId) throw new BadRequestException('Not authenticated');
+    if (!adminUserId) {
+      throw new BadRequestException('Not authenticated');
+    }
 
-    if (!getInviteListDto?.tenantId) {
-      throw new BadRequestException('tenantId is required in body');
+    if (!tenantId) {
+      throw new BadRequestException('Tenant ID not found in token');
     }
 
     return this.invitesService.getInvitesByTenant(
-      getInviteListDto.tenantId,
+      tenantId,
       getInviteListDto,
       adminUserId,
     );

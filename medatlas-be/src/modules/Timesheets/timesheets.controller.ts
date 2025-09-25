@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import {
   Controller,
   Post,
@@ -9,14 +8,14 @@ import {
   Req,
   Res,
   Param,
-  Request,
   UseGuards,
   BadRequestException,
   Query,
 } from '@nestjs/common';
 import { TimesheetsService } from './timesheets.service';
 import { JwtGuard } from 'src/common/auth/jwt.guard';
-import { Response } from 'express';
+import { Request, Response } from 'express';
+import { JwtPayload } from '../Users/interface/jwt.interface';
 
 @Controller('timesheets')
 export class TimesheetsController {
@@ -24,63 +23,74 @@ export class TimesheetsController {
 
   @Post('clock-in')
   @UseGuards(JwtGuard)
-  clockIn(
-    @Request() req: { user: { sub: string } },
-    @Body('tenantId') tenantId: string,
-  ) {
-    if (!tenantId) {
-      throw new BadRequestException('tenantId is required');
-    }
-    return this.timesheetsService.clockIn(tenantId, req.user.sub);
+  clockIn(@Req() req: Request) {
+    const userId = (req.user as JwtPayload & { sub?: string })?.sub;
+    const tenantId = (req.user as JwtPayload & { sub?: string })?.tenantId;
+    return this.timesheetsService.clockIn(tenantId, userId);
   }
 
   @Post('clock-out')
   @UseGuards(JwtGuard)
-  clockOut(@Request() req: { user: { sub: string } }) {
-    return this.timesheetsService.clockOut(req.user.sub);
+  clockOut(@Req() req: Request) {
+    const userId = (req.user as JwtPayload & { sub?: string })?.sub;
+    const tenantId = (req.user as JwtPayload & { sub?: string })?.tenantId;
+    return this.timesheetsService.clockOut(tenantId, userId);
   }
 
   @Post('start-break')
   @UseGuards(JwtGuard)
-  startBreak(@Request() req: { user: { sub: string } }) {
-    return this.timesheetsService.startBreak(req.user.sub);
+  startBreak(@Req() req: { user: { sub: string } }) {
+    const userId = (req.user as JwtPayload & { sub?: string })?.sub;
+    const tenantId = (req.user as JwtPayload & { sub?: string })?.tenantId;
+    return this.timesheetsService.startBreak(tenantId, userId);
   }
 
   @Post('end-break')
   @UseGuards(JwtGuard)
-  endBreak(@Request() req: { user: { sub: string } }) {
-    return this.timesheetsService.endBreak(req.user.sub);
+  endBreak(@Req() req: { user: { sub: string } }) {
+    const userId = (req.user as JwtPayload & { sub?: string })?.sub;
+    const tenantId = (req.user as JwtPayload & { sub?: string })?.tenantId;
+
+    return this.timesheetsService.endBreak(tenantId, userId);
   }
 
   @Get('status')
   @UseGuards(JwtGuard)
-  getStatus(
-    @Request() req: { user: { sub: string } },
-    @Query('periodStart') periodStart: string,
-    @Query('periodEnd') periodEnd: string,
+  async getStatus(
+    @Req() req: Request,
+    @Query('periodStart') periodStart?: string,
+    @Query('periodEnd') periodEnd?: string,
   ) {
-    return this.timesheetsService.getStatus(
-      req.user.sub,
-      periodStart,
-      periodEnd,
-    );
+    const user = req.user as JwtPayload & { sub?: string; tenantId?: string };
+    const userId = user.sub;
+    const tenantId = user.tenantId;
+
+    const start = periodStart || new Date().toISOString();
+    const end = periodEnd || new Date().toISOString();
+
+    return this.timesheetsService.getStatus(tenantId, userId, start, end);
   }
 
   @Get('daily-summary')
   @UseGuards(JwtGuard)
-  getDailySummary(@Request() req: { user: { sub: string } }) {
-    return this.timesheetsService.getDailySummary(req.user.sub);
+  getDailySummary(@Req() req: Request) {
+    const userId = (req.user as JwtPayload & { sub?: string })?.sub;
+    return this.timesheetsService.getDailySummary(userId);
   }
 
   @Get('entries')
   @UseGuards(JwtGuard)
   getEntries(
-    @Request() req: { user: { sub: string } },
+    @Req() req: Request,
     @Query('periodStart') periodStart?: string,
     @Query('periodEnd') periodEnd?: string,
   ) {
+    const userId = (req.user as JwtPayload & { sub?: string })?.sub;
+    const tenantId = (req.user as JwtPayload & { tenantId?: string })?.tenantId;
+
     return this.timesheetsService.getEntries(
-      req.user.sub,
+      tenantId,
+      userId,
       periodStart ? new Date(periodStart) : undefined,
       periodEnd ? new Date(periodEnd) : undefined,
     );
@@ -89,27 +99,30 @@ export class TimesheetsController {
   @Post('submit-week')
   @UseGuards(JwtGuard)
   submitWeek(
-    @Request() req: { user: { sub: string; tenantId?: string } },
+    @Req() req: Request,
     @Body('periodStart') periodStart: string,
     @Body('periodEnd') periodEnd: string,
   ) {
+    const userId = (req.user as JwtPayload & { sub?: string })?.sub;
+    const tenantId = (req.user as JwtPayload & { tenantId?: string })?.tenantId;
     return this.timesheetsService.submitWeek(
-      req.user.sub,
+      userId,
       new Date(periodStart),
       new Date(periodEnd),
-      req.user.tenantId,
+      tenantId,
     );
   }
 
   @Post('weekly-total')
   @UseGuards(JwtGuard)
   weeklyTotal(
-    @Request() req: { user: { sub: string } },
+    @Req() req: Request,
     @Body('periodStart') periodStart: string,
     @Body('periodEnd') periodEnd: string,
   ) {
+    const userId = (req.user as JwtPayload & { sub?: string })?.sub;
     return this.timesheetsService.getWeeklyTotal(
-      req.user.sub,
+      userId,
       new Date(periodStart),
       new Date(periodEnd),
     );
@@ -118,12 +131,13 @@ export class TimesheetsController {
   @Post('weekly-total/all')
   @UseGuards(JwtGuard)
   weeklyTotalAll(
-    @Request() req: { user: { tenantId?: string } },
+    @Req() req: Request,
     @Body('periodStart') periodStart: string,
     @Body('periodEnd') periodEnd: string,
   ) {
+    const userId = (req.user as JwtPayload & { sub?: string })?.sub;
     return this.timesheetsService.getWeeklyTotalAll(
-      req.user.tenantId,
+      userId,
       new Date(periodStart),
       new Date(periodEnd),
     );
@@ -132,14 +146,15 @@ export class TimesheetsController {
   @Get('submitted')
   @UseGuards(JwtGuard)
   getSubmitted(
-    @Request() req: { user: { tenantId?: string } },
+    @Req() req: Request,
     @Query('from') from?: string,
     @Query('to') to?: string,
     @Query('userId') userId?: string,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
   ) {
-    return this.timesheetsService.getSubmittedTimesheets(req.user.tenantId, {
+    const tenantId = (req.user as JwtPayload & { tenantId?: string })?.tenantId;
+    return this.timesheetsService.getSubmittedTimesheets(tenantId, {
       from: from ? new Date(from) : undefined,
       to: to ? new Date(to) : undefined,
       userId,
@@ -166,17 +181,15 @@ export class TimesheetsController {
 
   @Delete('entries/:entryId')
   @UseGuards(JwtGuard)
-  deleteEntry(
-    @Request() req: { user: { sub: string } },
-    @Param('entryId') entryId: string,
-  ) {
-    return this.timesheetsService.deleteEntry(req.user.sub, entryId);
+  deleteEntry(@Req() req: Request, @Param('entryId') entryId: string) {
+    const tenantId = (req.user as JwtPayload & { tenantId?: string })?.sub;
+    return this.timesheetsService.deleteEntry(tenantId, entryId);
   }
 
   @Get('export')
   @UseGuards(JwtGuard)
   async exportTimesheetCsv(
-    @Req() req: Request & { user: { sub: string } },
+    @Req() req: Request,
     @Query('periodStart') periodStart: string,
     @Query('periodEnd') periodEnd: string,
     @Res() res: Response,
@@ -188,11 +201,14 @@ export class TimesheetsController {
         'Invalid date format for periodStart or periodEnd',
       );
     }
+    const userId = (req.user as JwtPayload & { tenantId?: string })?.sub;
+    const tenantId = (req.user as JwtPayload & { tenantId?: string })?.sub;
 
     const buffer = await this.timesheetsService.exportTimesheetCsv(
-      req.user.sub,
+      userId,
       startDate,
       endDate,
+      tenantId,
     );
 
     res.setHeader('Content-Type', 'text/csv');

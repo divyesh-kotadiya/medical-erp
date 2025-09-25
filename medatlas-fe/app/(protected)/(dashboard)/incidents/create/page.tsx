@@ -52,7 +52,8 @@ export default function IncidentReportForm() {
   const dispatch = useAppDispatch();
   const [globalError, setGlobalError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
-  const { tenant, user } = useAppSelector((s) => s.auth);
+  const { user } = useAppSelector((s) => s.auth);
+  const { currentOrganization } = useAppSelector((state) => state.organizations);
   const {
     register,
     handleSubmit,
@@ -62,7 +63,7 @@ export default function IncidentReportForm() {
   } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
-      tenantId: tenant?.id,
+      tenantId: currentOrganization?.id,
       reportedBy: user?.id,
       title: "",
       description: "",

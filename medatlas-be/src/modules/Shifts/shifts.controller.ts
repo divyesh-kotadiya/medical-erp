@@ -6,27 +6,36 @@ import {
   Param,
   Post,
   Put,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { ShiftService } from './shifts.service';
 import { Shift } from './schemas/shift.schema';
 import { CreateShiftDto, UpdateShiftDto } from './dto/shift.dto';
 import { JwtGuard } from 'src/common/auth/jwt.guard';
+import { JwtPayload } from '../Users/interface/jwt.interface';
+import { Request } from 'express';
 
 @UseGuards(JwtGuard)
 @Controller('shifts')
 export class ShiftController {
-  constructor(private readonly shiftService: ShiftService) {}
+  constructor(private readonly shiftService: ShiftService) { }
 
   @Post()
   async create(@Body() createShiftDto: CreateShiftDto): Promise<Shift> {
     return this.shiftService.create(createShiftDto);
   }
-
   @Post('by-tenant')
-  async findAllByTenant(@Body('tenantId') tenantId: string): Promise<Shift[]> {
+  @UseGuards(JwtGuard)
+  async findAllByTenant(@Req() req: Request): Promise<Shift[]> {
+    const tenantId = (req.user as JwtPayload & { tenantId?: string }).tenantId;
+
+    if (!tenantId) {
+      throw new Error('Tenant ID not found in token');
+    }
     return this.shiftService.findAllByTenant(tenantId);
   }
+
   @Get(':id')
   async findOne(@Param('id') id: string): Promise<Shift> {
     return this.shiftService.findOne(id);

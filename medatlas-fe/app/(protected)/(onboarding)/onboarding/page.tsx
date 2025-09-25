@@ -6,7 +6,6 @@ import { createOrganization, fetchOrganizations } from '@/store/slices/organizat
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { enqueueSnackbar } from 'notistack';
-import { cn } from '@/lib/utils';
 import {
   Card,
   CardContent,

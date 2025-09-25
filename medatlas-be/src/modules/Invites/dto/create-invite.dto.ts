@@ -7,7 +7,4 @@ export class CreateInviteDto {
   @IsOptional()
   @IsString()
   role?: string;
-
-  @IsString()
-  tenantId?: string;
 }

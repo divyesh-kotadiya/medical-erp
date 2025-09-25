@@ -44,7 +44,7 @@ export default function SchedulingPage() {
 
     if (memberList.length === 0 || memberList[0]?.tenantId !== currentOrgId) {
       dispatch(fetchTenantMembers(currentOrgId));
-      dispatch(fetchShifts(currentOrgId));
+      dispatch(fetchShifts());
     }
   }, [currentOrgId, dispatch, memberList]);
 

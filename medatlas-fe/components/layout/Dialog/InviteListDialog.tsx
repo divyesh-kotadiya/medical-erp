@@ -17,7 +17,7 @@ export default function InviteListDialog() {
 
   useEffect(() => {
     if (currentOrganization?.id) {
-      dispatch(fetchInvites({ page, limit, tenantId: currentOrganization.id }));
+      dispatch(fetchInvites({ page, limit }));
     }
   }, [dispatch, currentOrganization]);
 
@@ -117,7 +117,6 @@ export default function InviteListDialog() {
               </table>
             </div>
 
-            {/* Pagination */}
             {totalPages > 1 && (
               <div className="flex items-center justify-between mt-4 text-sm">
                 <button

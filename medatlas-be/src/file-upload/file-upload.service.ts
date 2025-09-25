@@ -6,6 +6,13 @@ import { Request } from 'express';
 
 @Injectable()
 export class FileUploadService {
+  handleFileUpload(file: Express.Multer.File, folder: string) {
+    return {
+      path: `/uploads/${folder}/${file.filename}`,
+      filename: file.filename,
+    };
+  }
+
   getMulterOptions(folder: string): Options {
     const uploadPath = `./uploads/${folder}`;
     if (!existsSync(uploadPath)) {
@@ -17,7 +24,7 @@ export class FileUploadService {
         destination: uploadPath,
         filename: (
           req: Request,
-          file: { originalname: string; fieldname: string },
+          file: Express.Multer.File,
           cb: (error: Error | null, filename: string) => void,
         ) => {
           const uniqueSuffix =
@@ -28,8 +35,8 @@ export class FileUploadService {
       }),
       fileFilter: (
         req: Request,
-        file: { mimetype: string },
-        cb: (error: any, acceptFile: boolean) => void,
+        file: Express.Multer.File,
+        cb: (error: Error | null, acceptFile: boolean) => void,
       ) => {
         if (!file.mimetype.match(/\/(jpg|jpeg|png|gif|csv)$/)) {
           return cb(
@@ -39,7 +46,7 @@ export class FileUploadService {
         }
         cb(null, true);
       },
-      limits: { fileSize: 5 * 1024 * 1024 },
+      limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB
     };
   }
 }
