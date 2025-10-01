@@ -56,6 +56,11 @@ export default function LoginPage() {
     );
   }, [email, password]);
 
+  useEffect(() => {
+    router.prefetch('/verify-otp');
+  }, [router]);
+
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!isFormValid) {
@@ -112,43 +117,43 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit} className="space-y-6">
           <AuthInput
             label="Email"
-                type="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+            type="email"
+            placeholder="Enter your email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             error={errors.email}
           />
 
           <AuthInput
             label="Password"
-                  placeholder="Enter your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+            placeholder="Enter your password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
             error={errors.password}
             isPassword
           />
 
           <AuthButton
-              type="submit"
+            type="submit"
             loading={loading}
             disabled={!isFormValid}
           >
             Sign In
           </AuthButton>
-          </form>
+        </form>
 
-          <div className="text-right text-sm">
+        <div className="text-right text-sm">
           <AuthLink href="/forgot-password">
-              Forgot password?
+            Forgot password?
           </AuthLink>
-          </div>
+        </div>
 
         <div className="text-center text-sm text-muted-foreground pt-2">
-            Don&apos;t have an account?{' '}
+          Don&apos;t have an account?{' '}
           <AuthLink href="/register">
-              Sign up
+            Sign up
           </AuthLink>
-          </div>
+        </div>
       </AuthCard>
     </AuthLayout>
   );

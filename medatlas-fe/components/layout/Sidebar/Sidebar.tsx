@@ -27,6 +27,7 @@ import { logout } from '@/store/slices/auth';
 import { clearOrganizations, setCurrentOrganizationById } from '@/store/slices/organizations';
 import gsap from 'gsap';
 import { CSSPlugin } from 'gsap/CSSPlugin';
+import { useTheme } from 'next-themes';
 
 gsap.registerPlugin(CSSPlugin);
 
@@ -45,6 +46,7 @@ export const Sidebar = () => {
 
   const { user } = useAppSelector((state) => state.auth);
   const { organizations, currentOrganization } = useAppSelector((state) => state.organizations);
+  const { setTheme } = useTheme();
 
   const onboarding = !organizations || organizations.length === 0;
 
@@ -53,6 +55,7 @@ export const Sidebar = () => {
   const handleLogout = () => {
     dispatch(clearOrganizations());
     dispatch(logout());
+    setTheme("light");
     enqueueSnackbar("Logout successful", { variant: "success" });
   };
 
@@ -178,7 +181,7 @@ export const Sidebar = () => {
         <div className="absolute -bottom-0 -left-40 w-80 h-[100%] bg-sidebar-accent rounded-full mix-blend-soft-light filter blur-3xl opacity-20"></div>
       </div>
 
-      <div className="p-4 border-b border-sidebar-border flex items-center justify-between relative z-10">
+      <div className={`p-4 border-b border-sidebar-border flex items-center justify-center relative z-10 ${!collapsed && 'gap-3'}`}>
         {!collapsed && (
           <div>
             <h2 className="text-lg font-semibold text-sidebar-foreground flex items-center gap-2">
@@ -211,7 +214,7 @@ export const Sidebar = () => {
                 <Building className="h-5 w-5 text-sidebar-primary-foreground" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-sidebar-foreground truncate">
+                <p className="text-sm font-medium text-sidebar-foreground truncate max-w-[140px]">
                   {currentOrganization?.name || 'Select Organization'}
                 </p>
                 <p className="text-xs text-sidebar-muted-foreground">
@@ -247,8 +250,12 @@ export const Sidebar = () => {
                       </span>
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-sidebar-foreground">{org.name}</p>
-                      <p className="text-xs text-sidebar-muted-foreground">{org.role}</p>
+                      <p className="text-sm font-medium text-sidebar-foreground truncate max-w-[140px]">
+                        {org.name}
+                      </p>
+                      <p className="text-xs text-sidebar-muted-foreground truncate max-w-[140px]">
+                        {org.role}
+                      </p>
                     </div>
                   </div>
                   {org.id === currentOrganization?.id && (
@@ -270,7 +277,7 @@ export const Sidebar = () => {
         </div>
       )}
 
-      <nav className={`flex-1 ${collapsed ? 'p-6' : 'px-2'} space-y-2 overflow-y-auto relative z-10`}>
+      <nav className={`flex-1 px-2 space-y-2 overflow-y-auto relative z-10`}>
         {navigationItems.map((item, index) => (
           <Link
             key={item.title}
@@ -278,9 +285,9 @@ export const Sidebar = () => {
             href={item.url}
             prefetch
             className={cn(
-              `flex items-center ${collapsed ? 'space-x-2 px-2 py-2' : 'space-x-4 px-4 py-3'} rounded-xl transition-all duration-300 group`,
+              `flex items-center ${collapsed ? 'space-y-10 px-2 py-2  justify-center m-3' : ' m-3 space-x-4 px-4 py-3'} rounded-xl transition-all  duration-300 group`,
               isActive(item.url)
-                ? "bg-gradient-to-r from-sidebar-primary to-sidebar-accent text-sidebar-primary-foreground shadow-md"
+                ? "bg-gradient-to-r from-sidebar-primary to-sidebar-accent text-sidebar-primary-foreground border-1 border-white shadow-md"
                 : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
             )}
           >

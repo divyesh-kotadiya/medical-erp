@@ -1,8 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import Loader from '@/components/Loading';
-
+import { Loading } from '../loading';
 interface AuthButtonProps {
   children: React.ReactNode;
   loading?: boolean;
@@ -12,10 +11,10 @@ interface AuthButtonProps {
   type?: 'button' | 'submit' | 'reset';
 }
 
-export function AuthButton({ 
-  children, 
-  loading = false, 
-  disabled = false, 
+export function AuthButton({
+  children,
+  loading = false,
+  disabled = false,
   className = '',
   onClick,
   type = 'button'
@@ -35,7 +34,7 @@ export function AuthButton({
     >
       {loading ? (
         <div className="flex items-center gap-2 justify-center">
-          <Loader />
+          <Loading />
           <span>Processing...</span>
         </div>
       ) : (
