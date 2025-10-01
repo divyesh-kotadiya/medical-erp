@@ -74,13 +74,13 @@ export default function IncidentDetailPage() {
     }));
   };
 
-  const getStatusColor = (status: IncidentStatus) => {
+  const getStatusBadge = (status: IncidentStatus) => {
     switch (status) {
-      case IncidentStatus.OPEN: return 'bg-red-100 text-red-800 border border-red-200';
-      case IncidentStatus.IN_REVIEW: return 'bg-yellow-100 text-yellow-800 border border-yellow-200';
-      case IncidentStatus.IN_PROGRESS: return 'bg-blue-100 text-blue-800 border border-blue-200';
-      case IncidentStatus.RESOLVED: return 'bg-green-100 text-green-800 border border-green-200';
-      default: return 'bg-gray-100 text-gray-800 border border-gray-200';
+      case IncidentStatus.OPEN: return 'bg-destructive/10 text-destructive border border-destructive/20';
+      case IncidentStatus.IN_REVIEW: return 'bg-warning/10 text-warning border border-warning/20';
+      case IncidentStatus.IN_PROGRESS: return 'bg-primary/10 text-primary border border-primary/20';
+      case IncidentStatus.RESOLVED: return 'bg-success/10 text-success border border-success/20';
+      default: return 'bg-muted text-muted-foreground border border-border';
     }
   };
 
@@ -96,25 +96,25 @@ export default function IncidentDetailPage() {
 
   if (loading && !incident) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      <div className="min-h-screen bg-gradient-to-br from-background to-muted p-4 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
       </div>
     );
   }
 
   if (error && !incident) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 flex items-center justify-center">
-        <div className="bg-white rounded-xl shadow-lg p-8 max-w-md w-full">
+      <div className="min-h-screen bg-gradient-to-br from-background to-muted p-4 flex items-center justify-center">
+        <div className="bg-card rounded-xl shadow-card p-8 max-w-md w-full">
           <div className="text-center">
-            <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
-              <AlertTriangle className="h-6 w-6 text-red-600" />
+            <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-destructive/10">
+              <AlertTriangle className="h-6 w-6 text-destructive" />
             </div>
-            <h3 className="mt-4 text-lg font-semibold text-gray-900">Error loading incident</h3>
-            <p className="mt-2 text-sm text-gray-500">{error}</p>
+            <h3 className="mt-4 text-lg font-semibold text-foreground">Error loading incident</h3>
+            <p className="mt-2 text-sm text-muted-foreground">{error}</p>
             <button
               onClick={() => router.push('/incidents')}
-              className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+              className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-primary-foreground bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors"
             >
               Back to Incidents
             </button>
@@ -126,17 +126,17 @@ export default function IncidentDetailPage() {
 
   if (!incident) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 flex items-center justify-center">
-        <div className="bg-white rounded-xl shadow-lg p-8 max-w-md w-full">
+      <div className="min-h-screen bg-gradient-to-br from-background to-muted p-4 flex items-center justify-center">
+        <div className="bg-card rounded-xl shadow-card p-8 max-w-md w-full">
           <div className="text-center">
-            <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-gray-100">
-              <AlertTriangle className="h-6 w-6 text-gray-600" />
+            <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-muted">
+              <AlertTriangle className="h-6 w-6 text-muted-foreground" />
             </div>
-            <h3 className="mt-4 text-lg font-semibold text-gray-900">Incident not found</h3>
-            <p className="mt-2 text-sm text-gray-500">The incident you're looking for doesn't exist.</p>
+            <h3 className="mt-4 text-lg font-semibold text-foreground">Incident not found</h3>
+            <p className="mt-2 text-sm text-muted-foreground">The incident you're looking for doesn't exist.</p>
             <button
               onClick={() => router.push('/incidents')}
-              className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+              className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-primary-foreground bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors"
             >
               Back to Incidents
             </button>
@@ -151,15 +151,15 @@ export default function IncidentDetailPage() {
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
           
-          <div className="flex flex-col md:flex-row md:items-center justify-between bg-white rounded-xl shadow-md p-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between bg-card rounded-xl shadow-card p-6">
             <div className="flex items-center mb-4 md:mb-0">
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Incident Details</h1>
-                <p className="text-gray-600 mt-1">ID: {incident._id}</p>
+                <h1 className="text-2xl font-bold text-foreground">Incident Details</h1>
+                <p className="text-muted-foreground mt-1">ID: {incident._id}</p>
               </div>
             </div>
             <div className="flex items-center">
-              <span className={`px-4 py-2 inline-flex items-center text-sm leading-5 font-semibold rounded-full ${getStatusColor(incident.status as IncidentStatus)}`}>
+              <span className={`px-4 py-2 inline-flex items-center text-sm leading-5 font-semibold rounded-full ${getStatusBadge(incident.status as IncidentStatus)}`}>
                 {getStatusIcon(incident.status as IncidentStatus)}
                 <span className="ml-2">{incident.status}</span>
               </span>
@@ -168,15 +168,15 @@ export default function IncidentDetailPage() {
         </div>
 
         {error && (
-          <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-lg">
+          <div className="mb-6 bg-destructive/10 border-l-4 border-destructive p-4 rounded-lg">
             <div className="flex">
               <div className="flex-shrink-0">
-                <svg className="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <svg className="h-5 w-5 text-destructive" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                 </svg>
               </div>
               <div className="ml-3">
-                <p className="text-sm text-red-700">{error}</p>
+                <p className="text-sm text-destructive">{error}</p>
               </div>
             </div>
           </div>
@@ -184,30 +184,30 @@ export default function IncidentDetailPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           <div className="lg:col-span-3 space-y-6">
-            <div className="bg-white rounded-xl shadow-md p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-200">Incident Information</h2>
+            <div className="bg-card rounded-xl shadow-card p-6">
+              <h2 className="text-lg font-semibold text-foreground mb-4 pb-2 border-b border-border">Incident Information</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
-                  <p className="text-gray-900 font-medium text-lg">{incident.title}</p>
+                  <label className="block text-sm font-medium text-foreground mb-1">Title</label>
+                  <p className="text-foreground font-medium text-lg">{incident.title}</p>
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                  <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                    <p className="text-gray-700 whitespace-pre-line">{incident.description || 'No description provided'}</p>
+                  <label className="block text-sm font-medium text-foreground mb-1">Description</label>
+                  <div className="bg-muted/50 p-4 rounded-lg border border-border">
+                    <p className="text-foreground whitespace-pre-line">{incident.description || 'No description provided'}</p>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-xl shadow-md p-6">
-              <div className="flex items-center mb-4 pb-2 border-b border-gray-200">
-                <Workflow className="h-5 w-5 text-gray-700 mr-2" />
-                <h2 className="text-lg font-semibold text-gray-900">Workflow Configuration</h2>
+            <div className="bg-card rounded-xl shadow-card p-6">
+              <div className="flex items-center mb-4 pb-2 border-b border-border">
+                <Workflow className="h-5 w-5 text-foreground mr-2" />
+                <h2 className="text-lg font-semibold text-foreground">Workflow Configuration</h2>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                  <label className="block text-sm font-medium text-foreground mb-2">Status</label>
                   <CustomDropdown
                     label=""
                     options={Object.values(IncidentStatus).map((s) => ({
@@ -220,7 +220,7 @@ export default function IncidentDetailPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Current Step</label>
+                  <label className="block text-sm font-medium text-foreground mb-2">Current Step</label>
                   <CustomDropdown
                     label=""
                     options={Object.values(WorkflowStep).map((s) => ({ 
@@ -234,15 +234,15 @@ export default function IncidentDetailPage() {
                 </div>
               </div>
               
-              <div className="mt-8 pt-6 border-t border-gray-200">
-                <h3 className="text-md font-medium text-gray-900 mb-3">Workflow Progress</h3>
+              <div className="mt-8 pt-6 border-t border-border">
+                <h3 className="text-md font-medium text-foreground mb-3">Workflow Progress</h3>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-gray-600">Progress</span>
-                  <span className="text-sm font-medium text-gray-900">
+                  <span className="text-sm text-muted-foreground">Progress</span>
+                  <span className="text-sm font-medium text-foreground">
                     {Object.values(WorkflowStep).indexOf(incident.currentStep as WorkflowStep) + 1} of {Object.values(WorkflowStep).length} steps
                   </span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2.5">
+                <div className="w-full bg-muted rounded-full h-2.5">
                   <div 
                     className="bg-primary h-2.5 rounded-full transition-all duration-300" 
                     style={{ width: `${((Object.values(WorkflowStep).indexOf(incident.currentStep as WorkflowStep) + 1) / Object.values(WorkflowStep).length) * 100}%` }}
@@ -255,8 +255,8 @@ export default function IncidentDetailPage() {
                       key={step} 
                       className={`text-xs text-center p-2 rounded-lg ${
                         index <= Object.values(WorkflowStep).indexOf(incident.currentStep as WorkflowStep)
-                          ? 'bg-primary text-white font-medium'
-                          : 'bg-gray-100 text-gray-500'
+                          ? 'bg-primary text-primary-foreground font-medium'
+                          : 'bg-muted text-muted-foreground'
                       }`}
                     >
                       {step}
@@ -268,58 +268,58 @@ export default function IncidentDetailPage() {
           </div>
 
           <div className="space-y-6">
-            <div className="bg-white rounded-xl shadow-md p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-200">Incident Metadata</h2>
+            <div className="bg-card rounded-xl shadow-card p-6">
+              <h2 className="text-lg font-semibold text-foreground mb-4 pb-2 border-b border-border">Incident Metadata</h2>
               <div className="space-y-4">
                 <div className="flex items-start">
                   <div className="flex-shrink-0">
-                    <User className="h-5 w-5 text-gray-400" />
+                    <User className="h-5 w-5 text-muted-foreground" />
                   </div>
                   <div className="ml-3">
-                    <p className="text-sm font-medium text-gray-900">Reported By</p>
-                    <p className="text-sm text-gray-500 mt-1">{incident.reportedBy || 'Unknown'}</p>
+                    <p className="text-sm font-medium text-foreground">Reported By</p>
+                    <p className="text-sm text-muted-foreground mt-1">{incident.reportedBy || 'Unknown'}</p>
                   </div>
                 </div>
                 <div className="flex items-start">
                   <div className="flex-shrink-0">
-                    <Calendar className="h-5 w-5 text-gray-400" />
+                    <Calendar className="h-5 w-5 text-muted-foreground" />
                   </div>
                   <div className="ml-3">
-                    <p className="text-sm font-medium text-gray-900">Created At</p>
-                    <p className="text-sm text-gray-500 mt-1">{new Date(incident.createdAt).toLocaleString()}</p>
+                    <p className="text-sm font-medium text-foreground">Created At</p>
+                    <p className="text-sm text-muted-foreground mt-1">{new Date(incident.createdAt).toLocaleString()}</p>
                   </div>
                 </div>
                 <div className="flex items-start">
                   <div className="flex-shrink-0">
-                    <Calendar className="h-5 w-5 text-gray-400" />
+                    <Calendar className="h-5 w-5 text-muted-foreground" />
                   </div>
                   <div className="ml-3">
-                    <p className="text-sm font-medium text-gray-900">Updated At</p>
-                    <p className="text-sm text-gray-500 mt-1">{new Date(incident.updatedAt).toLocaleString()}</p>
+                    <p className="text-sm font-medium text-foreground">Updated At</p>
+                    <p className="text-sm text-muted-foreground mt-1">{new Date(incident.updatedAt).toLocaleString()}</p>
                   </div>
                 </div>
                 <div className="flex items-start">
                   <div className="flex-shrink-0">
-                    <FileText className="h-5 w-5 text-gray-400" />
+                    <FileText className="h-5 w-5 text-muted-foreground" />
                   </div>
                   <div className="ml-3">
-                    <p className="text-sm font-medium text-gray-900">Type</p>
-                    <p className="text-sm text-gray-500 mt-1">{incident.incidentType}</p>
+                    <p className="text-sm font-medium text-foreground">Type</p>
+                    <p className="text-sm text-muted-foreground mt-1">{incident.incidentType}</p>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-xl shadow-md p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-200">Current Status</h2>
+            <div className="bg-card rounded-xl shadow-card p-6">
+              <h2 className="text-lg font-semibold text-foreground mb-4 pb-2 border-b border-border">Current Status</h2>
               <div className="flex flex-col items-center py-4">
-                <span className={`px-4 py-3 inline-flex items-center text-sm leading-5 font-semibold rounded-lg ${getStatusColor(incident.status as IncidentStatus)} mb-3`}>
+                <span className={`px-4 py-3 inline-flex items-center text-sm leading-5 font-semibold rounded-lg ${getStatusBadge(incident.status as IncidentStatus)} mb-3`}>
                   {getStatusIcon(incident.status as IncidentStatus)}
                   <span className="ml-2">{incident.status}</span>
                 </span>
                 <div className="text-center">
-                  <p className="text-sm font-medium text-gray-900">Current Step</p>
-                  <p className="text-sm text-gray-600 mt-1 bg-gray-100 px-3 py-1 rounded-md inline-block">{incident.currentStep}</p>
+                  <p className="text-sm font-medium text-foreground">Current Step</p>
+                  <p className="text-sm text-muted-foreground mt-1 bg-muted px-3 py-1 rounded-md inline-block">{incident.currentStep}</p>
                 </div>
               </div>
             </div>

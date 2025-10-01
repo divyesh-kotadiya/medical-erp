@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import Loader from '@/components/loader';
+import Loader from '@/components/Loading';
 
 interface AuthButtonProps {
   children: React.ReactNode;

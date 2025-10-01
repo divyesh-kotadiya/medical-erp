@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { enqueueSnackbar } from 'notistack';
 import { fetchMyInvites, acceptInvite, rejectInvite } from '@/store/slices/invite';
+
+import { Check, X } from 'lucide-react';
+import Table from '@/components/common/Table';
 
 const InvitedListPage = () => {
   const dispatch = useAppDispatch();
@@ -46,96 +46,92 @@ const InvitedListPage = () => {
     }
   };
 
-  if (loading) return <div className="p-4 text-center">Loading invites...</div>;
+  const columns = [
+    {
+      key: 'organizationName',
+      label: 'ORGANIZATION NAME',
+      render: (value: any, row: any) => row?.tenantId?.name || row.organizationName,
+    },
+    {
+      key: 'email',
+      label: 'EMAIL',
+    },
+    {
+      key: 'role',
+      label: 'ROLE',
+    },
+    {
+      key: 'createdAt',
+      label: 'SENT AT',
+      render: (value: any) => new Date(value).toLocaleString(),
+    },
+    {
+      key: 'status',
+      label: 'STATUS',
+      render: (value: any) => {
+        if (value === 'ACCEPTED') {
+          return (
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-success/10 text-success">
+              ACCEPTED
+            </span>
+          );
+        } else if (value === 'REJECTED') {
+          return (
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-danger/10 text-danger">
+              REJECTED
+            </span>
+          );
+        }
+        return (
+          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-warning/10 text-warning">
+            PENDING
+          </span>
+        );
+      },
+    },
+  ];
+
+  const actions = [
+    {
+      icon: <Check className="h-4 w-4" />,
+      onClick: (row: any) => handleAccept(row.token),
+      tooltip: 'Accept',
+      className: 'text-success hover:text-success/80',
+      // Only show when status is PENDING
+      show: (row: any) => row.status === 'PENDING',
+    },
+    {
+      icon: <X className="h-4 w-4" />,
+      onClick: (row: any) => handleReject(row.token),
+      tooltip: 'Reject',
+      className: 'text-danger hover:text-danger/80',
+      // Only show when status is PENDING
+      show: (row: any) => row.status === 'PENDING',
+    },
+  ];
 
   return (
-    <div className="p-6 bg-background min-h-screen">
-      <Card className="w-full max-w-5xl mx-auto shadow-lg">
-        <CardHeader>
-          <CardTitle>My Invites</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {myInvites.length === 0 ? (
-            <p className="text-muted-foreground text-center py-6">No invites yet.</p>
-          ) : (
-            <>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>ORGANIZATION NAME</TableHead>
-                    <TableHead>EMAIL</TableHead>
-                    <TableHead>ROLE</TableHead>
-                    <TableHead>SENT AT</TableHead>
-                    <TableHead className="text-right">STATUS</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {myInvites.map((invite) => (
-                    <TableRow key={invite.token}>
-                      <TableCell>{invite?.tenantId?.name || invite.organizationName}</TableCell>
-                      <TableCell>{invite.email}</TableCell>
-                      <TableCell>{invite.role}</TableCell>
-                      <TableCell>{new Date(invite.createdAt).toLocaleString()}</TableCell>
-                      <TableCell className="text-right flex gap-2 justify-end">
-                        {invite.status === "ACCEPTED" ? (
-                          <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
-                            ACCEPTED
-                          </span>
-                        ) : invite.status === "REJECTED" ? (
-                          <span className="px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">
-                            REJECTED
-                          </span>
-                        ) : (
-                          <>
-                            <Button
-                              size="sm"
-                              disabled={processingToken === invite.token}
-                              onClick={() => handleAccept(invite.token)}
-                            >
-                              {processingToken === invite.token ? 'Processing...' : 'Accept'}
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              disabled={processingToken === invite.token}
-                              onClick={() => handleReject(invite.token)}
-                            >
-                              {processingToken === invite.token ? 'Processing...' : 'Reject'}
-                            </Button>
-                          </>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="flex items-center justify-between mt-4 text-sm">
-                  <Button
-                    size="sm"
-                    disabled={page === 1}
-                    onClick={() => setPage((prev) => prev - 1)}
-                  >
-                    Previous
-                  </Button>
-                  <span>
-                    Page {page} of {totalPages}
-                  </span>
-                  <Button
-                    size="sm"
-                    disabled={page === totalPages}
-                    onClick={() => setPage((prev) => prev + 1)}
-                  >
-                    Next
-                  </Button>
-                </div>
-              )}
-            </>
-          )}
-        </CardContent>
-      </Card>
+    <div className="p-6 bg-gradient-to-br from-background to-secondary min-h-screen">
+      <div className="w-full max-w-full mx-auto">
+        <h1 className="text-3xl font-bold mb-6 text-foreground">My Invites</h1>
+        <Table
+          columns={columns}
+          data={myInvites}
+          loading={loading}
+          error={null}
+          pagination={{
+            currentPage: page,
+            totalPages: totalPages,
+            onPageChange: setPage,
+            itemsPerPage: limit,
+            totalItems: myInvites.length,
+          }}
+          actions={actions}
+          keyExtractor={(row) => row.token}
+          emptyMessage="No invites yet."
+          className="shadow-card border border-border"
+        />
+      </div>
     </div>
   );
 };

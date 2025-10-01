@@ -1,8 +1,9 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { diskStorage, Options } from 'multer';
 import { extname } from 'path';
 import { existsSync, mkdirSync } from 'fs';
 import { Request } from 'express';
+import { ALLOWED_FILE_TYPES } from '../modules/Documents/types/document.constants';
 
 @Injectable()
 export class FileUploadService {
@@ -22,31 +23,21 @@ export class FileUploadService {
     return {
       storage: diskStorage({
         destination: uploadPath,
-        filename: (
-          req: Request,
-          file: Express.Multer.File,
-          cb: (error: Error | null, filename: string) => void,
-        ) => {
+        filename: (req, file, cb) => {
           const uniqueSuffix =
             Date.now() + '-' + Math.round(Math.random() * 1e9);
           const ext = extname(file.originalname);
           cb(null, `${file.fieldname}-${uniqueSuffix}${ext}`);
         },
       }),
-      fileFilter: (
-        req: Request,
-        file: Express.Multer.File,
-        cb: (error: Error | null, acceptFile: boolean) => void,
-      ) => {
-        if (!file.mimetype.match(/\/(jpg|jpeg|png|gif|csv)$/)) {
-          return cb(
-            new BadRequestException('Only image files are allowed!'),
-            false,
-          );
+      fileFilter: (req: Request, file: Express.Multer.File, cb) => {
+        const fileExt = file.originalname.split('.').pop()?.toLowerCase() || '';
+        if (!ALLOWED_FILE_TYPES.includes(fileExt as any)) {
+          return cb(new Error(`Invalid file type: ${fileExt}`) as any, false);
         }
         cb(null, true);
       },
-      limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB
+      limits: { fileSize: 50 * 1024 * 1024 },
     };
   }
 }

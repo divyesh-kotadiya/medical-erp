@@ -13,9 +13,16 @@ export default {
   theme: {
     container: {
       center: true,
-      padding: '2rem',
+      padding: '0',
       screens: {
-        '2xl': '1400px'
+        'sm': '640px',
+        'md': '768px',
+        'lg': '1024px',
+        'xl': '1200px',
+        '2xl': '1400px',
+        '3xl': '1600px',
+        '4xl': '1800px',
+        '5xl': '2000px',
       }
     },
     extend: {
@@ -32,7 +39,7 @@ export default {
         },
         secondary: {
           DEFAULT: 'hsl(var(--secondary))',
-          hover: 'hsl(var(-primary-hover))',
+          hover: 'hsl(var(--primary-hover))',
           foreground: 'hsl(var(--secondary-foreground))'
         },
         destructive: {
@@ -77,18 +84,24 @@ export default {
           accent: 'hsl(var(--sidebar-accent))',
           'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
           border: 'hsl(var(--sidebar-border))',
-          ring: 'hsl(var(--sidebar-ring))'
+          ring: 'hsl(var(--sidebar-ring))',
+          muted: 'hsl(var(--sidebar-muted))',
+          'muted-foreground': 'hsl(var(--sidebar-muted-foreground))'
         }
       },
       backgroundImage: {
         'gradient-primary': 'var(--gradient-primary)',
         'gradient-hero': 'var(--gradient-hero)',
-        'gradient-card': 'var(--gradient-card)'
+        'gradient-card': 'var(--gradient-card)',
+        'gradient-sidebar': 'var(--gradient-sidebar)',
+        'gradient-sidebar-light': 'var(--gradient-sidebar-light)',
+        'gradient-sidebar-dark': 'var(--gradient-sidebar-dark)'
       },
       boxShadow: {
         'medical': 'var(--shadow-medical)',
         'card': 'var(--shadow-card)',
-        'elevated': 'var(--shadow-elevated)'
+        'elevated': 'var(--shadow-elevated)',
+        'sidebar': 'var(--shadow-sidebar)'
       },
       transitionTimingFunction: {
         'medical': 'var(--transition-medical)',

@@ -96,7 +96,7 @@ export class IncidentController {
 
     const filePath = join(process.cwd(), attachment.url);
 
-    res.setHeader('Content-Type', 'application/octet-stream');
+    res.setHeader('Content-Type', 'application/jpg');
     return res.download(filePath, attachment.name);
   }
 

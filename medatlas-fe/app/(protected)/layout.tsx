@@ -1,19 +1,27 @@
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { RequireAuth } from '@/components/providers/auth/RequireAuth';
 import { OrgGuard } from '@/components/providers/organization/OrgGuard';
+import { ThemeProvider } from '@/components/providers/themee/theme-provider';
 
 export default function ProtectedLayout({ children }: { children: React.ReactNode }) {
   return (
-    <RequireAuth>
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="system"
+      enableSystem
+      disableTransitionOnChange
+    >
       <OrgGuard>
-        <DashboardLayout>
-          <div className="flex max-h-[100vh] relative">
-            <div className="flex-1 transition-opacity duration-200">
-              <main>{children}</main>
+        <RequireAuth>
+          <DashboardLayout>
+            <div className="flex max-h-[100vh] relative">
+              <div className="flex-1 transition-opacity duration-200">
+                <main>{children}</main>
+              </div>
             </div>
-          </div>
-        </DashboardLayout>
+          </DashboardLayout>
+        </RequireAuth>
       </OrgGuard>
-    </RequireAuth>
+    </ThemeProvider>
   );
 }

@@ -13,8 +13,8 @@ import {
   clearError,
 } from "@/store/slices/incidents";
 import { IncidentStatus, IncidentType, WorkflowStep } from "@/constants/Incidents";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import TableSkeleton from "@/components/ui/TableSkeleton";
+import Button from "@/components/layout/Button/Button";
+import Table from "@/components/common/Table";
 
 export default function IncidentsPage() {
   const dispatch = useAppDispatch();
@@ -83,19 +83,32 @@ export default function IncidentsPage() {
     router.push(`/incidents/${id}`);
   };
 
-  const getStatusColor = (status: IncidentStatus) => {
-    switch (status) {
+  const getStatusBadge = (status: IncidentStatus) => {
+    let badgeClass = '';
+    
+    switch(status) {
       case IncidentStatus.OPEN:
-        return "bg-red-100 text-red-800";
+        badgeClass = 'bg-destructive/10 text-destructive';
+        break;
       case IncidentStatus.IN_REVIEW:
-        return "bg-yellow-100 text-yellow-800";
+        badgeClass = 'bg-warning/10 text-warning';
+        break;
       case IncidentStatus.IN_PROGRESS:
-        return "bg-blue-100 text-blue-800";
+        badgeClass = 'bg-primary/10 text-primary';
+        break;
       case IncidentStatus.RESOLVED:
-        return "bg-green-100 text-green-800";
+        badgeClass = 'bg-success/10 text-success';
+        break;
       default:
-        return "bg-gray-100 text-gray-800";
+        badgeClass = 'bg-muted text-muted-foreground';
     }
+    
+    return (
+      <span className={`px-3 py-1 inline-flex items-center text-xs font-semibold rounded-full ${badgeClass}`}>
+        {getStatusIcon(status)}
+        <span className="ml-1">{status}</span>
+      </span>
+    );
   };
 
   const getStatusIcon = (status: IncidentStatus) => {
@@ -112,17 +125,29 @@ export default function IncidentsPage() {
     }
   };
 
-  const getTypeColor = (type: IncidentType) => {
-    switch (type) {
+  const getTypeBadge = (type: IncidentType) => {
+    let badgeClass = '';
+    
+    switch(type) {
       case IncidentType.UNAUTHORIZED_ACCESS:
-        return "bg-purple-100 text-purple-800";
+        badgeClass = 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400';
+        break;
       case IncidentType.DATA_LOSS:
-        return "bg-orange-100 text-orange-800";
+        badgeClass = 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400';
+        break;
       case IncidentType.IMPROPER_DISCLOSURE:
-        return "bg-pink-100 text-pink-800";
+        badgeClass = 'bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-400';
+        break;
       default:
-        return "bg-gray-100 text-gray-800";
+        badgeClass = 'bg-muted text-muted-foreground';
     }
+    
+    return (
+      <span className={`px-3 py-1 inline-flex items-center text-xs font-semibold rounded-full ${badgeClass}`}>
+        {getTypeIcon(type)}
+        <span className="ml-1">{type}</span>
+      </span>
+    );
   };
 
   const getTypeIcon = (type: IncidentType) => {
@@ -137,43 +162,83 @@ export default function IncidentsPage() {
     }
   };
 
+  const columns = [
+    {
+      key: 'title',
+      label: 'Incident',
+      render: (value: any, row: any) => (
+        <div>
+          <div className="font-medium text-foreground">{value}</div>
+          <div className="text-sm text-muted-foreground mt-1 line-clamp-2">
+            {row.description?.substring(0, 80)}
+            {row.description && row.description.length > 80 ? "..." : ""}
+          </div>
+        </div>
+      )
+    },
+    {
+      key: 'status',
+      label: 'Status',
+      render: (value: any, row: any) => getStatusBadge(value as IncidentStatus)
+    },
+    {
+      key: 'currentStep',
+      label: 'Current Step'
+    },
+    {
+      key: 'incidentType',
+      label: 'Type',
+      render: (value: any, row: any) => getTypeBadge(value as IncidentType)
+    },
+    {
+      key: 'createdAt',
+      label: 'Created',
+      render: (value: any, row: any) => (
+        <span className="text-sm text-muted-foreground">
+          {new Date(value).toLocaleDateString()}
+        </span>
+      )
+    }
+  ];
+
   return (
-    <div className="min-h-[100vh] shadow-inner rounded-md">
+    <div className="min-h-[100vh] bg-background">
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Incident Management</h1>
-            <p className="text-gray-600 mt-2">Track and manage security incidents</p>
+            <h1 className="text-3xl font-bold text-foreground">Incident Management</h1>
+            <p className="text-muted-foreground mt-2">Track and manage security incidents</p>
           </div>
           <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
             {hasActiveFilters && (
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-700 rounded-full text-sm border border-blue-100">
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-primary/10 text-primary rounded-full text-sm border border-primary/20">
                 <span>Filters applied</span>
-                <button onClick={clearAllFilters} className="ml-1 hover:text-blue-900 flex items-center">
+                <button onClick={clearAllFilters} className="ml-1 hover:text-primary flex items-center">
                   <X className="h-3 w-3" />
                 </button>
               </div>
             )}
-            <button
+            <Button
+              variant="outline"
               onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 transition-colors"
+              className="flex items-center gap-2"
             >
-              <Filter className="h-4 w-4 text-gray-500" />
-              <span className="font-medium text-gray-700">Filters</span>
-              {showFilters ? <ChevronUp className="h-4 w-4 text-gray-500" /> : <ChevronDown className="h-4 w-4 text-gray-500" />}
-            </button>
+              <Filter className="h-4 w-4" />
+              <span>Filters</span>
+              {showFilters ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            </Button>
           </div>
         </div>
 
         {error && (
-          <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-lg shadow-sm">
-            <p className="text-sm text-red-700">{error}</p>
+          <div className="mb-6 bg-destructive/10 border-l-4 border-destructive p-4 rounded-lg shadow-sm">
+            <p className="text-sm text-destructive">{error}</p>
           </div>
         )}
 
         {showFilters && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8 transition-all duration-300 ease-in-out">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Filter Incidents</h3>
+          <div className="bg-card rounded-xl shadow-card border border-border p-6 mb-8 transition-all duration-300 ease-in-out">
+            <h3 className="text-lg font-medium text-foreground mb-4">Filter Incidents</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <CustomDropdown
                 label="Status"
@@ -197,102 +262,57 @@ export default function IncidentsPage() {
                 placeholder="All Types"
               />
             </div>
-            <div className="mt-6 pt-4 border-t border-gray-100 flex justify-end gap-3">
-              <button
+            <div className="mt-6 pt-4 border-t border-border flex justify-end gap-3">
+              <Button
+                variant="outline"
                 onClick={() => setShowFilters(false)}
-                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={applyFilters}
-                className="px-4 py-2 bg-primary hover:bg-primary-hover text-white rounded-lg transition-colors"
               >
                 Apply Filters
-              </button>
+              </Button>
             </div>
           </div>
         )}
 
         {loading ? (
-          <TableSkeleton rows={limit} cols={5} />
-        ) : (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <div className="overflow-x-auto">
-              <Table
-                pagination={{
-                  page,
-                  totalPages: pagination.totalPages,
-                  setPage,
-                }}
-              >
-                <TableHeader>
-                  <TableRow className="bg-gray-50 hover:bg-gray-50">
-                    <TableHead className="font-semibold text-gray-900 py-4">Incident</TableHead>
-                    <TableHead className="font-semibold text-gray-900">Status</TableHead>
-                    <TableHead className="font-semibold text-gray-900">Current Step</TableHead>
-                    <TableHead className="font-semibold text-gray-900">Type</TableHead>
-                    <TableHead className="font-semibold text-gray-900">Created</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {incidents.length > 0 ? (
-                    incidents.map((incident) => (
-                      <TableRow
-                        key={incident._id}
-                        className="hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
-                        onClick={() => handleRowClick(incident._id)}
-                        onMouseEnter={() => router.prefetch(`/incidents/${incident._id}`)}
-                      >
-                        <TableCell className="py-4">
-                          <div className="font-medium text-gray-900">{incident.title}</div>
-                          <div className="text-sm text-gray-500 mt-1 line-clamp-2">
-                            {incident.description?.substring(0, 80)}
-                            {incident.description && incident.description.length > 80 ? "..." : ""}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <span
-                            className={`px-3 py-1 inline-flex items-center text-xs font-semibold rounded-full ${getStatusColor(
-                              incident.status as IncidentStatus
-                            )}`}
-                          >
-                            {getStatusIcon(incident.status as IncidentStatus)}
-                            <span className="ml-1">{incident.status}</span>
-                          </span>
-                        </TableCell>
-                        <TableCell className="text-sm text-gray-700">{incident.currentStep}</TableCell>
-                        <TableCell>
-                          <span
-                            className={`px-3 py-1 inline-flex items-center text-xs font-semibold rounded-full ${getTypeColor(
-                              incident.incidentType as IncidentType
-                            )}`}
-                          >
-                            {getTypeIcon(incident.incidentType as IncidentType)}
-                            <span className="ml-1">{incident.incidentType}</span>
-                          </span>
-                        </TableCell>
-                        <TableCell className="text-sm text-gray-500">
-                          {new Date(incident.createdAt).toLocaleDateString()}
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={5} className="text-center py-12 text-gray-500">
-                        <div className="flex flex-col items-center justify-center">
-                          <Filter className="h-12 w-12 text-gray-300 mb-4" />
-                          <p className="text-lg font-medium text-gray-400">No incidents found</p>
-                          <p className="text-sm text-gray-500 mt-1">
-                            Try adjusting your filters or create a new incident
-                          </p>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
+          <div className="bg-card rounded-xl shadow-card border border-border overflow-hidden">
+            <div className="animate-pulse">
+              <div className="h-12 bg-muted/50"></div>
+              {[...Array(limit)].map((_, i) => (
+                <div key={i} className="h-16 border-b border-border"></div>
+              ))}
             </div>
+          </div>
+        ) : (
+          <div className="bg-card rounded-xl shadow-card border border-border overflow-hidden">
+            <Table
+              columns={columns}
+              data={incidents}
+              loading={loading}
+              error={error}
+              pagination={{
+                currentPage: page,
+                totalPages: pagination.totalPages,
+                onPageChange: setPage,
+                itemsPerPage: limit,
+                totalItems: pagination.total
+              }}
+              onRowClick={(row) => handleRowClick(row._id)}
+              keyExtractor={(row) => row._id}
+              emptyMessage={
+                <div className="flex flex-col items-center justify-center py-12">
+                  <Filter className="h-12 w-12 text-muted-foreground/50 mb-4" />
+                  <p className="text-lg font-medium text-muted-foreground">No incidents found</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Try adjusting your filters or create a new incident
+                  </p>
+                </div>
+              }
+            />
           </div>
         )}
       </div>

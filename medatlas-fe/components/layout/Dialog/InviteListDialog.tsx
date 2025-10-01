@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { Users } from 'lucide-react';
-import Loader from '@/components/loader';
+import Loader from '@/components/Loading';
 import { fetchInvites } from '@/store/slices/invite';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { enqueueSnackbar } from 'notistack';
@@ -19,7 +19,7 @@ export default function InviteListDialog() {
     if (currentOrganization?.id) {
       dispatch(fetchInvites({ page, limit }));
     }
-  }, [dispatch, currentOrganization]);
+  }, [dispatch, currentOrganization, page]);
 
   useEffect(() => {
     if (error) {
@@ -37,7 +37,7 @@ export default function InviteListDialog() {
     <div>
       <button
         onClick={() => setOpen(true)}
-        className="flex items-center gap-2 rounded-lg border px-4 py-2 text-sm text-white bg-gradient-primary transition"
+        className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm text-primary-foreground bg-gradient-primary transition"
       >
         <Users className="h-4 w-4" />
         View Invited Members
@@ -45,26 +45,26 @@ export default function InviteListDialog() {
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm overflow-y-auto p-4">
-          <div className="w-full max-w-5xl rounded-xl bg-white p-6 shadow-lg">
+          <div className="w-full max-w-5xl rounded-xl bg-card p-6 shadow-elevated border border-border">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-semibold">Invited Members</h2>
-              <button onClick={handleClose} className="text-gray-500 hover:text-gray-800">✕</button>
+              <h2 className="text-lg font-semibold text-foreground">Invited Members</h2>
+              <button onClick={handleClose} className="text-muted-foreground hover:text-foreground">✕</button>
             </div>
 
-            <p className="mb-4 text-sm text-gray-600">Total Invites: {total || 0}</p>
+            <p className="mb-4 text-sm text-muted-foreground">Total Invites: {total || 0}</p>
 
-            <div className="overflow-x-auto rounded-lg border border-gray-200 shadow-sm">
-              <table className="min-w-full divide-y divide-gray-200 text-sm">
-                <thead className="bg-gray-50">
+            <div className="overflow-x-auto rounded-lg border border-border shadow-card">
+              <table className="min-w-full divide-y divide-border text-sm">
+                <thead className="bg-muted/50">
                   <tr>
-                    <th className="px-4 py-2 text-left font-medium text-gray-600">Email</th>
-                    <th className="px-4 py-2 text-left font-medium text-gray-600">Role</th>
-                    <th className="px-4 py-2 text-left font-medium text-gray-600">Tenant</th>
-                    <th className="px-4 py-2 text-left font-medium text-gray-600">Status</th>
+                    <th className="px-4 py-2 text-left font-medium text-foreground">Email</th>
+                    <th className="px-4 py-2 text-left font-medium text-foreground">Role</th>
+                    <th className="px-4 py-2 text-left font-medium text-foreground">Tenant</th>
+                    <th className="px-4 py-2 text-left font-medium text-foreground">Status</th>
                   </tr>
                 </thead>
 
-                <tbody className="divide-y divide-gray-100">
+                <tbody className="divide-y divide-border">
                   {loading ? (
                     <tr>
                       <td colSpan={6} className="px-4 py-6 text-center">
@@ -73,10 +73,10 @@ export default function InviteListDialog() {
                     </tr>
                   ) : invites?.length ? (
                     invites.map((invite) => (
-                      <tr key={invite._id || invite.token} className="hover:bg-gray-50">
-                        <td className="px-4 py-2">{invite.email}</td>
-                        <td className="px-4 py-2">{invite.role}</td>
-                        <td className="px-4 py-2">{invite.tenantId.name || '-'}</td>
+                      <tr key={invite._id || invite.token} className="hover:bg-muted/50">
+                        <td className="px-4 py-2 text-foreground">{invite.email}</td>
+                        <td className="px-4 py-2 text-foreground">{invite.role}</td>
+                        <td className="px-4 py-2 text-foreground">{invite.tenantId.name || '-'}</td>
                         <td className="px-4 py-2">
                           {(() => {
                             let bgClass = '';
@@ -84,16 +84,16 @@ export default function InviteListDialog() {
 
                             switch (invite.status) {
                               case 'ACCEPTED':
-                                bgClass = 'bg-green-100 text-green-700';
+                                bgClass = 'bg-success/10 text-success';
                                 text = 'Accepted';
                                 break;
                               case 'REJECTED':
-                                bgClass = 'bg-red-100 text-red-700';
+                                bgClass = 'bg-destructive/10 text-destructive';
                                 text = 'Rejected';
                                 break;
                               default:
-                                bgClass = 'bg-yellow-100 text-yellow-700';
-                                text = 'PANDING';
+                                bgClass = 'bg-warning/10 text-warning';
+                                text = 'PENDING';
                                 break;
                             }
 
@@ -108,7 +108,7 @@ export default function InviteListDialog() {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={6} className="px-4 py-6 text-center text-gray-500">
+                      <td colSpan={6} className="px-4 py-6 text-center text-muted-foreground">
                         No invites found.
                       </td>
                     </tr>
@@ -122,17 +122,17 @@ export default function InviteListDialog() {
                 <button
                   disabled={page === 1}
                   onClick={() => setPage((prev) => prev - 1)}
-                  className={`px-3 py-1 rounded-lg border ${page === 1 ? 'text-gray-400 border-gray-200 cursor-not-allowed' : 'hover:bg-gray-100'}`}
+                  className={`px-3 py-1 rounded-lg border ${page === 1 ? 'text-muted-foreground border-border cursor-not-allowed' : 'hover:bg-muted text-foreground'}`}
                 >
                   Previous
                 </button>
-                <span>
+                <span className="text-foreground">
                   Page {page} of {totalPages}
                 </span>
                 <button
                   disabled={page === totalPages}
                   onClick={() => setPage((prev) => prev + 1)}
-                  className={`px-3 py-1 rounded-lg border ${page === totalPages ? 'text-gray-400 border-gray-200 cursor-not-allowed' : 'hover:bg-gray-100'}`}
+                  className={`px-3 py-1 rounded-lg border ${page === totalPages ? 'text-muted-foreground border-border cursor-not-allowed' : 'hover:bg-muted text-foreground'}`}
                 >
                   Next
                 </button>

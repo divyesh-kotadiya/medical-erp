@@ -95,26 +95,26 @@ export default function IncidentReportForm() {
     <div className="min-h-screen max-w-8xl shadow-inner rounded-sm m-auto py-8 px-4 sm:px-6 lg:px-8">
       <div className="mx-auto space-y-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Report Security Incident</h1>
-          <p className="text-gray-600 mt-2">Submit details about potential PHI exposure or a security breach</p>
+          <h1 className="text-3xl font-bold text-foreground">Report Security Incident</h1>
+          <p className="text-muted-foreground mt-2">Submit details about potential PHI exposure or a security breach</p>
         </div>
 
         {globalError && (
-          <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg shadow-sm">
-            <p className="text-sm text-red-700">{globalError}</p>
+          <div className="bg-destructive/10 border-l-4 border-destructive p-4 rounded-lg shadow-sm">
+            <p className="text-sm text-destructive">{globalError}</p>
           </div>
         )}
 
         {submitted && (
-          <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded-lg shadow-sm flex items-center gap-2">
-            <Check className="h-4 w-4 text-green-600" />
-            <p className="text-sm text-green-700">Incident submitted successfully!</p>
+          <div className="bg-success/10 border-l-4 border-success p-4 rounded-lg shadow-sm flex items-center gap-2">
+            <Check className="h-4 w-4 text-success" />
+            <p className="text-sm text-success">Incident submitted successfully!</p>
           </div>
         )}
 
-        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4 rounded-xl bg-white">
-          <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-6">
-            <h2 className="text-lg font-medium text-gray-900">Incident Details</h2>
+        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4 rounded-xl bg-card">
+          <div className="bg-card rounded-xl border border-border p-6 space-y-6">
+            <h2 className="text-lg font-medium text-foreground">Incident Details</h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <InputField
@@ -131,7 +131,7 @@ export default function IncidentReportForm() {
                 onChange={(val) => setValue("incidentType", val, { shouldValidate: true })}
                 placeholder="Select incident type"
                 error={errors.incidentType?.message}
-                buttonClassName={`py-3.5 mt-2 ${errors.incidentType && 'border-red-600'}`}
+                buttonClassName={`py-3.5 mt-2 ${errors.incidentType && 'border-destructive'}`}
               />
 
               <div className="md:col-span-2">
@@ -146,8 +146,8 @@ export default function IncidentReportForm() {
             </div>
           </div>
 
-          <div className="bg-white shadow-sm rounded-xl border border-gray-200 p-6 space-y-6">
-            <h2 className="text-lg font-medium text-gray-900">Impact & Timeline</h2>
+          <div className="bg-card rounded-xl border border-border p-6 space-y-6">
+            <h2 className="text-lg font-medium text-foreground">Impact & Timeline</h2>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <InputField
@@ -174,10 +174,10 @@ export default function IncidentReportForm() {
             </div>
           </div>
 
-          <div className={`bg-white shadow-sm rounded-xl border border-gray-200 p-6 space-y-6 ${errors.phiDataTypes && 'border-red-600'}`}>
-            <label className="text-lg font-medium text-gray-900">Select PHI Types</label>
+          <div className={`bg-card rounded-xl border border-border p-6 space-y-6 ${errors.phiDataTypes && 'border-destructive'}`}>
+            <label className="text-lg font-medium text-foreground">Select PHI Types</label>
             {errors.phiDataTypes?.message && (
-              <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
+              <p className="mt-2 text-sm text-destructive flex items-center gap-1">
                 <TriangleAlert className="h-4 w-4" /> {errors.phiDataTypes.message}
               </p>
             )}
@@ -201,7 +201,7 @@ export default function IncidentReportForm() {
 
 
           <div className="flex justify-end">
-            <Button type="submit" variant="primary" disabled={isSubmitting}>
+            <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? <Loading /> : "Submit Incident Report"}
             </Button>
           </div>

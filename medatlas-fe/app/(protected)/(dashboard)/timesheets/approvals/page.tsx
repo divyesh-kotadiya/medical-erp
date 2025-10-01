@@ -2,11 +2,14 @@
 import { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { fetchSubmittedTimesheets, approveTimesheet, rejectTimesheet } from '@/store/slices/timesheets';
+import { Check, X } from 'lucide-react';
+import Table from '@/components/common/Table';
 
 export const ApprovalsList = () => {
   const dispatch = useAppDispatch();
   const { submittedList, loading } = useAppSelector((s) => s.timesheets);
   const { currentOrganization } = useAppSelector((state) => state.organizations)
+  
   useEffect(() => {
     dispatch(fetchSubmittedTimesheets({}));
   }, [dispatch, currentOrganization?.id]);
@@ -15,54 +18,95 @@ export const ApprovalsList = () => {
     await dispatch(approveTimesheet({ timesheetId: id, approvedBy: 'admin', }));
     dispatch(fetchSubmittedTimesheets({}));
   };
+  
   const handleReject = async (id: string) => {
     const reason = window.prompt('Reason for rejection?') || '';
     await dispatch(rejectTimesheet({ timesheetId: id, rejectedBy: 'admin', reason }));
     dispatch(fetchSubmittedTimesheets({}));
   };
 
+  const getStatusBadge = (status: string) => {
+    let badgeClass = '';
+    
+    switch(status.toLowerCase()) {
+      case 'submitted':
+        badgeClass = 'bg-warning/10 text-warning';
+        break;
+      case 'approved':
+        badgeClass = 'bg-success/10 text-success';
+        break;
+      case 'rejected':
+        badgeClass = 'bg-destructive/10 text-destructive';
+        break;
+      default:
+        badgeClass = 'bg-muted text-muted-foreground';
+    }
+    
+    return (
+      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${badgeClass}`}>
+        {status}
+      </span>
+    );
+  };
+
+  const columns = [
+    {
+      key: 'staffId.name',
+      label: 'User',
+      render: (value: any, row: any) => value || '—'
+    },
+    {
+      key: 'staffId.email',
+      label: 'Email',
+      render: (value: any, row: any) => value || '—'
+    },
+    {
+      key: 'period',
+      label: 'Period',
+      render: (value: any, row: any) => {
+        return `${new Date(row.periodStart).toLocaleDateString()} - ${new Date(row.periodEnd).toLocaleDateString()}`;
+      }
+    },
+    {
+      key: 'hours',
+      label: 'Hours',
+      className: 'font-medium text-primary'
+    },
+    {
+      key: 'status',
+      label: 'Status',
+      render: (value: any, row: any) => getStatusBadge(value)
+    }
+  ];
+
+  const actions = [
+    {
+      icon: <Check className="h-4 w-4" />,
+      onClick: (row: any) => handleApprove(row._id),
+      tooltip: 'Approve',
+      className: 'text-success hover:text-success/80'
+    },
+    {
+      icon: <X className="h-4 w-4" />,
+      onClick: (row: any) => handleReject(row._id),
+      tooltip: 'Reject',
+      className: 'text-destructive hover:text-destructive/80'
+    }
+  ];
+
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
-      <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-100">Submitted Timesheets</h2>
-      <div className="overflow-x-auto rounded-md border border-gray-200 dark:border-gray-700">
-        <table className="w-full">
-          <thead>
-            <tr className="text-left text-gray-500 dark:text-gray-400 text-sm font-medium bg-gray-50 dark:bg-gray-700">
-              <th className="p-3">User</th>
-              <th className="p-3">Email</th>
-              <th className="p-3">Period</th>
-              <th className="p-3">Hours</th>
-              <th className="p-3">Status</th>
-              <th className="p-3">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-            {loading ? (
-              <tr><td colSpan={6} className="p-6 text-center text-gray-500">Loading...</td></tr>
-            ) : (submittedList || []).length === 0 ? (
-              <tr><td colSpan={6} className="p-6 text-center text-gray-500">No submissions</td></tr>
-            ) : (
-              (submittedList || []).map((ts: any) => (
-                <tr key={ts._id} className="text-gray-700 dark:text-gray-300">
-                  <td className="p-3">{ts.staffId?.name || '—'}</td>
-                  <td className="p-3">{ts.staffId?.email || '—'}</td>
-                  <td className="p-3">{new Date(ts.periodStart).toLocaleDateString()} - {new Date(ts.periodEnd).toLocaleDateString()}</td>
-                  <td className="p-3 font-medium text-blue-600 dark:text-blue-400">{ts.hours}</td>
-                  <td className="p-3"><span className="px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 text-xs">{ts.status}</span></td>
-                  <td className="p-3 space-x-2">
-                    <button onClick={() => handleApprove(ts._id)} className="px-3 py-1 text-sm bg-green-500 text-white rounded-md hover:opacity-80">Approve</button>
-                    <button onClick={() => handleReject(ts._id)} className="px-3 py-1 text-sm bg-red-500 text-white rounded-md hover:opacity-80">Reject</button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+    <div className="bg-card rounded-2xl shadow-card p-6">
+      <h2 className="text-xl font-semibold mb-4 text-foreground">Submitted Timesheets</h2>
+      <Table
+        columns={columns}
+        data={submittedList || []}
+        loading={loading}
+        emptyMessage="No submissions"
+        actions={actions}
+        keyExtractor={(row) => row._id}
+      />
     </div>
   );
 };
 
 export default ApprovalsList;
-
-

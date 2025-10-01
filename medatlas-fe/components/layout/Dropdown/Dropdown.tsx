@@ -18,7 +18,6 @@ interface CustomDropdownProps {
   placeholder?: string;
   disabled?: boolean;
 
-  // Customization props
   className?: string;
   buttonClassName?: string;
   menuClassName?: string;
@@ -56,7 +55,7 @@ export default function CustomDropdown({
   return (
     <div className={clsx('relative', className)}>
       {label && (
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+        <label className="block text-sm font-medium text-foreground">
           {label}
         </label>
       )}
@@ -67,22 +66,22 @@ export default function CustomDropdown({
         disabled={disabled}
         className={clsx(
           'mt-1 flex w-full items-center justify-between rounded-lg border px-3 py-2 text-sm',
-          'focus:border-border focus:ring-1 focus:ring-ring',
+          'focus:border-primary focus:ring-1 focus:ring-primary/20 ',
           disabled
-            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-            : 'bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600',
+            ? 'bg-muted text-muted-foreground cursor-not-allowed'
+            : 'bg-background text-foreground border-border',
           buttonClassName
         )}
       >
         {options.find((opt) => opt.value === value)?.label || placeholder}
-        <ChevronDown className="h-4 w-4 text-gray-500 dark:text-gray-300" />
+        <ChevronDown className="h-4 w-4 text-muted-foreground" />
       </button>
 
       {open && (
         <ul
           className={clsx(
-            'absolute z-10 mt-1 w-full rounded-lg border bg-white dark:bg-gray-700 shadow-md max-h-48 overflow-y-auto',
-            'border-gray-300 dark:border-gray-600',
+            'absolute z-10 mt-1 w-full rounded-lg border bg-card shadow-card max-h-48 overflow-y-auto',
+            'border-border',
             menuClassName
           )}
         >
@@ -97,8 +96,8 @@ export default function CustomDropdown({
                   onOpenChange?.(false);
                 }}
                 className={clsx(
-                  'cursor-pointer px-3 py-2 text-sm hover:bg-blue-50 dark:hover:bg-blue-900/40',
-                  isSelected && 'bg-blue-100 dark:bg-blue-800 font-medium',
+                  'cursor-pointer px-3 py-2 text-sm hover:bg-primary/10',
+                  isSelected && 'bg-primary/10 font-medium text-primary',
                   optionClassName
                 )}
               >
@@ -111,7 +110,7 @@ export default function CustomDropdown({
         </ul>
       )}
 
-      {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+      {error && <p className="text-destructive text-sm mt-1">{error}</p>}
     </div>
   );
 }

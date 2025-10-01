@@ -11,20 +11,20 @@ export default function TextAreaField({ label, error, className, ...props }: Tex
   return (
     <div>
       {label && (
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-foreground mb-2">
           {label}
         </label>
       )}
       <textarea
         {...props}
         className={clsx(
-          'w-full border border-gray-200 rounded-lg px-4 py-3 bg-gray-50',
-          'focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent',
-          error && 'border-red-500',
+          'w-full border border-border rounded-lg px-4 py-3 bg-background',
+          'focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary',
+          error && 'border-destructive',
           className
         )}
       />
-      {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+      {error && <p className="text-destructive text-sm mt-1">{error}</p>}
     </div>
   );
 }

@@ -33,11 +33,11 @@ const initialState: InviteState = {
 export const inviteMember = createAsyncThunk(
   "invite/inviteMember",
   async (
-    { email, role, tenantId }: { email: string; role?: string; tenantId: string },
+    { email, role }: { email: string; role?: string; },
     { rejectWithValue }
   ) => {
     try {
-      const { data } = await api.post("/invites", { email, role, tenantId });
+      const { data } = await api.post("/invites", { email, role });
       return data;
     } catch (e: any) {
       if (e.response?.data) return rejectWithValue(e.response.data);

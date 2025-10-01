@@ -38,6 +38,7 @@
     "dotenv": "^17.2.1",
     "helmet": "^8.1.0",
     "juice": "^11.0.1",
+    "mime-types": "^3.0.1",
     "mongoose": "^8.17.1",
     "mongoose-encryption": "^2.1.2",
     "nodemailer": "^7.0.5",

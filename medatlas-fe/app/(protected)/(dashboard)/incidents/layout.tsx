@@ -20,9 +20,9 @@ export default function IncidentLayout({ children }: { children: React.ReactNode
       ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="min-h-screen bg-gradient-to-br from-background to-muted">
       <div className="max-w-full mx-auto">
-        <div className="bg-white rounded-xl overflow-hidden">
+        <div className="bg-card rounded-xl overflow-hidden shadow-card border border-border">
           <div className="flex space-x-2 px-4">
             <FancyTabs tabs={tabs} variant="default" />
           </div>

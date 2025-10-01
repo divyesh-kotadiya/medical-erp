@@ -125,15 +125,14 @@ export default function SchedulingPage() {
 
   return (
     <div className="flex flex-col gap-6 p-6">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Scheduling</h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1">Manage staff assignments and shift schedules</p>
+          <h1 className="text-2xl font-bold text-foreground">Scheduling</h1>
+          <p className="text-muted-foreground mt-1">Manage staff assignments and shift schedules</p>
         </div>
         <div className="flex items-center space-x-3">
           <Button
-            className="flex items-center px-2 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex items-center px-2 py-2 rounded-lg transition-colors"
             onClick={() => { setCurrentShift({ id: "", title: "", staff: "", start: "", end: "", notes: "" }); setError(""); setShowShiftForm(true); }}
           >
             <Plus className="h-4 w-4 mr-2" /> New Shift
@@ -141,13 +140,12 @@ export default function SchedulingPage() {
         </div>
       </div>
 
-      {/* Calendar */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+      <div className="bg-card rounded-xl shadow-card border border-border overflow-hidden">
         <div className="p-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
-            <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-3">
-              <span className="bg-blue-100 dark:bg-blue-900/40 p-2 rounded-lg">
-                <Calendar className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+            <h2 className="text-xl font-semibold text-foreground flex items-center gap-3">
+              <span className="bg-primary/10 p-2 rounded-lg">
+                <Calendar className="w-5 h-5 text-primary" />
               </span>
               Staff Scheduling Calendar
             </h2>
@@ -160,55 +158,52 @@ export default function SchedulingPage() {
         </div>
       </div>
 
-      {/* Shift Form Modal */}
       {showShiftForm && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 backdrop-blur-sm z-50">
-          <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-2xl w-full max-w-md mx-4 border border-gray-200 dark:border-gray-700">
-            {/* Modal Header */}
+        <div className="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50">
+          <div className="bg-card p-8 rounded-2xl shadow-elevated w-full max-w-md mx-4 border border-border">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center">
                 <div className="w-2 h-6 bg-primary rounded-full mr-3"></div>
-                <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100">{currentShift.id ? "Update Shift" : "Add New Shift"}</h3>
+                <h3 className="text-xl font-bold text-foreground">{currentShift.id ? "Update Shift" : "Add New Shift"}</h3>
               </div>
-              <button onClick={() => setShowShiftForm(false)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors">
-                <X size={20} className="text-gray-500 dark:text-gray-400" />
+              <button onClick={() => setShowShiftForm(false)} className="p-2 hover:bg-muted rounded-full transition-colors">
+                <X size={20} className="text-muted-foreground" />
               </button>
             </div>
 
-            {error && <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg"><p className="text-red-600 dark:text-red-400 text-sm">{error}</p></div>}
+            {error && <div className="mb-4 p-3 bg-destructive/10 border border-destructive/20 rounded-lg"><p className="text-destructive text-sm">{error}</p></div>}
 
-            {/* Form Fields */}
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Shift Title</label>
-                <input type="text" placeholder="Enter shift title" value={currentShift.title} onChange={e => setCurrentShift({ ...currentShift, title: e.target.value })} className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" />
+                <label className="block text-sm font-medium text-foreground mb-2">Shift Title</label>
+                <input type="text" placeholder="Enter shift title" value={currentShift.title} onChange={e => setCurrentShift({ ...currentShift, title: e.target.value })} className="w-full p-3 border border-border rounded-xl bg-background text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Staff Member</label>
+                <label className="block text-sm font-medium text-foreground mb-2">Staff Member</label>
                 <SearchableDropdown options={staffOptions} value={currentShift.staff} onChange={value => setCurrentShift({ ...currentShift, staff: value })} placeholder="Select staff member" />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Start Time</label>
-                  <input type="datetime-local" value={currentShift.start} min={nowDateTime} onChange={handleStartChange} className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all" />
+                  <label className="block text-sm font-medium text-foreground mb-2">Start Time</label>
+                  <input type="datetime-local" value={currentShift.start} min={nowDateTime} onChange={handleStartChange} className="w-full p-3 border border-border rounded-xl bg-background text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">End Time</label>
-                  <input type="datetime-local" value={currentShift.end} min={currentShift.start || nowDateTime} onChange={handleEndChange} className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all" />
+                  <label className="block text-sm font-medium text-foreground mb-2">End Time</label>
+                  <input type="datetime-local" value={currentShift.end} min={currentShift.start || nowDateTime} onChange={handleEndChange} className="w-full p-3 border border-border rounded-xl bg-background text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Notes</label>
-                <input type="text" placeholder="Add notes (optional)" value={currentShift.notes} onChange={e => setCurrentShift({ ...currentShift, notes: e.target.value })} className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all" />
+                <label className="block text-sm font-medium text-foreground mb-2">Notes</label>
+                <input type="text" placeholder="Add notes (optional)" value={currentShift.notes} onChange={e => setCurrentShift({ ...currentShift, notes: e.target.value })} className="w-full p-3 border border-border rounded-xl bg-background text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
               </div>
             </div>
 
             <div className="flex gap-3 mt-8">
-              <button onClick={() => setShowShiftForm(false)} className="flex-1 px-6 py-3 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-xl hover:bg-gray-300 dark:hover:bg-gray-600 transition-all transform shadow-md">Cancel</button>
-              <Button onClick={handleSaveShift} disabled={loading} className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform shadow-md flex items-center justify-center">{loading ? "Saving..." : currentShift.id ? "Update Shift" : "Add Shift"}</Button>
+              <button onClick={() => setShowShiftForm(false)} className="flex-1 px-6 py-3 bg-muted text-foreground rounded-xl hover:bg-muted/80 transition-all transform shadow-card">Cancel</button>
+              <Button onClick={handleSaveShift} disabled={loading} className="flex-1 px-6 py-3 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform shadow-card flex items-center justify-center">{loading ? "Saving..." : currentShift.id ? "Update Shift" : "Add Shift"}</Button>
             </div>
           </div>
         </div>

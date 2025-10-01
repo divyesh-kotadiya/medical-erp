@@ -3,6 +3,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { DocumentsService } from './documents.service';
 import { DocumentsController } from './documents.controller';
 import { DocumentSchema, EDocument } from './schemas/document.schema';
+import { FileUploadService } from 'src/file-upload/file-upload.service';
 
 @Module({
   imports: [
@@ -11,7 +12,7 @@ import { DocumentSchema, EDocument } from './schemas/document.schema';
     ]),
   ],
   controllers: [DocumentsController],
-  providers: [DocumentsService],
+  providers: [DocumentsService, FileUploadService],
   exports: [DocumentsService],
 })
 export class DocumentsModule {}

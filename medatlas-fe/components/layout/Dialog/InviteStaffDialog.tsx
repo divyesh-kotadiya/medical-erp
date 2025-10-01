@@ -9,7 +9,8 @@ import CustomDropdown from '../Dropdown/Dropdown';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { enqueueSnackbar } from 'notistack';
 import { inviteMember } from '@/store/slices/invite';
-import Loader from '@/components/loader';
+import Loader from '@/components/Loading';
+
 const inviteSchema = z.object({
   email: z.string().email('Invalid email'),
   role: z.nativeEnum(UserRole),
@@ -26,23 +27,22 @@ export default function InviteStaffDialog() {
     resolver: zodResolver(inviteSchema),
   });
 
-  const { currentOrganization } = useAppSelector((state) => state.organizations)
   const selectedRole = watch('role');
 
   const onSubmit = async (data: InviteFormValues) => {
     try {
       const resultAction = await dispatch(
         inviteMember({
-          ...data,
-          tenantId: currentOrganization?.id,
+          ...data
         })
       );
-
 
       if (inviteMember.fulfilled.match(resultAction)) {
         enqueueSnackbar(resultAction.payload.message || "Invite sent successfully!", {
           variant: "success",
         });
+        setOpen(false);
+        reset();
       } else if (inviteMember.rejected.match(resultAction)) {
         const errorMessage = (resultAction.payload as { message?: string })?.message || "Something went wrong";
         enqueueSnackbar(errorMessage, {
@@ -54,12 +54,11 @@ export default function InviteStaffDialog() {
     }
   };
 
-
   return (
     <div>
       <button
         onClick={() => setOpen(true)}
-        className="flex items-center gap-2 rounded-lg bg-gradient-primary px-4 py-2 text-white shadow hover:opacity-90 transition"
+        className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm text-primary-foreground bg-gradient-primary shadow-card hover:opacity-90 transition"
       >
         <UserPlus className="h-4 w-4" />
         Invite Staff
@@ -67,22 +66,22 @@ export default function InviteStaffDialog() {
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-lg">
-            <h2 className="text-lg font-semibold">Invite Member</h2>
-            <p className="text-sm text-gray-500 mb-4">
+          <div className="w-full max-w-md rounded-xl bg-card p-6 shadow-elevated border border-border">
+            <h2 className="text-lg font-semibold text-foreground">Invite Member</h2>
+            <p className="text-sm text-muted-foreground mb-4">
               Send an invitation email to a new member.
             </p>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium">Email</label>
+                <label className="block text-sm font-medium text-foreground mb-1">Email</label>
                 <input
                   {...register('email')}
-                  placeholder="menmber@example.com"
-                  className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+                  placeholder="member@example.com"
+                  className="mt-1 w-full rounded-lg border border-border px-3 py-2 text-sm bg-background focus:border-primary focus:ring-2 focus:ring-primary/20"
                 />
                 {errors.email && (
-                  <p className="text-red-500 text-sm">{errors.email.message}</p>
+                  <p className="text-destructive text-sm mt-1">{errors.email.message}</p>
                 )}
               </div>
 
@@ -98,7 +97,7 @@ export default function InviteStaffDialog() {
                   error={errors.role?.message}
                 />
                 {roleOpen && (
-                  <ul className="absolute z-10 mt-1 w-full rounded-lg border bg-white shadow-md">
+                  <ul className="absolute z-10 mt-1 w-full rounded-lg border border-border bg-card shadow-md">
                     {Object.values(UserRole).map((role) => (
                       <li
                         key={role}
@@ -106,7 +105,7 @@ export default function InviteStaffDialog() {
                           setValue('role', role as UserRole);
                           setRoleOpen(false);
                         }}
-                        className={`cursor-pointer px-3 py-2 text-sm hover:bg-blue-50 ${selectedRole === role ? 'bg-blue-100 font-medium' : ''
+                        className={`cursor-pointer px-3 py-2 text-sm hover:bg-primary/10 ${selectedRole === role ? 'bg-primary/10 font-medium text-primary' : 'text-foreground'
                           }`}
                       >
                         {role}
@@ -123,7 +122,7 @@ export default function InviteStaffDialog() {
                     setOpen(false);
                     reset();
                   }}
-                  className="rounded-lg border border-gray-300 w-20 px-4 py-2 text-sm hover:bg-gray-100"
+                  className="rounded-lg border border-border w-20 px-4 py-2 text-sm hover:bg-muted text-foreground"
                 >
                   Cancel
                 </button>
@@ -131,7 +130,7 @@ export default function InviteStaffDialog() {
                 <button
                   disabled={loading}
                   type="submit"
-                  className="rounded-lg bg-gradient-primary w-20  px-4 py-2 flex justify-center text-sm text-white shadow hover:opacity-90"
+                  className="rounded-lg bg-gradient-primary w-20 px-4 py-2 flex justify-center text-sm text-primary-foreground shadow-card hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loading ? <Loader /> : 'Invite'}
                 </button>
@@ -142,5 +141,4 @@ export default function InviteStaffDialog() {
       )}
     </div>
   );
-};
-
+}

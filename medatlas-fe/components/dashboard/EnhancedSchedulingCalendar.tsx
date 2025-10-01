@@ -115,13 +115,13 @@ export default function StaffSchedulingPage({
     const bgColor = eventInfo.event.extendedProps.type === 'Consulting'
       ? 'bg-primary'
       : eventInfo.event.extendedProps.type === 'Support'
-        ? 'bg-green-100'
-        : 'bg-gray-100';
+        ? 'bg-success/20'
+        : 'bg-muted';
 
     return (
       <div className={`${bgColor} p-2 rounded-md border-l-4 border-primary`}>
-        <div className="font-semibold text-gray-800 truncate">{eventInfo.event.title}</div>
-        <div className="text-xs text-gray-600">{start} - {end}</div>
+        <div className="font-semibold text-foreground truncate">{eventInfo.event.title}</div>
+        <div className="text-xs text-muted-foreground">{start} - {end}</div>
       </div>
     );
   };
@@ -158,15 +158,15 @@ export default function StaffSchedulingPage({
   }, [view, next, prev, today]);
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen relative">
+    <div className="p-6 bg-background min-h-screen relative">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold text-gray-800">
+        <h2 className="text-xl font-semibold text-foreground">
           {currentDate.toLocaleDateString("en-US", { month: "long", year: "numeric" })}
         </h2>
         <div className="flex gap-2">
-          <button onClick={handlePrev} className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">Prev</button>
-          <button onClick={handleToday} className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">Today</button>
-          <button onClick={handleNext} className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">Next</button>
+          <button onClick={handlePrev} className="px-3 py-1 bg-muted rounded hover:bg-muted/80">Prev</button>
+          <button onClick={handleToday} className="px-3 py-1 bg-muted rounded hover:bg-muted/80">Today</button>
+          <button onClick={handleNext} className="px-3 py-1 bg-muted rounded hover:bg-muted/80">Next</button>
         </div>
       </div>
 
@@ -192,82 +192,82 @@ export default function StaffSchedulingPage({
       />
 
       {selectedEvent && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 backdrop-blur-sm transition-opacity" onClick={() => setSelectedEvent(null)}>
-          <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-2xl mx-4 border border-gray-100 transform transition-all" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm transition-opacity" onClick={() => setSelectedEvent(null)}>
+          <div className="bg-card rounded-2xl shadow-elevated p-8 w-full max-w-2xl mx-4 border border-border transform transition-all" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-8">
               <div className="flex items-center">
                 <div className="w-2 h-6 bg-primary rounded-full mr-3"></div>
-                <h3 className="text-2xl font-bold text-gray-800">Shift Details</h3>
+                <h3 className="text-2xl font-bold text-foreground">Shift Details</h3>
               </div>
-              <button className="p-2 hover:bg-gray-100 rounded-full transition-colors" onClick={() => setSelectedEvent(null)}>
-                <X size={20} className="text-gray-500" />
+              <button className="p-2 hover:bg-muted rounded-full transition-colors" onClick={() => setSelectedEvent(null)}>
+                <X size={20} className="text-muted-foreground" />
               </button>
             </div>
 
             <div className="space-y-6 mb-8">
-              <div className="flex items-center p-4 bg-blue-50 rounded-xl">
-                <div className="p-2 bg-blue-100 rounded-lg mr-4">
-                  <Calendar size={20} className="text-blue-600" />
+              <div className="flex items-center p-4 bg-primary/10 rounded-xl">
+                <div className="p-2 bg-primary/20 rounded-lg mr-4">
+                  <Calendar size={20} className="text-primary" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Title</p>
-                  <p className="font-medium text-gray-800">{selectedEvent?.event.title}</p>
+                  <p className="text-sm text-muted-foreground">Title</p>
+                  <p className="font-medium text-foreground">{selectedEvent?.event.title}</p>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div className="flex items-center p-4 bg-green-50 rounded-xl">
-                  <div className="p-2 bg-green-100 rounded-lg mr-3">
-                    <Clock size={18} className="text-green-600" />
+                <div className="flex items-center p-4 bg-success/10 rounded-xl">
+                  <div className="p-2 bg-success/20 rounded-lg mr-3">
+                    <Clock size={18} className="text-success" />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500">Start</p>
-                    <p className="font-medium text-gray-800">{formatTime(selectedEvent?.event.start)}</p>
+                    <p className="text-sm text-muted-foreground">Start</p>
+                    <p className="font-medium text-foreground">{formatTime(selectedEvent?.event.start)}</p>
                   </div>
                 </div>
 
-                <div className="flex items-center p-4 bg-red-50 rounded-xl">
-                  <div className="p-2 bg-red-100 rounded-lg mr-3">
-                    <Clock size={18} className="text-red-600" />
+                <div className="flex items-center p-4 bg-destructive/10 rounded-xl">
+                  <div className="p-2 bg-destructive/20 rounded-lg mr-3">
+                    <Clock size={18} className="text-destructive" />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500">End</p>
-                    <p className="font-medium text-gray-800">{formatTime(selectedEvent?.event.end)}</p>
+                    <p className="text-sm text-muted-foreground">End</p>
+                    <p className="font-medium text-foreground">{formatTime(selectedEvent?.event.end)}</p>
                   </div>
                 </div>
               </div>
 
               {selectedEvent?.event.extendedProps.staff && (
-                <div className="flex items-center p-4 bg-purple-50 rounded-xl">
-                  <div className="p-2 bg-purple-100 rounded-lg mr-4">
-                    <User size={20} className="text-purple-600" />
+                <div className="flex items-center p-4 bg-accent/10 rounded-xl">
+                  <div className="p-2 bg-accent/20 rounded-lg mr-4">
+                    <User size={20} className="text-accent" />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500">Staff</p>
-                    <p className="font-medium text-gray-800">{selectedEvent.event.extendedProps.staff}</p>
+                    <p className="text-sm text-muted-foreground">Staff</p>
+                    <p className="font-medium text-foreground">{selectedEvent.event.extendedProps.staff}</p>
                   </div>
                 </div>
               )}
 
               {selectedEvent?.event.extendedProps.notes && (
-                <div className="p-4 bg-orange-50 rounded-xl">
+                <div className="p-4 bg-warning/10 rounded-xl">
                   <div className="flex items-center mb-2">
-                    <div className="p-2 bg-orange-100 rounded-lg mr-3">
-                      <FileText size={18} className="text-orange-600" />
+                    <div className="p-2 bg-warning/20 rounded-lg mr-3">
+                      <FileText size={18} className="text-warning" />
                     </div>
-                    <p className="text-sm text-gray-500">Notes</p>
+                    <p className="text-sm text-muted-foreground">Notes</p>
                   </div>
-                  <p className="text-gray-800 ml-11">{selectedEvent.event.extendedProps.notes}</p>
+                  <p className="text-foreground ml-11">{selectedEvent.event.extendedProps.notes}</p>
                 </div>
               )}
             </div>
 
             <div className="flex gap-3">
-              <Button variant="secondary" className="flex items-center justify-center px-6 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-all transform flex-1 shadow-md" onClick={handleUpdate}>
+              <Button variant="secondary" className="flex items-center justify-center px-6 py-3 rounded-xl transition-all transform flex-1 shadow-card" onClick={handleUpdate}>
                 <Edit size={18} className="mr-2" />
                 Edit
               </Button>
-              <Button variant="danger" className="flex items-center justify-center px-6 py-3 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-all transform flex-1 shadow-md" onClick={handleDelete}>
+              <Button variant="danger" className="flex items-center justify-center px-6 py-3 rounded-xl transition-all transform flex-1 shadow-card" onClick={handleDelete}>
                 <Trash size={18} className="mr-2" />
                 Delete
               </Button>

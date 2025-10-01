@@ -14,14 +14,13 @@ import {
 import { mapEntryToDisplay } from '@/lib/time';
 import CustomDropdown from '@/components/layout/Dropdown/Dropdown';
 
-
 export default function TimesheetList() {
   const dispatch = useAppDispatch();
   const { entries, loading, submittedList, submissionStatus } = useAppSelector(
     (state) => state.timesheets
   );
   const { currentOrganization } = useAppSelector((state) => state.organizations);
-  const { user } = useAppSelector((state) => state.auth)
+  const { user } = useAppSelector((state) => state.auth);
   const [anchorDate, setAnchorDate] = useState<Date>(new Date());
 
   const { periodStart, periodEnd } = useMemo(() => {
@@ -66,7 +65,6 @@ export default function TimesheetList() {
     );
   }, [dispatch, periodStart, periodEnd, user?.id, currentOrganization?.id]);
 
-
   const formatTimeEntries = () => entries.map((entry) => mapEntryToDisplay(entry));
 
   const handleSubmitWeek = async () => {
@@ -83,7 +81,6 @@ export default function TimesheetList() {
       })
     );
   };
-
 
   const handleDownloadWeek = async () => {
     try {
@@ -156,7 +153,6 @@ export default function TimesheetList() {
     return 'NOT_SUBMITTED';
   }, [submittedList, submissionStatus, periodStart, periodEnd, currentOrganization?.id]);
 
-
   const handleWeekChange = async (value: string) => {
     setAnchorDate(new Date(value));
     await dispatch(
@@ -168,13 +164,13 @@ export default function TimesheetList() {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 transition-all duration-300 hover:shadow-xl">
+    <div className="bg-card rounded-2xl shadow-card p-6 transition-all duration-300 hover:shadow-elevated">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
-          <div className="bg-blue-100 dark:bg-blue-900/30 p-3 rounded-lg mr-4">
-            <ListChecks className="text-blue-600 dark:text-blue-400" size={24} />
+          <div className="bg-primary/10 p-3 rounded-lg mr-4">
+            <ListChecks className="text-primary" size={24} />
           </div>
-          <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100">
+          <h2 className="text-xl font-semibold text-foreground">
             Weekly TimeSheet Management
           </h2>
         </div>
@@ -189,10 +185,10 @@ export default function TimesheetList() {
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+      <div className="overflow-x-auto rounded-lg border border-border">
         <table className="w-full">
           <thead>
-            <tr className="text-left text-gray-500 dark:text-gray-400 text-sm font-medium bg-gray-50 dark:bg-gray-700">
+            <tr className="text-left text-muted-foreground text-sm font-medium bg-muted/50">
               <th className="p-4">Date</th>
               <th className="p-4">Check In</th>
               <th className="p-4">Check Out</th>
@@ -200,27 +196,27 @@ export default function TimesheetList() {
               <th className="p-4">Working Hours</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+          <tbody className="divide-y divide-border">
             {loading ? (
               <tr>
-                <td colSpan={5} className="p-8 text-center text-gray-500 dark:text-gray-400">
+                <td colSpan={5} className="p-8 text-center text-muted-foreground">
                   Loading time entries...
                 </td>
               </tr>
             ) : formatTimeEntries().length === 0 ? (
               <tr>
-                <td colSpan={5} className="p-8 text-center text-gray-500 dark:text-gray-400">
+                <td colSpan={5} className="p-8 text-center text-muted-foreground">
                   No time entries found for this week.
                 </td>
               </tr>
             ) : (
               formatTimeEntries().map((entry) => (
-                <tr key={entry.id} className="text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                <tr key={entry.id} className="text-foreground hover:bg-muted/50 transition-colors">
                   <td className="p-4">{entry.date}</td>
                   <td className="p-4">{entry.checkIn}</td>
                   <td className="p-4">{entry.checkOut}</td>
                   <td className="p-4">{entry.mealBreak}</td>
-                  <td className="p-4 font-medium text-blue-600 dark:text-blue-400">{entry.workingHours}</td>
+                  <td className="p-4 font-medium text-primary">{entry.workingHours}</td>
                 </tr>
               ))
             )}
@@ -231,14 +227,14 @@ export default function TimesheetList() {
       <div className="flex justify-end gap-2 pt-6">
         <button
           onClick={handleDownloadWeek}
-          className="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 py-2 px-3 rounded-lg transition-colors"
+          className="flex items-center gap-1 text-sm text-muted-foreground bg-muted hover:bg-muted/80 py-2 px-3 rounded-lg transition-colors"
           disabled={formatTimeEntries().length === 0}
         >
           <Download size={16} /> Export
         </button>
         {(weekStatus === "REJECTED" || weekStatus === "NOT_SUBMITTED") && (
           <button
-            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:opacity-80 transition-all disabled:opacity-50"
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-all disabled:opacity-50"
             onClick={handleSubmitWeek}
             disabled={loading || formatTimeEntries().length === 0}
           >
@@ -246,10 +242,9 @@ export default function TimesheetList() {
           </button>
         )}
 
-
         {weekStatus === "SUBMITTED" && (
           <button
-            className="px-4 py-2 bg-gray-400 text-white rounded-md cursor-not-allowed"
+            className="px-4 py-2 bg-muted text-muted-foreground rounded-md cursor-not-allowed"
             disabled
           >
             Submitted
@@ -257,13 +252,11 @@ export default function TimesheetList() {
         )}
 
         {weekStatus === "APPROVED" && (
-          <span className="px-4 py-2 bg-gray-400  text-white rounded-md">
+          <span className="px-4 py-2 bg-success text-success-foreground rounded-md">
             Approved
           </span>
         )}
       </div>
-
-
     </div>
   );
-};
+}

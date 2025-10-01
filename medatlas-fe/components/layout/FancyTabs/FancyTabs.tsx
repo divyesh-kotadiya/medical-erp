@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
@@ -17,6 +18,23 @@ interface TabsProps {
 
 const FancyTabs = ({ tabs, className = '', variant = 'default' }: TabsProps) => {
   const pathname = usePathname();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <div className={`flex border-b border-gray-200 dark:border-gray-800 mb-6 w-full ${className}`}>
+        {tabs.map((tab) => (
+          <div key={tab.href} className="px-5 py-4 text-gray-400">
+            {tab.label}
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   if (variant === 'pills') {
     return (
@@ -26,14 +44,14 @@ const FancyTabs = ({ tabs, className = '', variant = 'default' }: TabsProps) => 
           const Icon = tab.icon;
 
           return (
-            <Link key={tab.href} href={tab.href}>
+            <Link key={tab.href} href={tab.href} prefetch={false}>
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 className={`px-4 py-2 flex items-center gap-2 rounded-md transition-all ${
                   isActive
                     ? 'bg-white dark:bg-gray-900 shadow-sm text-blue-600 font-semibold'
-                    : 'text-gray-600 dark:text-gray-400 hover:text-for dark:hover:text-blue-400'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400'
                 }`}
               >
                 {Icon && <Icon className="w-4 h-4" />}
@@ -65,7 +83,7 @@ const FancyTabs = ({ tabs, className = '', variant = 'default' }: TabsProps) => 
         const Icon = tab.icon;
 
         return (
-          <Link key={tab.href} href={tab.href} className="relative group">
+          <Link key={tab.href} href={tab.href} prefetch={false} className="relative group">
             <button
               className={`px-5 py-4 flex items-center gap-2 transition-all duration-200 ${
                 isActive
