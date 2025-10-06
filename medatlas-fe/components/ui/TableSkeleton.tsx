@@ -1,6 +1,13 @@
-"use client"
+'use client';
 
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 
 export default function TableSkeleton({ rows = 5, cols = 5 }: { rows?: number; cols?: number }) {
   return (
@@ -28,5 +35,5 @@ export default function TableSkeleton({ rows = 5, cols = 5 }: { rows?: number; c
         </TableBody>
       </Table>
     </div>
-  )
+  );
 }

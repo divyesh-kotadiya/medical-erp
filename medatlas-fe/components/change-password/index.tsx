@@ -15,8 +15,8 @@ interface ChangePasswordModalProps {
 
 export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordModalProps) {
   const dispatch = useAppDispatch();
-  const [password, setPassword] = useState("");
-  const [CurrentPassword, setCurrentPassword] = useState("");
+  const [password, setPassword] = useState('');
+  const [CurrentPassword, setCurrentPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState(0);
@@ -39,38 +39,36 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
   }, [password]);
 
   useEffect(() => {
-    setIsFormValid(
-      password.length >= 8 &&
-      CurrentPassword.length > 0
-    );
+    setIsFormValid(password.length >= 8 && CurrentPassword.length > 0);
   }, [password, CurrentPassword]);
 
   async function onSubmit() {
     if (!password || !CurrentPassword) {
-      enqueueSnackbar("Please fill in all fields.", { variant: "warning" });
+      enqueueSnackbar('Please fill in all fields.', { variant: 'warning' });
       return;
     }
 
     if (password.length < 8) {
-      enqueueSnackbar("Password must be at least 8 characters.", { variant: "warning" });
+      enqueueSnackbar('Password must be at least 8 characters.', { variant: 'warning' });
       return;
     }
 
     setLoading(true);
     try {
       const resultAction = await dispatch(
-        changePassword({ currentPassword: CurrentPassword, newPassword: password })
+        changePassword({ currentPassword: CurrentPassword, newPassword: password }),
       );
       if (changePassword.fulfilled.match(resultAction)) {
-        enqueueSnackbar("Password reset successfully.", { variant: "success" });
+        enqueueSnackbar('Password reset successfully.', { variant: 'success' });
         onClose();
       } else {
-        const errorMessage = (resultAction?.payload as { message?: string })?.message || "Failed to reset password";
-        enqueueSnackbar(errorMessage, { variant: "error" });
+        const errorMessage =
+          (resultAction?.payload as { message?: string })?.message || 'Failed to reset password';
+        enqueueSnackbar(errorMessage, { variant: 'error' });
       }
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : "Something went wrong";
-      enqueueSnackbar(errorMessage, { variant: "error" });
+      const errorMessage = err instanceof Error ? err.message : 'Something went wrong';
+      enqueueSnackbar(errorMessage, { variant: 'error' });
     } finally {
       setLoading(false);
     }
@@ -94,13 +92,18 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
         <div className="bg-gray-50 px-4  border-b border-gray-200 flex justify-between items-center">
           <div className="flex items-center space-x-2">
             <div className="flex space-x-1.5 items-center py-2 ">
-              <div className="w-4 h-4 rounded-full bg-red-400 flex justify-center items-center"   onClick={onClose}>
-                  <X size={10} className='text-red-700 hover:text-white' />
+              <div
+                className="w-4 h-4 rounded-full bg-red-400 flex justify-center items-center"
+                onClick={onClose}
+              >
+                <X size={10} className="text-red-700 hover:text-white" />
               </div>
               <div className="w-4 h-4 rounded-full bg-yellow-400"></div>
               <div className="w-4 h-4 rounded-full bg-green-400"></div>
             </div>
-            <span className="text-sm font-medium py-2 px-4 text-gray-700 bg-gray-200">Change Password</span>
+            <span className="text-sm font-medium py-2 px-4 text-gray-700 bg-gray-200">
+              Change Password
+            </span>
           </div>
         </div>
 
@@ -122,7 +125,7 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
                 <label className="text-sm font-medium">Current Password</label>
                 <div className="relative">
                   <input
-                    type={showCurrentPassword ? "text" : "password"}
+                    type={showCurrentPassword ? 'text' : 'password'}
                     placeholder="Enter your current password"
                     className="w-full p-3 border border-gray-300 rounded-lg bg-white pr-10 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:outline-none transition-colors"
                     value={CurrentPassword}
@@ -142,7 +145,7 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
                 <label className="text-sm font-medium">New Password</label>
                 <div className="relative">
                   <input
-                    type={showPassword ? "text" : "password"}
+                    type={showPassword ? 'text' : 'password'}
                     placeholder="Create a new password"
                     className="w-full p-3 border border-gray-300 rounded-lg bg-white pr-10 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:outline-none transition-colors"
                     value={password}
@@ -163,20 +166,30 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
                       {[1, 2, 3, 4].map((i) => (
                         <div
                           key={i}
-                          className={`h-1.5 flex-1 rounded-full ${i <= passwordStrength
-                            ? passwordStrength === 1 ? 'bg-red-500' :
-                              passwordStrength === 2 ? 'bg-orange-500' :
-                                passwordStrength === 3 ? 'bg-yellow-500' : 'bg-green-500'
-                            : 'bg-gray-200'
-                            }`}
+                          className={`h-1.5 flex-1 rounded-full ${
+                            i <= passwordStrength
+                              ? passwordStrength === 1
+                                ? 'bg-red-500'
+                                : passwordStrength === 2
+                                  ? 'bg-orange-500'
+                                  : passwordStrength === 3
+                                    ? 'bg-yellow-500'
+                                    : 'bg-green-500'
+                              : 'bg-gray-200'
+                          }`}
                         />
                       ))}
                     </div>
                     <p className="text-xs text-gray-500">
-                      {passwordStrength === 0 ? 'Enter a password' :
-                        passwordStrength === 1 ? 'Weak password' :
-                          passwordStrength === 2 ? 'Fair password' :
-                            passwordStrength === 3 ? 'Good password' : 'Strong password'}
+                      {passwordStrength === 0
+                        ? 'Enter a password'
+                        : passwordStrength === 1
+                          ? 'Weak password'
+                          : passwordStrength === 2
+                            ? 'Fair password'
+                            : passwordStrength === 3
+                              ? 'Good password'
+                              : 'Strong password'}
                     </p>
                   </div>
                 )}
@@ -190,13 +203,31 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
                 >
                   {loading ? (
                     <div className="flex items-center justify-center">
-                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      <svg
+                        className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
                       </svg>
                       Resetting Password...
                     </div>
-                  ) : 'Reset Password'}
+                  ) : (
+                    'Reset Password'
+                  )}
                 </Button>
               </div>
             </CardContent>

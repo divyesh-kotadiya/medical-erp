@@ -1,6 +1,6 @@
 'use client';
 
-import { TriangleAlert } from "lucide-react";
+import { TriangleAlert } from 'lucide-react';
 
 interface CheckboxProps {
   label: string;
@@ -14,7 +14,7 @@ export default function Checkbox({ label, checked, onChange, error }: CheckboxPr
     <div>
       <label
         className={`flex items-center space-x-3 p-3 border rounded-lg cursor-pointer transition-colors ${
-          checked ? "border-primary bg-primary/5" : "border-border hover:bg-muted"
+          checked ? 'border-primary bg-primary/5' : 'border-border hover:bg-muted'
         }`}
       >
         <input

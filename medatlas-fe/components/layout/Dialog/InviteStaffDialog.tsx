@@ -23,7 +23,14 @@ export default function InviteStaffDialog() {
   const [open, setOpen] = useState(false);
   const dispatch = useAppDispatch();
   const [roleOpen, setRoleOpen] = useState(false);
-  const { register, handleSubmit, setValue, reset, watch, formState: { errors } } = useForm<InviteFormValues>({
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    reset,
+    watch,
+    formState: { errors },
+  } = useForm<InviteFormValues>({
     resolver: zodResolver(inviteSchema),
   });
 
@@ -33,24 +40,25 @@ export default function InviteStaffDialog() {
     try {
       const resultAction = await dispatch(
         inviteMember({
-          ...data
-        })
+          ...data,
+        }),
       );
 
       if (inviteMember.fulfilled.match(resultAction)) {
-        enqueueSnackbar(resultAction.payload.message || "Invite sent successfully!", {
-          variant: "success",
+        enqueueSnackbar(resultAction.payload.message || 'Invite sent successfully!', {
+          variant: 'success',
         });
         setOpen(false);
         reset();
       } else if (inviteMember.rejected.match(resultAction)) {
-        const errorMessage = (resultAction.payload as { message?: string })?.message || "Something went wrong";
+        const errorMessage =
+          (resultAction.payload as { message?: string })?.message || 'Something went wrong';
         enqueueSnackbar(errorMessage, {
-          variant: "error",
+          variant: 'error',
         });
       }
     } catch {
-      enqueueSnackbar("Something went wrong", { variant: "error" });
+      enqueueSnackbar('Something went wrong', { variant: 'error' });
     }
   };
 
@@ -105,8 +113,11 @@ export default function InviteStaffDialog() {
                           setValue('role', role as UserRole);
                           setRoleOpen(false);
                         }}
-                        className={`cursor-pointer px-3 py-2 text-sm hover:bg-primary/10 ${selectedRole === role ? 'bg-primary/10 font-medium text-primary' : 'text-foreground'
-                          }`}
+                        className={`cursor-pointer px-3 py-2 text-sm hover:bg-primary/10 ${
+                          selectedRole === role
+                            ? 'bg-primary/10 font-medium text-primary'
+                            : 'text-foreground'
+                        }`}
                       >
                         {role}
                       </li>

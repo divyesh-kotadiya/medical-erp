@@ -19,4 +19,3 @@ export function Section({ className, children }: SectionProps) {
 }
 
 export default Section;
-

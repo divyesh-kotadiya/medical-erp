@@ -4,7 +4,7 @@ import { useState, FormEvent, useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { useRouter } from 'next/navigation';
 import { login } from '@/store/slices/auth';
-import { Shield, Users, CheckCircle } from 'lucide-react';
+import { Shield, Users } from 'lucide-react';
 import { useAuthRedirect } from '@/hooks/useAuthRedirect';
 import { enqueueSnackbar } from 'notistack';
 import { AuthLayout } from '@/components/auth/AuthLayout';
@@ -23,7 +23,7 @@ export default function LoginPage() {
   const [isFormValid, setIsFormValid] = useState(false);
   const [errors, setErrors] = useState({
     email: '',
-    password: ''
+    password: '',
   });
 
   useAuthRedirect();
@@ -36,7 +36,7 @@ export default function LoginPage() {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const newErrors = {
       email: '',
-      password: ''
+      password: '',
     };
 
     if (email && !emailRegex.test(email)) {
@@ -50,9 +50,9 @@ export default function LoginPage() {
     setErrors(newErrors);
     setIsFormValid(
       email.length > 0 &&
-      password.length >= 6 &&
-      emailRegex.test(email) &&
-      Object.values(newErrors).every(error => error === '')
+        password.length >= 6 &&
+        emailRegex.test(email) &&
+        Object.values(newErrors).every((error) => error === ''),
     );
   }, [email, password]);
 
@@ -60,14 +60,13 @@ export default function LoginPage() {
     router.prefetch('/verify-otp');
   }, [router]);
 
-
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!isFormValid) {
       if (!email) {
-        enqueueSnackbar("Please enter your email", { variant: "warning" });
+        enqueueSnackbar('Please enter your email', { variant: 'warning' });
       } else if (!password) {
-        enqueueSnackbar("Please enter your password", { variant: "warning" });
+        enqueueSnackbar('Please enter your password', { variant: 'warning' });
       }
       return;
     }
@@ -76,31 +75,29 @@ export default function LoginPage() {
       const resultAction = await dispatch(login({ email, password }));
 
       if (login.fulfilled.match(resultAction)) {
-        router.push("/verify-otp");
-        enqueueSnackbar("Please verify the OTP sent to your email", { variant: "info" });
+        router.push('/verify-otp');
+        enqueueSnackbar('Please verify the OTP sent to your email', { variant: 'info' });
       } else {
         const errorMessage =
-          (resultAction?.payload as { message?: string })?.message ||
-          "Login failed";
-        enqueueSnackbar(errorMessage, { variant: "error" });
+          (resultAction?.payload as { message?: string })?.message || 'Login failed';
+        enqueueSnackbar(errorMessage, { variant: 'error' });
       }
     } catch (err: unknown) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Something went wrong.";
-      enqueueSnackbar(errorMessage, { variant: "error" });
+      const errorMessage = err instanceof Error ? err.message : 'Something went wrong.';
+      enqueueSnackbar(errorMessage, { variant: 'error' });
     }
   };
 
   const features = [
     {
       icon: <Shield className="h-6 w-6 text-accent" />,
-      title: "Secure Access",
-      description: "Multi-factor authentication and encrypted connections"
+      title: 'Secure Access',
+      description: 'Multi-factor authentication and encrypted connections',
     },
     {
       icon: <Users className="h-6 w-6 text-accent" />,
-      title: "Role-Based Access",
-      description: "Custom permissions tailored to user responsibilities"
+      title: 'Role-Based Access',
+      description: 'Custom permissions tailored to user responsibilities',
     },
   ];
 
@@ -133,26 +130,17 @@ export default function LoginPage() {
             isPassword
           />
 
-          <AuthButton
-            type="submit"
-            loading={loading}
-            disabled={!isFormValid}
-          >
+          <AuthButton type="submit" loading={loading} disabled={!isFormValid}>
             Sign In
           </AuthButton>
         </form>
 
         <div className="text-right text-sm">
-          <AuthLink href="/forgot-password">
-            Forgot password?
-          </AuthLink>
+          <AuthLink href="/forgot-password">Forgot password?</AuthLink>
         </div>
 
         <div className="text-center text-sm text-muted-foreground pt-2">
-          Don&apos;t have an account?{' '}
-          <AuthLink href="/register">
-            Sign up
-          </AuthLink>
+          Don&apos;t have an account? <AuthLink href="/register">Sign up</AuthLink>
         </div>
       </AuthCard>
     </AuthLayout>

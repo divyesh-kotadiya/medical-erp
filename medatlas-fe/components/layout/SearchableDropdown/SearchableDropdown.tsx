@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useState, useRef, useEffect } from 'react';
 import { ChevronDown, Search, Check } from 'lucide-react';
@@ -15,11 +15,11 @@ const SearchableDropdown = ({
   options,
   value,
   onChange,
-  placeholder = "Select an option",
-  className = ""
+  placeholder = 'Select an option',
+  className = '',
 }: SearchableDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -33,11 +33,11 @@ const SearchableDropdown = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const filteredOptions = options.filter(option =>
-    option.label.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredOptions = options.filter((option) =>
+    option.label.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
-  const selectedOption = options.find(option => option.value === value);
+  const selectedOption = options.find((option) => option.value === value);
 
   return (
     <div className={`relative ${className}`} ref={dropdownRef}>
@@ -46,17 +46,23 @@ const SearchableDropdown = ({
         className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all flex items-center justify-between"
         onClick={() => setIsOpen(!isOpen)}
       >
-        <span className={value ? "" : "text-gray-400 dark:text-gray-500"}>
+        <span className={value ? '' : 'text-gray-400 dark:text-gray-500'}>
           {selectedOption ? selectedOption.label : placeholder}
         </span>
-        <ChevronDown size={16} className={`transform transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown
+          size={16}
+          className={`transform transition-transform ${isOpen ? 'rotate-180' : ''}`}
+        />
       </button>
 
       {isOpen && (
         <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg overflow-hidden">
           <div className="p-2 border-b border-gray-200 dark:border-gray-700">
             <div className="relative">
-              <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <Search
+                size={16}
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+              />
               <input
                 type="text"
                 placeholder="Search staff..."
@@ -67,7 +73,7 @@ const SearchableDropdown = ({
               />
             </div>
           </div>
-          
+
           <div className="max-h-60 overflow-y-auto">
             {filteredOptions.length === 0 ? (
               <div className="px-4 py-3 text-gray-500 dark:text-gray-400 text-sm">
@@ -82,13 +88,11 @@ const SearchableDropdown = ({
                   onClick={() => {
                     onChange(option.value);
                     setIsOpen(false);
-                    setSearchTerm("");
+                    setSearchTerm('');
                   }}
                 >
                   <span>{option.label}</span>
-                  {value === option.value && (
-                    <Check size={16} className="text-blue-500" />
-                  )}
+                  {value === option.value && <Check size={16} className="text-blue-500" />}
                 </button>
               ))
             )}

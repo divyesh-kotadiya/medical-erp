@@ -1,4 +1,4 @@
-"use client";
+'use client';
 import { useEffect } from 'react';
 import { useAppSelector } from '@/store/hooks';
 import { usePathname, useRouter } from 'next/navigation';
@@ -10,14 +10,11 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
-      if (!pathname.startsWith("/login")) {
+      if (!pathname.startsWith('/login')) {
         router.replace(`/login?redirect=${encodeURIComponent(pathname)}`);
       }
     }
   }, [isAuthenticated, loading, pathname, router]);
 
-
   return <>{children}</>;
 }
-
-

@@ -7,12 +7,12 @@ import { EmailTemplateData } from '../interface/email.interface';
 const logger = new Logger('EmailTemplateUtil');
 
 export function loadTemplate(name: string): string | undefined {
-  let templatesDir = path.join(process.cwd(), 'dist/common/email/templates');
-  let filePath = path.join(templatesDir, name);
+  let filePath = path.join(process.cwd(), 'src/common/email/templates', name);
+
+  console.log(filePath, 'this is file path');
 
   if (!fs.existsSync(filePath)) {
-    templatesDir = path.join(process.cwd(), 'src/common/email/templates');
-    filePath = path.join(templatesDir, name);
+    filePath = path.join(process.cwd(), 'dist/common/email/templates', name);
   }
 
   if (fs.existsSync(filePath)) {

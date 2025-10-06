@@ -23,12 +23,12 @@ export default function TimesheetLayout({ children }: { children: React.ReactNod
   const adminTabs =
     currentOrganization?.role === 'ADMIN'
       ? [
-        {
-          label: 'Approvals',
-          href: siteConfig.baseLinks.timesheets.approvals,
-          icon: ThumbsUp,
-        },
-      ]
+          {
+            label: 'Approvals',
+            href: siteConfig.baseLinks.timesheets.approvals,
+            icon: ThumbsUp,
+          },
+        ]
       : [];
 
   const tabs = [...baseTabs, ...adminTabs];

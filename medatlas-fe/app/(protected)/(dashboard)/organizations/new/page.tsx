@@ -6,13 +6,7 @@ import { createOrganization, fetchOrganizations } from '@/store/slices/organizat
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { enqueueSnackbar } from 'notistack';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Building2, ChevronLeft, ChevronRight, Check, Plus, Users } from 'lucide-react';
 
 import { useForm } from 'react-hook-form';
@@ -66,9 +60,7 @@ type OnboardingForm = z.infer<typeof onboardingSchema>;
 const Onboarding = () => {
   const dispatch = useAppDispatch();
   const router = useRouter();
-  const {loading, creating, loaded } = useAppSelector(
-    (state) => state.organizations
-  );
+  const { loading, creating, loaded } = useAppSelector((state) => state.organizations);
 
   const [currentStep, setCurrentStep] = useState(0);
   const totalSteps = 4;
@@ -101,7 +93,6 @@ const Onboarding = () => {
       dateFormat: 'MM/DD/YYYY',
     },
   });
-
 
   useEffect(() => {
     if (!loaded) {
@@ -154,8 +145,7 @@ const Onboarding = () => {
     if (currentStep === 1) fieldsToValidate = ['name', 'description', 'type'];
     if (currentStep === 2)
       fieldsToValidate = ['email', 'phone', 'street', 'city', 'state', 'zipCode', 'country'];
-    if (currentStep === 3)
-      fieldsToValidate = ['timezone', 'currency', 'dateFormat'];
+    if (currentStep === 3) fieldsToValidate = ['timezone', 'currency', 'dateFormat'];
 
     const valid = await trigger(fieldsToValidate);
 
@@ -203,9 +193,9 @@ const Onboarding = () => {
               <p className="text-center text-muted-foreground">
                 Get started by creating a new organization or joining an existing one
               </p>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Card 
+                <Card
                   className="cursor-pointer hover:border-primary transition-colors"
                   onClick={() => handleActionSelect('create')}
                 >
@@ -219,8 +209,8 @@ const Onboarding = () => {
                     </p>
                   </CardContent>
                 </Card>
-                
-                <Card 
+
+                <Card
                   className="cursor-pointer hover:border-primary transition-colors"
                   onClick={() => handleActionSelect('join')}
                 >
@@ -240,12 +230,23 @@ const Onboarding = () => {
 
           {currentStep === 1 && (
             <div className="space-y-4">
-              <InputField label="Organization Name" {...register('name')} error={errors.name?.message} />
-              <InputField label="Description" {...register('description')} error={errors.description?.message} />
+              <InputField
+                label="Organization Name"
+                {...register('name')}
+                error={errors.name?.message}
+              />
+              <InputField
+                label="Description"
+                {...register('description')}
+                error={errors.description?.message}
+              />
 
               <CustomDropdown
                 label="Organization Type"
-                options={organizationTypes.map((type) => ({ label: type.label, value: type.value }))}
+                options={organizationTypes.map((type) => ({
+                  label: type.label,
+                  value: type.value,
+                }))}
                 value={getValues('type')}
                 onChange={(val) => setValue('type', val, { shouldValidate: true })}
                 error={errors.type?.message}
@@ -258,7 +259,11 @@ const Onboarding = () => {
             <div className="space-y-4">
               <InputField label="Email" {...register('email')} error={errors.email?.message} />
               <InputField label="Phone" {...register('phone')} error={errors.phone?.message} />
-              <InputField label="Website" {...register('website')} error={errors.website?.message} />
+              <InputField
+                label="Website"
+                {...register('website')}
+                error={errors.website?.message}
+              />
               <InputField label="Street" {...register('street')} error={errors.street?.message} />
 
               <div className="grid grid-cols-2 gap-2">
@@ -267,8 +272,16 @@ const Onboarding = () => {
               </div>
 
               <div className="grid grid-cols-2 gap-2">
-                <InputField label="Zip Code" {...register('zipCode')} error={errors.zipCode?.message} />
-                <InputField label="Country" {...register('country')} error={errors.country?.message} />
+                <InputField
+                  label="Zip Code"
+                  {...register('zipCode')}
+                  error={errors.zipCode?.message}
+                />
+                <InputField
+                  label="Country"
+                  {...register('country')}
+                  error={errors.country?.message}
+                />
               </div>
             </div>
           )}
@@ -305,11 +318,7 @@ const Onboarding = () => {
           )}
 
           <div className="flex justify-between mt-6">
-            <Button 
-              variant="outline" 
-              onClick={handlePrev} 
-              disabled={currentStep === 0}
-            >
+            <Button variant="outline" onClick={handlePrev} disabled={currentStep === 0}>
               <ChevronLeft className="h-4 w-4" /> Previous
             </Button>
             <Button onClick={handleNext} disabled={creating}>

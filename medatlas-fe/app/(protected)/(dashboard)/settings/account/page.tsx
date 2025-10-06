@@ -1,8 +1,8 @@
-'use client'
-import ChangePasswordModal from "@/components/change-password";
-import { useState, useEffect } from "react";
-import { Moon, Sun } from "lucide-react";
-import { useTheme } from "next-themes";
+'use client';
+import ChangePasswordModal from '@/components/change-password';
+import { useState, useEffect } from 'react';
+import { Moon, Sun } from 'lucide-react';
+import { useTheme } from 'next-themes';
 
 export default function AccountSettings() {
   const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
@@ -14,10 +14,10 @@ export default function AccountSettings() {
   }, []);
 
   const toggleTheme = () => {
-    if (theme === "light") {
-      setTheme("dark");
+    if (theme === 'light') {
+      setTheme('dark');
     } else {
-      setTheme("light");
+      setTheme('light');
     }
   };
 
@@ -34,11 +34,7 @@ export default function AccountSettings() {
           className="p-2 rounded-md bg-secondary hover:bg-secondary/80 transition-colors"
           aria-label="Toggle theme"
         >
-          {theme === "light" ? (
-            <Moon className="h-5 w-5" />
-          ) : (
-            <Sun className="h-5 w-5" />
-          )}
+          {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
         </button>
       </div>
 
@@ -49,7 +45,7 @@ export default function AccountSettings() {
             Update your password associated with your account.
           </p>
 
-          <button 
+          <button
             onClick={() => setIsChangePasswordModalOpen(true)}
             className="bg-primary text-primary-foreground px-4 py-2 rounded-md text-sm font-medium hover:bg-primary/90 transition-colors"
           >
@@ -69,8 +65,8 @@ export default function AccountSettings() {
       </div>
 
       <ChangePasswordModal
-        isOpen={isChangePasswordModalOpen} 
-        onClose={() => setIsChangePasswordModalOpen(false)} 
+        isOpen={isChangePasswordModalOpen}
+        onClose={() => setIsChangePasswordModalOpen(false)}
       />
     </div>
   );

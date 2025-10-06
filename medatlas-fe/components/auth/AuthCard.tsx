@@ -21,9 +21,7 @@ export function AuthCard({ children, title, description, icon }: AuthCardProps) 
         <CardTitle className="text-2xl font-bold text-card-foreground">{title}</CardTitle>
         <CardDescription className="text-muted-foreground">{description}</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6">
-        {children}
-      </CardContent>
+      <CardContent className="space-y-6">{children}</CardContent>
     </Card>
   );
 }

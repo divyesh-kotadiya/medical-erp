@@ -41,7 +41,7 @@ function Tooltip({ text }: { text: string }) {
       gsap.fromTo(
         tooltipRef.current,
         { opacity: 0, y: 10, scale: 0.95 },
-        { opacity: 1, y: 0, scale: 1, duration: 0.3, ease: 'power3.out' }
+        { opacity: 1, y: 0, scale: 1, duration: 0.3, ease: 'power3.out' },
       );
     } else {
       gsap.to(tooltipRef.current, {
@@ -60,9 +60,7 @@ function Tooltip({ text }: { text: string }) {
       onMouseEnter={() => setVisible(true)}
       onMouseLeave={() => setVisible(false)}
     >
-      <span className="cursor-pointer">
-        {text.length > 10 ? text.slice(0, 10) + '…' : text}
-      </span>
+      <span className="cursor-pointer">{text.length > 10 ? text.slice(0, 10) + '…' : text}</span>
       {visible && text.length > 10 && (
         <div
           ref={tooltipRef}
@@ -77,9 +75,13 @@ function Tooltip({ text }: { text: string }) {
 
 export default function DocumentsPage() {
   const dispatch = useAppDispatch();
-  const { items: documents, loading, error, page, totalPages } = useAppSelector(
-    (state) => state.documents
-  );
+  const {
+    items: documents,
+    loading,
+    error,
+    page,
+    totalPages,
+  } = useAppSelector((state) => state.documents);
   const [limit] = useState(13);
 
   const { currentOrganization } = useAppSelector((state) => state.organizations);
@@ -87,7 +89,9 @@ export default function DocumentsPage() {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
-  const [filterCategory, setFilterCategory] = useState<'All Categories' | DocumentCategoryType>('All Categories');
+  const [filterCategory, setFilterCategory] = useState<'All Categories' | DocumentCategoryType>(
+    'All Categories',
+  );
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarMode, setSidebarMode] = useState<'view' | 'create'>('view');
   const [previewSrc, setPreviewSrc] = useState<string | null>(null);
@@ -108,7 +112,7 @@ export default function DocumentsPage() {
         page,
         limit,
         category: categoryParam,
-      })
+      }),
     );
   }, [dispatch, currentOrganization, filterCategory, page, limit]);
 
@@ -120,7 +124,7 @@ export default function DocumentsPage() {
           page: page - 1,
           limit,
           category: filterCategory === 'All Categories' ? undefined : filterCategory,
-        })
+        }),
       );
     }
   };
@@ -133,7 +137,7 @@ export default function DocumentsPage() {
           page: page + 1,
           limit,
           category: filterCategory === 'All Categories' ? undefined : filterCategory,
-        })
+        }),
       );
     }
   };
@@ -143,7 +147,7 @@ export default function DocumentsPage() {
       gsap.fromTo(
         sidebarRef.current,
         { x: '100%', opacity: 0 },
-        { x: 0, opacity: 1, duration: 0.4, ease: 'power3.out' }
+        { x: 0, opacity: 1, duration: 0.4, ease: 'power3.out' },
       );
     }
   }, [sidebarOpen]);
@@ -153,7 +157,7 @@ export default function DocumentsPage() {
       gsap.fromTo(
         tableBodyRef.current.querySelectorAll('tr'),
         { opacity: 0, y: 20 },
-        { opacity: 1, y: 0, duration: 0.4, stagger: 0.05 }
+        { opacity: 1, y: 0, duration: 0.4, stagger: 0.05 },
       );
     }
   }, [documents, searchTerm, filterCategory]);
@@ -163,7 +167,7 @@ export default function DocumentsPage() {
       gsap.fromTo(
         previewRef.current,
         { opacity: 0, scale: 0.9 },
-        { opacity: 1, scale: 1, duration: 0.5, ease: 'power3.out' }
+        { opacity: 1, scale: 1, duration: 0.5, ease: 'power3.out' },
       );
     }
   }, [previewSrc, previewType]);
@@ -179,8 +183,7 @@ export default function DocumentsPage() {
     const matchesSearch =
       doc.filename.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (doc.patient && doc.patient.toLowerCase().includes(searchTerm.toLowerCase()));
-    const matchesCategory =
-      filterCategory === 'All Categories' || doc.category === filterCategory;
+    const matchesCategory = filterCategory === 'All Categories' || doc.category === filterCategory;
     return matchesSearch && matchesCategory;
   });
 
@@ -256,7 +259,9 @@ export default function DocumentsPage() {
       <div className="max-w-[90vw] mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">Document Management</h1>
-          <p className="text-muted-foreground">Manage and organize all your documents in one place</p>
+          <p className="text-muted-foreground">
+            Manage and organize all your documents in one place
+          </p>
         </div>
 
         <div className="bg-card rounded-xl shadow-card p-4 mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -274,19 +279,22 @@ export default function DocumentsPage() {
               />
             </div>
           </div>
-          
+
           <div className="flex flex-wrap gap-3 w-full md:w-auto">
             <div className="relative">
               <CustomDropdown
                 buttonClassName="flex items-center gap-2 py-2.5 px-4 bg-background border border-input rounded-lg hover:bg-secondary transition text-foreground"
                 value={filterCategory}
                 options={[{ label: 'All Categories', value: 'All Categories' }, ...categoryOptions]}
-                onChange={(val: string) => setFilterCategory(val as DocumentCategoryType | 'All Categories')}>
+                onChange={(val: string) =>
+                  setFilterCategory(val as DocumentCategoryType | 'All Categories')
+                }
+              >
                 <Filter className="h-4 w-4" />
                 <span>Category</span>
               </CustomDropdown>
             </div>
-            
+
             <button
               onClick={openCreateSidebar}
               className="flex items-center gap-2 py-2.5 px-4 bg-primary hover:bg-primary-hover text-primary-foreground rounded-lg transition shadow-card hover:shadow-elevated"
@@ -304,15 +312,33 @@ export default function DocumentsPage() {
                 <table className="w-full">
                   <thead className="bg-secondary border-b border-border">
                     <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Select</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Document</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Username</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Email</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Uploaded</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Type</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Size</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Category</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Actions</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                        Select
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                        Document
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                        Username
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                        Email
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                        Uploaded
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                        Type
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                        Size
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                        Category
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                        Actions
+                      </th>
                     </tr>
                   </thead>
                   <tbody ref={tableBodyRef} className="divide-y divide-border">
@@ -352,7 +378,10 @@ export default function DocumentsPage() {
                         onClick={() => openViewSidebar(doc)}
                       >
                         <td className="px-4 py-3">
-                          <input type="checkbox" className="h-4 w-4 text-primary rounded focus:ring-primary" />
+                          <input
+                            type="checkbox"
+                            className="h-4 w-4 text-primary rounded focus:ring-primary"
+                          />
                         </td>
                         <td className="px-4 py-3 font-medium text-foreground">
                           <Tooltip text={doc.filename} />
@@ -408,7 +437,7 @@ export default function DocumentsPage() {
                   </tbody>
                 </table>
               </div>
-              
+
               <div className="flex items-center justify-between border-t border-border bg-card px-4 py-3 sm:px-6">
                 <div className="flex flex-1 justify-between sm:hidden">
                   <button
@@ -441,7 +470,10 @@ export default function DocumentsPage() {
                     </p>
                   </div>
                   <div>
-                    <nav className="isolate inline-flex -space-x-px rounded-md shadow-card" aria-label="Pagination">
+                    <nav
+                      className="isolate inline-flex -space-x-px rounded-md shadow-card"
+                      aria-label="Pagination"
+                    >
                       <button
                         onClick={handlePrevPage}
                         disabled={page === 1}
@@ -497,7 +529,7 @@ export default function DocumentsPage() {
                   </button>
                 </div>
               </div>
-              
+
               <div className="flex-1 overflow-y-auto p-6 space-y-6">
                 {sidebarMode === 'view' && selectedDocument ? (
                   <div className="space-y-6">
@@ -513,9 +545,13 @@ export default function DocumentsPage() {
                           </div>
                         )}
                         <div>
-                          <h3 className="font-bold text-lg text-foreground">{selectedDocument.filename}</h3>
+                          <h3 className="font-bold text-lg text-foreground">
+                            {selectedDocument.filename}
+                          </h3>
                           <p className="text-sm text-muted-foreground">
-                            {selectedDocument.size ? `${(selectedDocument.size / 1024 / 1024).toFixed(2)} MB` : '—'}
+                            {selectedDocument.size
+                              ? `${(selectedDocument.size / 1024 / 1024).toFixed(2)} MB`
+                              : '—'}
                           </p>
                         </div>
                       </div>
@@ -535,8 +571,10 @@ export default function DocumentsPage() {
                     </div>
 
                     <div className="space-y-4">
-                      <h4 className="font-semibold text-foreground text-lg border-b border-border pb-2">Document Information</h4>
-                      
+                      <h4 className="font-semibold text-foreground text-lg border-b border-border pb-2">
+                        Document Information
+                      </h4>
+
                       <div className="grid grid-cols-1 gap-4">
                         <div className="bg-background border border-border rounded-lg p-4 shadow-card">
                           <div className="flex items-center space-x-3">
@@ -551,7 +589,7 @@ export default function DocumentsPage() {
                             </div>
                           </div>
                         </div>
-                        
+
                         <div className="bg-background border border-border rounded-lg p-4 shadow-card">
                           <div className="flex items-center space-x-3">
                             <div className="bg-accent/10 p-2 rounded-lg">
@@ -559,11 +597,13 @@ export default function DocumentsPage() {
                             </div>
                             <div>
                               <p className="text-xs text-muted-foreground">Uploaded By</p>
-                              <p className="font-medium text-foreground">{selectedDocument?.createdBy?.name || 'Unknown'}</p>
+                              <p className="font-medium text-foreground">
+                                {selectedDocument?.createdBy?.name || 'Unknown'}
+                              </p>
                             </div>
                           </div>
                         </div>
-                        
+
                         <div className="bg-background border border-border rounded-lg p-4 shadow-card">
                           <div className="flex items-center space-x-3">
                             <div className="bg-success/10 p-2 rounded-lg">
@@ -571,11 +611,13 @@ export default function DocumentsPage() {
                             </div>
                             <div>
                               <p className="text-xs text-muted-foreground">File Type</p>
-                              <p className="font-medium text-foreground">{selectedDocument.fileType}</p>
+                              <p className="font-medium text-foreground">
+                                {selectedDocument.fileType}
+                              </p>
                             </div>
                           </div>
                         </div>
-                        
+
                         <div className="bg-background border border-border rounded-lg p-4 shadow-card">
                           <div className="flex items-center space-x-3">
                             <div className="bg-warning/10 p-2 rounded-lg">
@@ -583,7 +625,9 @@ export default function DocumentsPage() {
                             </div>
                             <div>
                               <p className="text-xs text-muted-foreground">Category</p>
-                              <p className="font-medium text-foreground">{selectedDocument.category}</p>
+                              <p className="font-medium text-foreground">
+                                {selectedDocument.category}
+                              </p>
                             </div>
                           </div>
                         </div>
@@ -618,7 +662,10 @@ export default function DocumentsPage() {
                           type="file"
                           className="hidden"
                           id="file-upload"
-                          {...register('file', { required: true, onChange: (e) => handleFileChange(e.target.files?.[0]) })}
+                          {...register('file', {
+                            required: true,
+                            onChange: (e) => handleFileChange(e.target.files?.[0]),
+                          })}
                         />
                         <label htmlFor="file-upload" className="cursor-pointer">
                           {previewType === 'image' && previewSrc ? (
@@ -639,9 +686,12 @@ export default function DocumentsPage() {
                                 </div>
                               </div>
                               <div className="text-sm text-muted-foreground">
-                                <span className="font-medium text-primary">Click to upload</span> or drag and drop
+                                <span className="font-medium text-primary">Click to upload</span> or
+                                drag and drop
                               </div>
-                              <p className="text-xs text-muted-foreground">PDF, DOC, DOCX, JPG, PNG up to 10MB</p>
+                              <p className="text-xs text-muted-foreground">
+                                PDF, DOC, DOCX, JPG, PNG up to 10MB
+                              </p>
                             </div>
                           )}
                         </label>
@@ -653,15 +703,20 @@ export default function DocumentsPage() {
                       </div>
                     </div>
 
-                    <div className='z-0'>
+                    <div className="z-0">
                       <label className="block text-sm font-medium text-foreground mb-2">
                         Category
                       </label>
                       <CustomDropdown
                         value={filterCategory}
                         menuClassName="z-999"
-                        options={[{ label: 'All Categories', value: 'All Categories' }, ...categoryOptions]}
-                        onChange={(val) => setFilterCategory(val as DocumentCategoryType | 'All Categories')}
+                        options={[
+                          { label: 'All Categories', value: 'All Categories' },
+                          ...categoryOptions,
+                        ]}
+                        onChange={(val) =>
+                          setFilterCategory(val as DocumentCategoryType | 'All Categories')
+                        }
                         buttonClassName="w-full py-3 text-sm bg-background border border-input rounded-lg hover:bg-secondary transition"
                       />
                     </div>

@@ -19,7 +19,7 @@ import { UserInviteListDto } from './dto/user-invite.dto';
 
 @Controller('invites')
 export class InvitesController {
-  constructor(private readonly invitesService: InvitesService) { }
+  constructor(private readonly invitesService: InvitesService) {}
 
   @UseGuards(JwtGuard)
   @Post()

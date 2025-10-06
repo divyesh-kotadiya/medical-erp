@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
@@ -13,7 +13,7 @@ export default function ResetPasswordPage() {
   const router = useRouter();
   const dispatch = useAppDispatch();
 
-  const { userIdForOtp } = useAppSelector((state) => state.auth)
+  const { userIdForOtp } = useAppSelector((state) => state.auth);
 
   const [otp, setOtp] = useState<string[]>(Array(6).fill(''));
   const [step, setStep] = useState<'otp' | 'password'>('otp');
@@ -23,8 +23,8 @@ export default function ResetPasswordPage() {
   const [error, setError] = useState<string | null>(null);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState(0);
@@ -61,9 +61,7 @@ export default function ResetPasswordPage() {
 
   useEffect(() => {
     setIsFormValid(
-      password.length >= 8 &&
-      confirmPassword.length > 0 &&
-      password === confirmPassword
+      password.length >= 8 && confirmPassword.length > 0 && password === confirmPassword,
     );
   }, [password, confirmPassword]);
 
@@ -96,11 +94,11 @@ export default function ResetPasswordPage() {
     }
   };
 
-  const isOtpValid = otp.every(digit => digit !== '');
+  const isOtpValid = otp.every((digit) => digit !== '');
 
   const handleOtpSubmit = async () => {
     if (!isOtpValid) {
-      setError("Please enter all 6 digits");
+      setError('Please enter all 6 digits');
       return;
     }
 
@@ -113,14 +111,14 @@ export default function ResetPasswordPage() {
     try {
       setResendLoading(true);
       dispatch(resendOtp(userIdForOtp!));
-      enqueueSnackbar("OTP resent successfully", { variant: "success" });
+      enqueueSnackbar('OTP resent successfully', { variant: 'success' });
       setCountdown(30);
       setOtp(Array(6).fill(''));
       if (inputRefs.current[0]) {
         inputRefs.current[0]?.focus();
       }
     } catch (err) {
-      setError("Failed to resend OTP");
+      setError('Failed to resend OTP');
     } finally {
       setResendLoading(false);
     }
@@ -129,17 +127,17 @@ export default function ResetPasswordPage() {
   // Handle password reset submission
   async function onSubmit() {
     if (!password || !confirmPassword) {
-      enqueueSnackbar("Please fill in all fields.", { variant: "warning" });
+      enqueueSnackbar('Please fill in all fields.', { variant: 'warning' });
       return;
     }
 
     if (password.length < 8) {
-      enqueueSnackbar("Password must be at least 8 characters.", { variant: "warning" });
+      enqueueSnackbar('Password must be at least 8 characters.', { variant: 'warning' });
       return;
     }
 
     if (password !== confirmPassword) {
-      enqueueSnackbar("Passwords do not match.", { variant: "error" });
+      enqueueSnackbar('Passwords do not match.', { variant: 'error' });
       return;
     }
 
@@ -147,18 +145,19 @@ export default function ResetPasswordPage() {
     try {
       const otpString = otp.join('');
       const resultAction = await dispatch(
-        resetPassword({ userId: userIdForOtp, otp: otpString, newPassword: password })
+        resetPassword({ userId: userIdForOtp, otp: otpString, newPassword: password }),
       );
       if (resetPassword.fulfilled.match(resultAction)) {
-        enqueueSnackbar("Password reset successfully.", { variant: "success" });
-        router.push("/login");
+        enqueueSnackbar('Password reset successfully.', { variant: 'success' });
+        router.push('/login');
       } else {
-        const errorMessage = (resultAction?.payload as { message?: string })?.message || "Failed to reset password";
-        enqueueSnackbar(errorMessage, { variant: "error" });
+        const errorMessage =
+          (resultAction?.payload as { message?: string })?.message || 'Failed to reset password';
+        enqueueSnackbar(errorMessage, { variant: 'error' });
       }
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : "Something went wrong";
-      enqueueSnackbar(errorMessage, { variant: "error" });
+      const errorMessage = err instanceof Error ? err.message : 'Something went wrong';
+      enqueueSnackbar(errorMessage, { variant: 'error' });
     } finally {
       setLoading(false);
     }
@@ -167,10 +166,11 @@ export default function ResetPasswordPage() {
   return (
     <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2">
       {/* Left side - Branding section */}
-      <div className="hidden lg:flex flex-col items-center justify-center 
+      <div
+        className="hidden lg:flex flex-col items-center justify-center 
         bg-gradient-to-br from-blue-500 via-blue-600 to-emerald-500 
-        text-white p-12 relative overflow-hidden w-full">
-
+        text-white p-12 relative overflow-hidden w-full"
+      >
         <div className="absolute inset-0 bg-gradient-to-r from-blue-400/10 to-emerald-400/10 animate-pulse" />
 
         <div className="absolute inset-0 opacity-10">
@@ -201,8 +201,18 @@ export default function ResetPasswordPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12 text-white/80 max-w-4xl mx-auto">
             <div className="bg-white/10 backdrop-blur-sm p-4 rounded-lg border border-white/20 flex flex-col items-center text-center">
               <div className="h-12 w-12 rounded-full bg-emerald-400/20 flex items-center justify-center mb-3">
-                <svg className="h-6 w-6 text-emerald-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                <svg
+                  className="h-6 w-6 text-emerald-300"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                  />
                 </svg>
               </div>
               <h3 className="font-semibold text-white mb-1">Secure Reset</h3>
@@ -211,8 +221,18 @@ export default function ResetPasswordPage() {
 
             <div className="bg-white/10 backdrop-blur-sm p-4 rounded-lg border border-white/20 flex flex-col items-center text-center">
               <div className="h-12 w-12 rounded-full bg-blue-400/20 flex items-center justify-center mb-3">
-                <svg className="h-6 w-6 text-blue-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                <svg
+                  className="h-6 w-6 text-blue-300"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                  />
                 </svg>
               </div>
               <h3 className="font-semibold text-white mb-1">Strong Passwords</h3>
@@ -254,16 +274,14 @@ export default function ResetPasswordPage() {
               // OTP Verification Form
               <div className="space-y-6">
                 {error && (
-                  <div className="bg-red-50 text-red-700 px-4 py-3 rounded-lg text-sm">
-                    {error}
-                  </div>
+                  <div className="bg-red-50 text-red-700 px-4 py-3 rounded-lg text-sm">{error}</div>
                 )}
 
                 <div className="flex justify-center space-x-3" onPaste={handleOtpPaste}>
                   {otp.map((digit, index) => (
                     <div key={index} className="relative">
                       <input
-                        ref={el => inputRefs.current[index] = el}
+                        ref={(el) => (inputRefs.current[index] = el)}
                         type="text"
                         inputMode="numeric"
                         pattern="[0-9]*"
@@ -271,8 +289,9 @@ export default function ResetPasswordPage() {
                         onChange={(e) => handleOtpChange(index, e.target.value)}
                         onKeyDown={(e) => handleOtpKeyDown(index, e)}
                         maxLength={1}
-                        className={`w-12 h-12 text-center text-xl font-semibold border-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200 ${digit ? 'border-blue-500 bg-blue-50' : 'border-gray-300'
-                          }`}
+                        className={`w-12 h-12 text-center text-xl font-semibold border-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200 ${
+                          digit ? 'border-blue-500 bg-blue-50' : 'border-gray-300'
+                        }`}
                         autoComplete="one-time-code"
                         aria-label={`OTP digit ${index + 1}`}
                       />
@@ -292,38 +311,73 @@ export default function ResetPasswordPage() {
                 >
                   {loading ? (
                     <span className="flex items-center justify-center">
-                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      <svg
+                        className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
                       </svg>
                       Verifying...
                     </span>
-                  ) : "Verify Code"}
+                  ) : (
+                    'Verify Code'
+                  )}
                 </Button>
 
                 <div className="text-center text-sm text-gray-600">
-                  Didn't receive the code?{" "}
+                  Didn't receive the code?{' '}
                   <button
                     type="button"
-                    className={`font-medium transition-colors duration-200 ${countdown > 0 || resendLoading
-                      ? 'text-gray-400 cursor-not-allowed'
-                      : 'text-blue-600 hover:text-blue-800 underline'
-                      }`}
+                    className={`font-medium transition-colors duration-200 ${
+                      countdown > 0 || resendLoading
+                        ? 'text-gray-400 cursor-not-allowed'
+                        : 'text-blue-600 hover:text-blue-800 underline'
+                    }`}
                     onClick={handleResendOtp}
                     disabled={countdown > 0 || resendLoading}
                   >
                     {resendLoading ? (
                       <span className="flex items-center justify-center">
-                        <svg className="animate-spin -ml-1 mr-1 h-3 w-3 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        <svg
+                          className="animate-spin -ml-1 mr-1 h-3 w-3 text-blue-600"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
                         </svg>
                         Sending...
                       </span>
                     ) : countdown > 0 ? (
                       `Resend in ${countdown}s`
                     ) : (
-                      "Resend OTP"
+                      'Resend OTP'
                     )}
                   </button>
                 </div>
@@ -347,7 +401,7 @@ export default function ResetPasswordPage() {
                   <label className="text-sm font-medium">New Password</label>
                   <div className="relative">
                     <input
-                      type={showPassword ? "text" : "password"}
+                      type={showPassword ? 'text' : 'password'}
                       placeholder="Enter new password"
                       className="w-full p-3 border border-gray-300 rounded-lg bg-background pr-10 focus:ring-2 focus:ring-blue-200 focus:border-blue-400 focus:outline-none transition-colors"
                       value={password}
@@ -368,20 +422,30 @@ export default function ResetPasswordPage() {
                         {[1, 2, 3, 4].map((i) => (
                           <div
                             key={i}
-                            className={`h-1 flex-1 rounded-full ${i <= passwordStrength
-                              ? passwordStrength === 1 ? 'bg-red-500' :
-                                passwordStrength === 2 ? 'bg-orange-500' :
-                                  passwordStrength === 3 ? 'bg-yellow-500' : 'bg-green-500'
-                              : 'bg-gray-200'
-                              }`}
+                            className={`h-1 flex-1 rounded-full ${
+                              i <= passwordStrength
+                                ? passwordStrength === 1
+                                  ? 'bg-red-500'
+                                  : passwordStrength === 2
+                                    ? 'bg-orange-500'
+                                    : passwordStrength === 3
+                                      ? 'bg-yellow-500'
+                                      : 'bg-green-500'
+                                : 'bg-gray-200'
+                            }`}
                           />
                         ))}
                       </div>
                       <p className="text-xs text-gray-500">
-                        {passwordStrength === 0 ? 'Enter a password' :
-                          passwordStrength === 1 ? 'Weak password' :
-                            passwordStrength === 2 ? 'Fair password' :
-                              passwordStrength === 3 ? 'Good password' : 'Strong password'}
+                        {passwordStrength === 0
+                          ? 'Enter a password'
+                          : passwordStrength === 1
+                            ? 'Weak password'
+                            : passwordStrength === 2
+                              ? 'Fair password'
+                              : passwordStrength === 3
+                                ? 'Good password'
+                                : 'Strong password'}
                       </p>
                     </div>
                   )}
@@ -391,7 +455,7 @@ export default function ResetPasswordPage() {
                   <label className="text-sm font-medium">Confirm Password</label>
                   <div className="relative">
                     <input
-                      type={showConfirmPassword ? "text" : "password"}
+                      type={showConfirmPassword ? 'text' : 'password'}
                       placeholder="Confirm new password"
                       className="w-full p-3 border border-gray-300 rounded-lg bg-background pr-10 focus:ring-2 focus:ring-blue-200 focus:border-blue-400 focus:outline-none transition-colors"
                       value={confirmPassword}
@@ -417,13 +481,31 @@ export default function ResetPasswordPage() {
                 >
                   {loading ? (
                     <div className="flex items-center justify-center">
-                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      <svg
+                        className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
                       </svg>
                       Resetting Password...
                     </div>
-                  ) : 'Reset Password'}
+                  ) : (
+                    'Reset Password'
+                  )}
                 </Button>
 
                 <div className="text-center text-sm text-muted-foreground pt-2">

@@ -1,7 +1,6 @@
+'use client';
 
-"use client"; 
-
-import React from "react";
+import React from 'react';
 
 interface ErrorProps {
   error: Error;
@@ -10,7 +9,7 @@ interface ErrorProps {
 
 export default function Error({ error, reset }: ErrorProps) {
   return (
-    <div style={{ textAlign: "center", padding: "2rem", color: "red" }}>
+    <div style={{ textAlign: 'center', padding: '2rem', color: 'red' }}>
       <h1>Something went wrong!</h1>
       <p>{error.message}</p>
       <button onClick={() => reset()}>Try Again</button>

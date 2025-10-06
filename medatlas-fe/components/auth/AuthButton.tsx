@@ -17,7 +17,7 @@ export function AuthButton({
   disabled = false,
   className = '',
   onClick,
-  type = 'button'
+  type = 'button',
 }: AuthButtonProps) {
   return (
     <Button

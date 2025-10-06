@@ -22,7 +22,8 @@ export default function FileUpload({ onFilesAdded }: FileUploadProps) {
     >
       <input {...getInputProps()} />
       <p className="mt-2 text-sm text-gray-600">
-        <span className="font-medium text-blue-600 hover:text-blue-500">Click to upload</span> or drag & drop
+        <span className="font-medium text-blue-600 hover:text-blue-500">Click to upload</span> or
+        drag & drop
       </p>
       <p className="text-xs text-gray-500 mt-1">PDF, DOC, PNG, JPG up to 5MB</p>
     </div>

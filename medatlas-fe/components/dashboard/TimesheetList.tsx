@@ -16,9 +16,9 @@ import CustomDropdown from '../layout/Dropdown/Dropdown';
 export const TimesheetList = () => {
   const dispatch = useAppDispatch();
   const { entries, loading, submittedList, submissionStatus } = useAppSelector(
-    (state) => state.timesheets
+    (state) => state.timesheets,
   );
-  const { user } = useAppSelector((state) => state.auth)
+  const { user } = useAppSelector((state) => state.auth);
   const [anchorDate, setAnchorDate] = useState<Date>(new Date());
 
   const { periodStart, periodEnd } = useMemo(() => {
@@ -39,29 +39,28 @@ export const TimesheetList = () => {
       fetchEntries({
         periodStart: periodStart.toISOString(),
         periodEnd: periodEnd.toISOString(),
-      })
+      }),
     );
     dispatch(
       fetchSubmittedTimesheets({
         from: periodStart.toISOString(),
         to: periodEnd.toISOString(),
-        userId: user?.id
-      })
+        userId: user?.id,
+      }),
     );
     dispatch(
       fetchWeeklyTotal({
         periodStart: periodStart.toISOString(),
         periodEnd: periodEnd.toISOString(),
-      })
+      }),
     );
     dispatch(
       checkSubmissionStatus({
         periodStart: periodStart.toISOString(),
         periodEnd: periodEnd.toISOString(),
-      })
+      }),
     );
   }, [dispatch, periodStart, periodEnd, user?.id]);
-
 
   const formatTimeEntries = () => entries.map((entry) => mapEntryToDisplay(entry));
 
@@ -70,16 +69,15 @@ export const TimesheetList = () => {
       submitWeek({
         periodStart: periodStart.toISOString(),
         periodEnd: periodEnd.toISOString(),
-      })
+      }),
     );
     await dispatch(
       fetchSubmittedTimesheets({
         from: periodStart.toISOString(),
         to: periodEnd.toISOString(),
-      })
+      }),
     );
   };
-
 
   const handleDownloadWeek = async () => {
     try {
@@ -88,13 +86,13 @@ export const TimesheetList = () => {
           userId: user?.id,
           periodStart: periodStart.toISOString(),
           periodEnd: periodEnd.toISOString(),
-        })
+        }),
       );
 
       if (downloadTimesheet.fulfilled.match(resultAction)) {
         const blob = resultAction.payload;
         const url = window.URL.createObjectURL(blob);
-        const link = document.createElement("a");
+        const link = document.createElement('a');
         link.href = url;
         link.download = `Timesheet_${periodStart.toLocaleDateString()}_to_${periodEnd.toLocaleDateString()}.csv`;
         document.body.appendChild(link);
@@ -102,10 +100,10 @@ export const TimesheetList = () => {
         document.body.removeChild(link);
         window.URL.revokeObjectURL(url);
       } else {
-        console.error("Download failed:", resultAction.payload);
+        console.error('Download failed:', resultAction.payload);
       }
     } catch (error) {
-      console.error("Unexpected error downloading timesheet:", error);
+      console.error('Unexpected error downloading timesheet:', error);
     }
   };
 
@@ -137,7 +135,7 @@ export const TimesheetList = () => {
       const match = submittedList.find(
         (t) =>
           new Date(t.periodStart).toISOString() === periodStart.toISOString() &&
-          new Date(t.periodEnd).toISOString() === periodEnd.toISOString()
+          new Date(t.periodEnd).toISOString() === periodEnd.toISOString(),
       );
       if (match?.status) {
         return match.status.toUpperCase() as 'SUBMITTED' | 'APPROVED' | 'REJECTED';
@@ -151,14 +149,13 @@ export const TimesheetList = () => {
     return 'NOT_SUBMITTED';
   }, [submittedList, submissionStatus, periodStart, periodEnd]);
 
-
   const handleWeekChange = async (value: string) => {
     setAnchorDate(new Date(value));
     await dispatch(
       checkSubmissionStatus({
         periodStart: periodStart.toISOString(),
         periodEnd: periodEnd.toISOString(),
-      })
+      }),
     );
   };
 
@@ -210,12 +207,17 @@ export const TimesheetList = () => {
               </tr>
             ) : (
               formatTimeEntries().map((entry) => (
-                <tr key={entry.id} className="text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                <tr
+                  key={entry.id}
+                  className="text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                >
                   <td className="p-4">{entry.date}</td>
                   <td className="p-4">{entry.checkIn}</td>
                   <td className="p-4">{entry.checkOut}</td>
                   <td className="p-4">{entry.mealBreak}</td>
-                  <td className="p-4 font-medium text-blue-600 dark:text-blue-400">{entry.workingHours}</td>
+                  <td className="p-4 font-medium text-blue-600 dark:text-blue-400">
+                    {entry.workingHours}
+                  </td>
                 </tr>
               ))
             )}
@@ -232,7 +234,7 @@ export const TimesheetList = () => {
           <Download size={16} /> Export
         </button>
 
-        {(weekStatus === "REJECTED") && (
+        {weekStatus === 'REJECTED' && (
           <button
             className="px-4 py-2 bg-blue-500 text-white rounded-md hover:opacity-80 transition-all disabled:opacity-50"
             onClick={handleSubmitWeek}
@@ -242,7 +244,7 @@ export const TimesheetList = () => {
           </button>
         )}
 
-        {weekStatus === "SUBMITTED" && (
+        {weekStatus === 'SUBMITTED' && (
           <button
             className="px-4 py-2 bg-gray-400 text-white rounded-md cursor-not-allowed"
             disabled
@@ -251,14 +253,10 @@ export const TimesheetList = () => {
           </button>
         )}
 
-        {weekStatus === "APPROVED" && (
-          <span className="px-4 py-2 bg-gray-400  text-white rounded-md">
-            Approved
-          </span>
+        {weekStatus === 'APPROVED' && (
+          <span className="px-4 py-2 bg-gray-400  text-white rounded-md">Approved</span>
         )}
       </div>
-
-
     </div>
   );
 };

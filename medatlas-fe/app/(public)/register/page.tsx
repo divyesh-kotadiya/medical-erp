@@ -23,14 +23,14 @@ export default function RegisterPage() {
   const [isFormValid, setIsFormValid] = useState(false);
   const [errors, setErrors] = useState({
     email: '',
-    password: ''
+    password: '',
   });
 
   useEffect(() => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const newErrors = {
       email: '',
-      password: ''
+      password: '',
     };
 
     if (email && !emailRegex.test(email)) {
@@ -44,54 +44,57 @@ export default function RegisterPage() {
     setErrors(newErrors);
     setIsFormValid(
       fullName.length > 0 &&
-      email.length > 0 &&
-      password.length >= 8 &&
-      emailRegex.test(email) &&
-      Object.values(newErrors).every(error => error === '')
+        email.length > 0 &&
+        password.length >= 8 &&
+        emailRegex.test(email) &&
+        Object.values(newErrors).every((error) => error === ''),
     );
   }, [fullName, email, password]);
 
   async function onSubmit() {
     if (!fullName || !email || !password) {
-      enqueueSnackbar("Please fill all fields.", { variant: "warning" });
+      enqueueSnackbar('Please fill all fields.', { variant: 'warning' });
       return;
     }
 
     try {
-      const resultAction = await dispatch(register({
-        name: fullName,
-        email,
-        password
-      }));
+      const resultAction = await dispatch(
+        register({
+          name: fullName,
+          email,
+          password,
+        }),
+      );
 
       if (register.fulfilled.match(resultAction)) {
-        enqueueSnackbar("Please Varifiy Otp", { variant: "success" });
+        enqueueSnackbar('Please Varifiy Otp', { variant: 'success' });
         router.push('/verify-otp');
       } else {
-        const errorMessage = (resultAction?.payload as { message?: string })?.message || "Registration failed";
-        enqueueSnackbar(errorMessage, { variant: "error" });
+        const errorMessage =
+          (resultAction?.payload as { message?: string })?.message || 'Registration failed';
+        enqueueSnackbar(errorMessage, { variant: 'error' });
       }
     } catch {
-      enqueueSnackbar("Something went wrong.", { variant: "error" });
+      enqueueSnackbar('Something went wrong.', { variant: 'error' });
     }
   }
 
   const features = [
     {
       icon: <UserPlus className="h-6 w-6 text-accent" />,
-      title: "Easy Setup",
-      description: "Quick and secure account creation process"
+      title: 'Easy Setup',
+      description: 'Quick and secure account creation process',
     },
     {
       icon: <Building className="h-6 w-6 text-accent" />,
-      title: "Organization Management",
-      description: "Manage your healthcare organization efficiently"
+      title: 'Organization Management',
+      description: 'Manage your healthcare organization efficiently',
     },
     {
       icon: <CheckCircle className="h-6 w-6 text-accent" />,
-      title: "HIPAA Compliant",
-      description: "Full compliance with healthcare data protection standards"
-    }
+      title: 'HIPAA Compliant',
+      description: 'Full compliance with healthcare data protection standards',
+    },
   ];
 
   return (
@@ -134,19 +137,12 @@ export default function RegisterPage() {
             <PasswordStrength password={password} />
           </div>
 
-          <AuthButton
-            onClick={onSubmit}
-            loading={loading}
-            disabled={!isFormValid}
-          >
+          <AuthButton onClick={onSubmit} loading={loading} disabled={!isFormValid}>
             Create Account
           </AuthButton>
 
           <div className="text-center text-sm text-muted-foreground">
-            Already have an account?{' '}
-            <AuthLink href="/login">
-              Sign in
-            </AuthLink>
+            Already have an account? <AuthLink href="/login">Sign in</AuthLink>
           </div>
         </div>
       </AuthCard>

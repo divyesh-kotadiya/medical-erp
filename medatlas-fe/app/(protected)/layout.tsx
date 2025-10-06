@@ -5,12 +5,7 @@ import { ThemeProvider } from '@/components/providers/themee/theme-provider';
 
 export default function ProtectedLayout({ children }: { children: React.ReactNode }) {
   return (
-    <ThemeProvider
-      attribute="class"
-      defaultTheme="system"
-      enableSystem
-      disableTransitionOnChange
-    >
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
       <OrgGuard>
         <RequireAuth>
           <DashboardLayout>

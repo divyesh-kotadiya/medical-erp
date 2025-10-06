@@ -1,5 +1,5 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { api } from "@/lib/api/client";
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { api } from '@/lib/api/client';
 
 export interface Invite {
   status: string;
@@ -31,83 +31,72 @@ const initialState: InviteState = {
 };
 
 export const inviteMember = createAsyncThunk(
-  "invite/inviteMember",
-  async (
-    { email, role }: { email: string; role?: string; },
-    { rejectWithValue }
-  ) => {
+  'invite/inviteMember',
+  async ({ email, role }: { email: string; role?: string }, { rejectWithValue }) => {
     try {
-      const { data } = await api.post("/invites", { email, role });
+      const { data } = await api.post('/invites', { email, role });
       return data;
     } catch (e: any) {
       if (e.response?.data) return rejectWithValue(e.response.data);
-      return rejectWithValue("Network error");
+      return rejectWithValue('Network error');
     }
-  }
+  },
 );
 
-
 export const fetchInvites = createAsyncThunk(
-  "invite/fetchInvites",
-  async (
-    { page, limit }: { page: number; limit: number;},
-    { rejectWithValue }
-  ) => {
+  'invite/fetchInvites',
+  async ({ page, limit }: { page: number; limit: number }, { rejectWithValue }) => {
     try {
-      const { data } = await api.post("/invites/tenant/list", { page, limit });
+      const { data } = await api.post('/invites/tenant/list', { page, limit });
       return data;
     } catch (e: any) {
       if (e.response?.data) return rejectWithValue(e.response.data);
-      return rejectWithValue("Network error");
+      return rejectWithValue('Network error');
     }
-  }
+  },
 );
 
 export const fetchMyInvites = createAsyncThunk(
-  "invite/fetchMyInvites",
-  async (
-    { page = 1, limit = 10 }: { page?: number; limit?: number } = {},
-    { rejectWithValue }
-  ) => {
+  'invite/fetchMyInvites',
+  async ({ page = 1, limit = 10 }: { page?: number; limit?: number } = {}, { rejectWithValue }) => {
     try {
-      const { data } = await api.get("/invites/me", { page, limit });
+      const { data } = await api.get('/invites/me', { page, limit });
 
       return data;
     } catch (e: any) {
-      return rejectWithValue(e.response?.data || "Network error");
+      return rejectWithValue(e.response?.data || 'Network error');
     }
-  }
+  },
 );
 
-
 export const acceptInvite = createAsyncThunk(
-  "invite/acceptInvite",
+  'invite/acceptInvite',
   async (token: string, { rejectWithValue }) => {
     try {
-      const { data } = await api.post("/invites/accept", { token });
+      const { data } = await api.post('/invites/accept', { token });
       return data;
     } catch (e: any) {
       if (e.response?.data) return rejectWithValue(e.response.data);
-      return rejectWithValue("Network error");
+      return rejectWithValue('Network error');
     }
-  }
+  },
 );
 
 export const rejectInvite = createAsyncThunk(
-  "invite/rejectInvite",
+  'invite/rejectInvite',
   async (token: string, { rejectWithValue }) => {
     try {
-      const { data } = await api.post("/invites/reject", { token });
+      const { data } = await api.post('/invites/reject', { token });
       return data;
     } catch (e: any) {
       if (e.response?.data) return rejectWithValue(e.response.data);
-      return rejectWithValue("Network error");
+      return rejectWithValue('Network error');
     }
-  }
+  },
 );
 
 const inviteSlice = createSlice({
-  name: "invite",
+  name: 'invite',
   initialState,
   reducers: {
     clearInvites: (state) => {
@@ -118,12 +107,12 @@ const inviteSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder.addCase(inviteMember.pending, (state) => {
-      state.loading = true
+      state.loading = true;
       state.creating = true;
       state.error = undefined;
     });
     builder.addCase(inviteMember.fulfilled, (state, action) => {
-      state.loading =  false;
+      state.loading = false;
       state.creating = false;
       state.invites.unshift(action.payload);
     });

@@ -1,8 +1,8 @@
-'use client'
+'use client';
 
-import { Clock } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { Clock } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import {
   clockIn,
   clockOut,
@@ -13,18 +13,14 @@ import {
   fetchEntries,
   clearError,
   resetTimesheetState,
-} from "@/store/slices/timesheets";
-import {
-  formatHoursAsHhMm,
-  getTodayBreakMinutes,
-  mapEntryToDisplay,
-} from "@/lib/time";
+} from '@/store/slices/timesheets';
+import { formatHoursAsHhMm, getTodayBreakMinutes, mapEntryToDisplay } from '@/lib/time';
 
 export default function Verification() {
   const dispatch = useAppDispatch();
-  const { currentOrganization } = useAppSelector((state) => state.organizations)
+  const { currentOrganization } = useAppSelector((state) => state.organizations);
   const { entries, status, dailySummary, loading, error } = useAppSelector(
-    (state) => state.timesheets
+    (state) => state.timesheets,
   );
 
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -60,7 +56,12 @@ export default function Verification() {
   };
 
   const formatDate = (date: Date) => {
-    return date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' });
+    return date.toLocaleDateString('en-US', {
+      weekday: 'long',
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
   };
 
   const handleClockAction = async () => {
@@ -71,7 +72,7 @@ export default function Verification() {
         dispatch(clockIn({ tenantId: currentOrganization.id }));
       }
     }
-  }
+  };
 
   const handleBreakAction = async () => {
     if (status.isOnBreak) {
@@ -98,8 +99,19 @@ export default function Verification() {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
         <h2 className="text-2xl font-bold text-foreground flex items-center mb-4 md:mb-0">
           <span className="bg-primary/10 p-2.5 rounded-lg mr-3">
-            <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            <svg
+              className="w-6 h-6 text-primary"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+              ></path>
             </svg>
           </span>
           Electronic Visit Verification
@@ -113,7 +125,9 @@ export default function Verification() {
         <div className="bg-gradient-to-br from-primary/5 to-primary/10 p-5 rounded-xl border border-primary/20 transition-all duration-300 hover:shadow-card">
           <div className="text-sm text-muted-foreground mb-2">CURRENT STATUS</div>
           <div className="flex items-center justify-between">
-            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${status.isClockedIn ? 'bg-success/10 text-success' : 'bg-muted text-muted-foreground'}`}>
+            <span
+              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${status.isClockedIn ? 'bg-success/10 text-success' : 'bg-muted text-muted-foreground'}`}
+            >
               {status.isClockedIn ? 'Clocked In' : 'Clocked Out'}
             </span>
             <button
@@ -137,16 +151,23 @@ export default function Verification() {
 
         <div className="bg-gradient-to-br from-primary/5 to-primary/10 p-5 rounded-xl border border-primary/20 transition-all duration-300 hover:shadow-card">
           <div className="text-sm text-muted-foreground mb-1">TODAY&apos;S HOURS</div>
-          <div className="text-2xl font-bold text-foreground">{formatHoursAsHhMm(dailySummary.hours)} hrs</div>
+          <div className="text-2xl font-bold text-foreground">
+            {formatHoursAsHhMm(dailySummary.hours)} hrs
+          </div>
           <div className="mt-3 text-sm text-muted-foreground">
-            This Period: <span className="font-medium text-foreground">{formatHoursAsHhMm(dailySummary.hours * 7)} hrs</span>
+            This Period:{' '}
+            <span className="font-medium text-foreground">
+              {formatHoursAsHhMm(dailySummary.hours * 7)} hrs
+            </span>
           </div>
         </div>
 
         <div className="bg-gradient-to-br from-primary/5 to-primary/10 p-5 rounded-xl border border-primary/20 transition-all duration-300 hover:shadow-card">
           <div className="text-sm text-muted-foreground mb-2">BREAK STATUS</div>
           <div className="flex items-center justify-between">
-            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${status.isOnBreak ? 'bg-warning/10 text-warning' : 'bg-muted text-muted-foreground'}`}>
+            <span
+              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${status.isOnBreak ? 'bg-warning/10 text-warning' : 'bg-muted text-muted-foreground'}`}
+            >
               {status.isOnBreak ? 'On Break' : 'Active'}
             </span>
             <button
@@ -199,10 +220,13 @@ export default function Verification() {
                   <td className="p-4">{entry.mealBreak}</td>
                   <td className="p-4 font-medium text-primary">{entry.workingHours}</td>
                   <td className="p-4">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${entry.status === 'completed'
-                      ? 'bg-success/10 text-success'
-                      : 'bg-primary/10 text-primary'
-                      }`}>
+                    <span
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        entry.status === 'completed'
+                          ? 'bg-success/10 text-success'
+                          : 'bg-primary/10 text-primary'
+                      }`}
+                    >
                       {entry.status === 'completed' ? 'Completed' : 'In Progress'}
                     </span>
                   </td>

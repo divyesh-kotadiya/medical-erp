@@ -7,6 +7,8 @@ export interface AuthState {
     id: string;
     email: string;
     name: string;
+    avater: string;
+    phone: string;
   } | null;
   loading: boolean;
   error?: string;
@@ -30,7 +32,7 @@ export const login = createAsyncThunk(
     } catch (e: any) {
       return rejectWithValue(e.response?.data || 'Network error');
     }
-  }
+  },
 );
 
 export const verifyOtp = createAsyncThunk(
@@ -42,7 +44,7 @@ export const verifyOtp = createAsyncThunk(
     } catch (e: any) {
       return rejectWithValue(e.response?.data || 'Network error');
     }
-  }
+  },
 );
 
 export const register = createAsyncThunk(
@@ -54,7 +56,7 @@ export const register = createAsyncThunk(
     } catch (e: any) {
       return rejectWithValue(e.response?.data || 'Network error');
     }
-  }
+  },
 );
 
 export const forgotPassword = createAsyncThunk(
@@ -66,7 +68,7 @@ export const forgotPassword = createAsyncThunk(
     } catch (e: any) {
       return rejectWithValue(e.response?.data || 'Network error');
     }
-  }
+  },
 );
 
 export const resetPassword = createAsyncThunk(
@@ -78,32 +80,17 @@ export const resetPassword = createAsyncThunk(
     } catch (e: any) {
       return rejectWithValue(e.response?.data || 'Network error');
     }
-  }
+  },
 );
 
-export const fetchMe = createAsyncThunk(
-  'auth/me',
-  async (_, { rejectWithValue }) => {
-    try {
-      const { data } = await api.get('/auth/me');
-      return data;
-    } catch (e: any) {
-      return rejectWithValue(e.response?.data || 'Network error');
-    }
+export const fetchMe = createAsyncThunk('auth/me', async (_, { rejectWithValue }) => {
+  try {
+    const { data } = await api.get('/auth/profile');
+    return data;
+  } catch (e: any) {
+    return rejectWithValue(e.response?.data || 'Network error');
   }
-);
-
-export const refreshTokens = createAsyncThunk(
-  'auth/refresh',
-  async (_, { rejectWithValue }) => {
-    try {
-      const { data } = await api.post('/auth/refresh');
-      return data;
-    } catch (e: any) {
-      return rejectWithValue(e.response?.data || 'Network error');
-    }
-  }
-);
+});
 
 export const resendOtp = createAsyncThunk(
   'auth/resendOtp',
@@ -114,7 +101,7 @@ export const resendOtp = createAsyncThunk(
     } catch (e: any) {
       return rejectWithValue(e.response?.data || 'Network error');
     }
-  }
+  },
 );
 
 const authSlice = createSlice({
@@ -131,92 +118,139 @@ const authSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(login.pending, (state) => { state.loading = true; state.error = undefined; })
-      .addCase(login.fulfilled, (state, action: PayloadAction<{ message: string; userId: string }>) => {
-        state.loading = false;
-        state.userIdForOtp = action.payload.userId;
+      .addCase(login.pending, (state) => {
+        state.loading = true;
+        state.error = undefined;
       })
+      .addCase(
+        login.fulfilled,
+        (state, action: PayloadAction<{ message: string; userId: string }>) => {
+          state.loading = false;
+          state.userIdForOtp = action.payload.userId;
+        },
+      )
       .addCase(login.rejected, (state, action) => {
         state.loading = false;
         state.error = (action.payload as any)?.message || action.error.message || 'Login failed';
       });
 
     builder
-      .addCase(verifyOtp.pending, (state) => { state.loading = true; state.error = undefined; })
-      .addCase(verifyOtp.fulfilled, (state, action: PayloadAction<{ data: { id: string; name: string; email: string }; accessToken: string }>) => {
-        state.loading = false;
-        state.isAuthenticated = true;
-        localStorage.setItem('token', action.payload.accessToken);  
-        state.user = action.payload.data;
-        state.userIdForOtp = undefined;
+      .addCase(verifyOtp.pending, (state) => {
+        state.loading = true;
+        state.error = undefined;
       })
+      .addCase(
+        verifyOtp.fulfilled,
+        (
+          state,
+          action: PayloadAction<{
+            data: { id: string; name: string; email: string };
+            accessToken: string;
+          }>,
+        ) => {
+          state.loading = false;
+          state.isAuthenticated = true;
+          localStorage.setItem('token', action.payload.accessToken);
+          state.user = action.payload.data;
+          state.userIdForOtp = undefined;
+        },
+      )
       .addCase(verifyOtp.rejected, (state, action) => {
         state.loading = false;
-        state.error = (action.payload as any)?.message || action.error.message || 'OTP verification failed';
+        state.error =
+          (action.payload as any)?.message || action.error.message || 'OTP verification failed';
       });
 
     builder
-      .addCase(register.pending, (state) => { state.loading = true; state.error = undefined; })
-      .addCase(register.fulfilled, (state, action: PayloadAction<{ message: string; userId: string }>) => {
-        state.loading = false;
-        state.userIdForOtp = action.payload.userId;
+      .addCase(register.pending, (state) => {
+        state.loading = true;
+        state.error = undefined;
       })
+      .addCase(
+        register.fulfilled,
+        (state, action: PayloadAction<{ message: string; userId: string }>) => {
+          state.loading = false;
+          state.userIdForOtp = action.payload.userId;
+        },
+      )
       .addCase(register.rejected, (state, action) => {
         state.loading = false;
-        state.error = (action.payload as any)?.message || action.error.message || 'Registration failed';
+        state.error =
+          (action.payload as any)?.message || action.error.message || 'Registration failed';
       });
 
     builder
-      .addCase(forgotPassword.pending, (state) => { state.loading = true; state.error = undefined; })
-      .addCase(forgotPassword.fulfilled, (state, action: PayloadAction<{ message: string; userId: string }>) => {
-        state.loading = false;
-        state.userIdForOtp = action.payload.userId;
+      .addCase(forgotPassword.pending, (state) => {
+        state.loading = true;
+        state.error = undefined;
       })
+      .addCase(
+        forgotPassword.fulfilled,
+        (state, action: PayloadAction<{ message: string; userId: string }>) => {
+          state.loading = false;
+          state.userIdForOtp = action.payload.userId;
+        },
+      )
       .addCase(forgotPassword.rejected, (state, action) => {
         state.loading = false;
-        state.error = (action.payload as any)?.message || action.error.message || 'Forgot password failed';
+        state.error =
+          (action.payload as any)?.message || action.error.message || 'Forgot password failed';
       });
 
     builder
-      .addCase(resetPassword.pending, (state) => { state.loading = true; state.error = undefined; })
-      .addCase(resetPassword.fulfilled, (state) => { state.loading = false; state.userIdForOtp = undefined; })
+      .addCase(resetPassword.pending, (state) => {
+        state.loading = true;
+        state.error = undefined;
+      })
+      .addCase(resetPassword.fulfilled, (state) => {
+        state.loading = false;
+        state.userIdForOtp = undefined;
+      })
       .addCase(resetPassword.rejected, (state, action) => {
         state.loading = false;
-        state.error = (action.payload as any)?.message || action.error.message || 'Reset password failed';
+        state.error =
+          (action.payload as any)?.message || action.error.message || 'Reset password failed';
       });
 
     builder
-      .addCase(fetchMe.pending, (state) => { state.loading = true; state.error = undefined; })
-      .addCase(fetchMe.fulfilled, (state, action: PayloadAction<{ data: { id: string; name: string; email: string }; token: string }>) => {
-        state.loading = false;
-        state.isAuthenticated = true;
-        state.user = action.payload.data;
+      .addCase(fetchMe.pending, (state) => {
+        state.loading = true;
+        state.error = undefined;
       })
+      .addCase(
+        fetchMe.fulfilled,
+        (
+          state,
+          action: PayloadAction<{
+            data: { id: string; name: string; email: string };
+            token: string;
+          }>,
+        ) => {
+          state.loading = false;
+          state.isAuthenticated = true;
+          state.user = action.payload;
+        },
+      )
       .addCase(fetchMe.rejected, (state, action) => {
         state.loading = false;
-        state.error = (action.payload as any)?.message || action.error.message || 'Fetch user failed';
+        state.error =
+          (action.payload as any)?.message || action.error.message || 'Fetch user failed';
         state.isAuthenticated = false;
         state.user = null;
       });
 
     builder
-      .addCase(refreshTokens.pending, (state) => { state.loading = true; state.error = undefined; })
-      .addCase(refreshTokens.fulfilled, (state) => {
-        state.isAuthenticated = true;
+      .addCase(resendOtp.pending, (state) => {
+        state.loading = true;
+        state.error = undefined;
+      })
+      .addCase(resendOtp.fulfilled, (state) => {
         state.loading = false;
       })
-      .addCase(refreshTokens.rejected, (state) => {
-        state.isAuthenticated = false;
-        state.user = null;
-        state.loading = false;
-      });
-
-    builder
-      .addCase(resendOtp.pending, (state) => { state.loading = true; state.error = undefined; })
-      .addCase(resendOtp.fulfilled, (state) => { state.loading = false; })
       .addCase(resendOtp.rejected, (state, action) => {
         state.loading = false;
-        state.error = (action.payload as any)?.message || action.error.message || 'Resend OTP failed';
+        state.error =
+          (action.payload as any)?.message || action.error.message || 'Resend OTP failed';
       });
   },
 });

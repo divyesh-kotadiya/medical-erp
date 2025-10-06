@@ -8,7 +8,7 @@ const persistConfig = {
   key: 'root',
   version: 1,
   storage,
-  whitelist: ['auth','timesheets'],
+  whitelist: ['auth', 'timesheets'],
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

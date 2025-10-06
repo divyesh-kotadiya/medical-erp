@@ -36,7 +36,6 @@ export const ALLOWED_CATEGORIES: DocumentCategoryType[] = [
   'Prescriptions',
 ];
 
-
 export interface Document {
   _id: string;
   filename: string;

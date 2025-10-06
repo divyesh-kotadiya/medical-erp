@@ -12,7 +12,7 @@ import {
   Calendar,
   FileText,
   ArrowRight,
-  Star
+  Star,
 } from 'lucide-react';
 import { useAuthRedirect } from '@/hooks/useAuthRedirect';
 
@@ -20,33 +20,33 @@ const features = [
   {
     icon: Shield,
     title: 'Secure & Compliant',
-    description: 'HIPAA-compliant infrastructure ensuring your medical data stays protected.'
+    description: 'HIPAA-compliant infrastructure ensuring your medical data stays protected.',
   },
   {
     icon: Users,
     title: 'Team Management',
-    description: 'Efficiently manage your healthcare team with role-based access controls.'
+    description: 'Efficiently manage your healthcare team with role-based access controls.',
   },
   {
     icon: Calendar,
     title: 'Smart Scheduling',
-    description: 'Automated scheduling system that optimizes staff allocation and patient care.'
+    description: 'Automated scheduling system that optimizes staff allocation and patient care.',
   },
   {
     icon: Clock,
     title: 'Time Tracking',
-    description: 'Comprehensive timesheet management for accurate payroll and compliance.'
+    description: 'Comprehensive timesheet management for accurate payroll and compliance.',
   },
   {
     icon: BarChart3,
     title: 'Analytics & Reports',
-    description: 'Real-time insights and detailed reports to improve operational efficiency.'
+    description: 'Real-time insights and detailed reports to improve operational efficiency.',
   },
   {
     icon: FileText,
     title: 'Document Management',
-    description: 'Centralized document storage with version control and secure sharing.'
-  }
+    description: 'Centralized document storage with version control and secure sharing.',
+  },
 ];
 
 const testimonials = [
@@ -54,16 +54,18 @@ const testimonials = [
     name: 'Dr. Michael Chen',
     role: 'Chief Medical Officer',
     hospital: 'Metropolitan General',
-    content: 'MedAtlas transformed our workflow efficiency by 40%. The intuitive interface makes staff management effortless.',
-    rating: 5
+    content:
+      'MedAtlas transformed our workflow efficiency by 40%. The intuitive interface makes staff management effortless.',
+    rating: 5,
   },
   {
     name: 'Sarah Williams',
     role: 'Nursing Director',
     hospital: 'City Medical Center',
-    content: 'Finally, a healthcare management system that actually understands our needs. Scheduling has never been easier.',
-    rating: 5
-  }
+    content:
+      'Finally, a healthcare management system that actually understands our needs. Scheduling has never been easier.',
+    rating: 5,
+  },
 ];
 
 export const LandingPage = () => {
@@ -103,11 +105,15 @@ export const LandingPage = () => {
                 </span>
               </h1>
               <p className="text-xl text-white/90 mb-8 max-w-2xl">
-                The all-in-one platform for healthcare management. Schedule staff, track time, manage incidents, and generate insights—all in one secure, HIPAA-compliant system.
+                The all-in-one platform for healthcare management. Schedule staff, track time,
+                manage incidents, and generate insights—all in one secure, HIPAA-compliant system.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <Link href="/register">
-                  <Button size="lg" className="bg-white text-primary hover:bg-white/90 font-semibold">
+                  <Button
+                    size="lg"
+                    className="bg-white text-primary hover:bg-white/90 font-semibold"
+                  >
                     Start Free Trial
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
@@ -140,13 +146,17 @@ export const LandingPage = () => {
               Everything you need to manage healthcare operations
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              From staff scheduling to incident tracking, MedAtlas provides comprehensive tools designed specifically for healthcare environments.
+              From staff scheduling to incident tracking, MedAtlas provides comprehensive tools
+              designed specifically for healthcare environments.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature, index) => (
-              <Card key={index} className="group hover:shadow-elevated transition-all duration-300 border-border/50">
+              <Card
+                key={index}
+                className="group hover:shadow-elevated transition-all duration-300 border-border/50"
+              >
                 <CardContent className="p-6">
                   <div className="mb-4">
                     <div className="h-12 w-12 bg-gradient-primary rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
@@ -199,7 +209,8 @@ export const LandingPage = () => {
             Ready to transform your healthcare operations?
           </h2>
           <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
-            Join hundreds of healthcare facilities already using MedAtlas to improve efficiency and patient care.
+            Join hundreds of healthcare facilities already using MedAtlas to improve efficiency and
+            patient care.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/register">

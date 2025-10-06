@@ -1,9 +1,9 @@
-import { ensureValidObjectId } from 'src/common/utils/mongo.util';
 import {
   Injectable,
   BadRequestException,
   UnauthorizedException,
   Logger,
+  NotFoundException,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { InjectModel } from '@nestjs/mongoose';
@@ -17,15 +17,24 @@ import { EmailService } from 'src/common/email/email.service';
 import { RegisterDto } from './dto/register.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
+import { ensureValidObjectId } from 'src/common/utils/mongo.util';
+import { existsSync, mkdirSync, unlinkSync } from 'fs';
+import { join } from 'path';
 @Injectable()
 export class UsersService {
   private readonly logger = new Logger(UsersService.name);
+  private readonly uploadsDir = join(process.cwd(), 'uploads');
 
   constructor(
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     private hashService: HashService,
     private emailService: EmailService,
-  ) { }
+  ) {
+    if (!existsSync(this.uploadsDir)) {
+      mkdirSync(this.uploadsDir, { recursive: true });
+    }
+  }
 
   async loginOtp(dto: LoginDto) {
     const { email, password } = dto;
@@ -117,6 +126,7 @@ export class UsersService {
 
     user.otpCode = undefined;
     user.otpExpiresAt = undefined;
+    user.lastLoginAt = new Date();
     await user.save();
 
     const accessToken = this.hashService.generateAccessToken(user);
@@ -236,5 +246,108 @@ export class UsersService {
     );
 
     return { message: 'Password reset successful' };
+  }
+
+  async getUserById(userId: string): Promise<UserDocument> {
+    ensureValidObjectId(userId);
+    const user = await this.userModel
+      .findById(userId)
+      .select('-password -__v -updatedAt -createdAt -lastLoginAt -disabled');
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
+  }
+
+  async updateProfile(
+    userId: string,
+    updateProfileDto: UpdateProfileDto,
+    avatarFile?: Express.Multer.File,
+  ): Promise<UserDocument> {
+    ensureValidObjectId(userId);
+    const user = await this.userModel.findById(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (updateProfileDto.name) user.name = updateProfileDto.name;
+    if (updateProfileDto.email) user.email = updateProfileDto.email;
+    if (updateProfileDto.phone) user.phone = updateProfileDto.phone;
+
+    if (avatarFile) {
+      if (user.avatar) {
+        const oldAvatarPath = join(process.cwd(), user.avatar);
+        if (existsSync(oldAvatarPath)) {
+          unlinkSync(oldAvatarPath);
+        }
+      }
+
+      const avatarDir = join(this.uploadsDir, 'avatars');
+      if (!existsSync(avatarDir)) {
+        mkdirSync(avatarDir, { recursive: true });
+      }
+
+      if (avatarFile) {
+        if (user.avatar) {
+          const oldAvatarPath = join(process.cwd(), user.avatar);
+          if (existsSync(oldAvatarPath)) {
+            unlinkSync(oldAvatarPath);
+          }
+        }
+
+        user.avatar = `/uploads/avatars/${avatarFile.filename}`;
+      }
+    }
+
+    await user.save();
+    return this.getUserById(userId);
+  }
+
+  async changePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<{ message: string }> {
+    ensureValidObjectId(userId);
+    const user = await this.userModel.findById(userId);
+    if (!user?.password) {
+      throw new NotFoundException('User not found');
+    }
+
+    const isCurrentPasswordValid = await this.hashService.verifyPassword(
+      currentPassword,
+      user?.password,
+    );
+
+    if (!isCurrentPasswordValid) {
+      throw new UnauthorizedException('Current password is incorrect');
+    }
+
+    const hashedNewPassword = await this.hashService.hashPassword(newPassword);
+    user.password = hashedNewPassword;
+    await user.save();
+
+    this.logger.log(`User ${user.email} changed password successfully`);
+
+    return { message: 'Password changed successfully' };
+  }
+
+  async delete(userId: string): Promise<boolean> {
+    ensureValidObjectId(userId);
+    const user = await this.userModel.findById(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (user.avatar) {
+      const avatarPath = join(process.cwd(), user.avatar);
+      if (existsSync(avatarPath)) {
+        unlinkSync(avatarPath);
+      }
+    }
+
+    await this.userModel.deleteOne({ _id: userId });
+    this.logger.log(`User ${user.email} deleted successfully`);
+    return true;
   }
 }

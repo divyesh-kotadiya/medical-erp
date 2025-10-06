@@ -19,7 +19,7 @@ import { Request } from 'express';
 @UseGuards(JwtGuard)
 @Controller('shifts')
 export class ShiftController {
-  constructor(private readonly shiftService: ShiftService) { }
+  constructor(private readonly shiftService: ShiftService) {}
 
   @Post()
   async create(@Body() createShiftDto: CreateShiftDto): Promise<Shift> {

@@ -34,7 +34,7 @@ export class DocumentsController {
   constructor(
     private readonly documentsService: DocumentsService,
     private readonly fileUploadService: FileUploadService,
-  ) { }
+  ) {}
 
   private getContentType(filename: string): string {
     const ext = filename.split('.').pop()?.toLowerCase();

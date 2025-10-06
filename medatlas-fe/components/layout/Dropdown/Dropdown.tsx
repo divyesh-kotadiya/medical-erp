@@ -54,11 +54,7 @@ export default function CustomDropdown({
 
   return (
     <div className={clsx('relative', className)}>
-      {label && (
-        <label className="block text-sm font-medium text-foreground">
-          {label}
-        </label>
-      )}
+      {label && <label className="block text-sm font-medium text-foreground">{label}</label>}
 
       <button
         type="button"
@@ -70,7 +66,7 @@ export default function CustomDropdown({
           disabled
             ? 'bg-muted text-muted-foreground cursor-not-allowed'
             : 'bg-background text-foreground border-border',
-          buttonClassName
+          buttonClassName,
         )}
       >
         {options.find((opt) => opt.value === value)?.label || placeholder}
@@ -82,7 +78,7 @@ export default function CustomDropdown({
           className={clsx(
             'absolute z-10 mt-1 w-full rounded-lg border bg-card shadow-card max-h-48 overflow-y-auto',
             'border-border',
-            menuClassName
+            menuClassName,
           )}
         >
           {options.map((option) => {
@@ -98,12 +94,10 @@ export default function CustomDropdown({
                 className={clsx(
                   'cursor-pointer px-3 py-2 text-sm hover:bg-primary/10',
                   isSelected && 'bg-primary/10 font-medium text-primary',
-                  optionClassName
+                  optionClassName,
                 )}
               >
-                {renderOption
-                  ? renderOption(option, isSelected)
-                  : option.label}
+                {renderOption ? renderOption(option, isSelected) : option.label}
               </li>
             );
           })}

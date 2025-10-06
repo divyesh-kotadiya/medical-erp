@@ -10,13 +10,29 @@ export default function IncidentLayout({ children }: { children: React.ReactNode
 
   const tabs = id
     ? [
-        { label: 'Overview', href: `${siteConfig.baseLinks.incidents.incidentsList}/${id}`, icon: FileTextIcon },
-        { label: 'Attachments', href: `${siteConfig.baseLinks.incidents.incidentsList}/${id}/attachments`, icon: PaperclipIcon },
+        {
+          label: 'Overview',
+          href: `${siteConfig.baseLinks.incidents.incidentsList}/${id}`,
+          icon: FileTextIcon,
+        },
+        {
+          label: 'Attachments',
+          href: `${siteConfig.baseLinks.incidents.incidentsList}/${id}/attachments`,
+          icon: PaperclipIcon,
+        },
         { label: 'Go Back', href: `${siteConfig.baseLinks.incidents.goback}`, icon: ChevronLeft },
       ]
     : [
-        { label: 'Incident List', href: siteConfig.baseLinks.incidents.incidentsList, icon: ListIcon },
-        { label: 'Create Incident', href: siteConfig.baseLinks.incidents.incidentsCreate, icon: PlusCircleIcon },
+        {
+          label: 'Incident List',
+          href: siteConfig.baseLinks.incidents.incidentsList,
+          icon: ListIcon,
+        },
+        {
+          label: 'Create Incident',
+          href: siteConfig.baseLinks.incidents.incidentsCreate,
+          icon: PlusCircleIcon,
+        },
       ];
 
   return (

@@ -10,18 +10,14 @@ interface InputFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
 export default function InputField({ label, error, className, ...props }: InputFieldProps) {
   return (
     <div>
-      {label && (
-        <label className="block text-sm font-medium text-foreground mb-2">
-          {label}
-        </label>
-      )}
+      {label && <label className="block text-sm font-medium text-foreground mb-2">{label}</label>}
       <input
         {...props}
         className={clsx(
           'w-full border border-border rounded-lg px-4 py-3 bg-background',
           'focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary',
           error && 'border-destructive',
-          className
+          className,
         )}
       />
       {error && <p className="text-destructive text-sm mt-1">{error}</p>}

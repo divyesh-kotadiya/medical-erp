@@ -8,11 +8,13 @@ export interface TimeBreak {
 
 export interface TimeEntry {
   _id: string;
-  staffId: string | {
-    firstName?: string;
-    lastName?: string;
-    email?: string;
-  };
+  staffId:
+    | string
+    | {
+        firstName?: string;
+        lastName?: string;
+        email?: string;
+      };
   clockIn: string;
   clockOut?: string;
   breaks: TimeBreak[];
@@ -35,7 +37,14 @@ export interface TimesheetsState {
   dailySummary: DailySummary;
   weeklyHours?: number;
   lastSubmittedTimesheetId?: string | null;
-  submittedList?: Array<{ _id: string; staff: { name: string; email: string }; periodStart: string; periodEnd: string; hours: number; status: string }>;
+  submittedList?: Array<{
+    _id: string;
+    staff: { name: string; email: string };
+    periodStart: string;
+    periodEnd: string;
+    hours: number;
+    status: string;
+  }>;
   submissionStatus?: 'SUBMITTED' | 'APPROVED' | 'REJECTED';
   submissionMessage?: string;
   loading: boolean;
@@ -59,10 +68,12 @@ export const checkSubmissionStatus = createAsyncThunk(
   'timesheets/checkSubmissionStatus',
   async (
     { periodStart, periodEnd }: { periodStart: string; periodEnd: string },
-    { rejectWithValue }
+    { rejectWithValue },
   ) => {
     try {
-      const { data } = await api.get(`/timesheets/status?periodStart=${periodStart}&periodEnd=${periodEnd}`);
+      const { data } = await api.get(
+        `/timesheets/status?periodStart=${periodStart}&periodEnd=${periodEnd}`,
+      );
       return data;
     } catch (e: unknown) {
       if (typeof e === 'object' && e !== null && 'response' in e) {
@@ -73,7 +84,7 @@ export const checkSubmissionStatus = createAsyncThunk(
       }
       return rejectWithValue('Network error');
     }
-  }
+  },
 );
 
 export const clockIn = createAsyncThunk(
@@ -91,26 +102,23 @@ export const clockIn = createAsyncThunk(
       }
       return rejectWithValue('Network error');
     }
-  }
+  },
 );
 
-export const clockOut = createAsyncThunk(
-  'timesheets/clockOut',
-  async (_, { rejectWithValue }) => {
-    try {
-      const { data } = await api.post('/timesheets/clock-out');
-      return data;
-    } catch (e: unknown) {
-      if (typeof e === 'object' && e !== null && 'response' in e) {
-        const error = e as { response?: { data?: unknown } };
-        if (error.response && error.response.data) {
-          return rejectWithValue(error.response.data);
-        }
+export const clockOut = createAsyncThunk('timesheets/clockOut', async (_, { rejectWithValue }) => {
+  try {
+    const { data } = await api.post('/timesheets/clock-out');
+    return data;
+  } catch (e: unknown) {
+    if (typeof e === 'object' && e !== null && 'response' in e) {
+      const error = e as { response?: { data?: unknown } };
+      if (error.response && error.response.data) {
+        return rejectWithValue(error.response.data);
       }
-      return rejectWithValue('Network error');
     }
+    return rejectWithValue('Network error');
   }
-);
+});
 
 export const startBreak = createAsyncThunk(
   'timesheets/startBreak',
@@ -127,26 +135,23 @@ export const startBreak = createAsyncThunk(
       }
       return rejectWithValue('Network error');
     }
-  }
+  },
 );
 
-export const endBreak = createAsyncThunk(
-  'timesheets/endBreak',
-  async (_, { rejectWithValue }) => {
-    try {
-      const { data } = await api.post('/timesheets/end-break');
-      return data;
-    } catch (e: unknown) {
-      if (typeof e === 'object' && e !== null && 'response' in e) {
-        const error = e as { response?: { data?: unknown } };
-        if (error.response && error.response.data) {
-          return rejectWithValue(error.response.data);
-        }
+export const endBreak = createAsyncThunk('timesheets/endBreak', async (_, { rejectWithValue }) => {
+  try {
+    const { data } = await api.post('/timesheets/end-break');
+    return data;
+  } catch (e: unknown) {
+    if (typeof e === 'object' && e !== null && 'response' in e) {
+      const error = e as { response?: { data?: unknown } };
+      if (error.response && error.response.data) {
+        return rejectWithValue(error.response.data);
       }
-      return rejectWithValue('Network error');
     }
+    return rejectWithValue('Network error');
   }
-);
+});
 
 export const fetchStatus = createAsyncThunk(
   'timesheets/fetchStatus',
@@ -163,7 +168,7 @@ export const fetchStatus = createAsyncThunk(
       }
       return rejectWithValue('Network error');
     }
-  }
+  },
 );
 
 export const fetchDailySummary = createAsyncThunk(
@@ -181,7 +186,7 @@ export const fetchDailySummary = createAsyncThunk(
       }
       return rejectWithValue('Network error');
     }
-  }
+  },
 );
 
 export const fetchEntries = createAsyncThunk(
@@ -204,7 +209,7 @@ export const fetchEntries = createAsyncThunk(
       }
       return rejectWithValue('Network error');
     }
-  }
+  },
 );
 export const fetchAllEntries = createAsyncThunk(
   'timesheets/fetchAllEntries',
@@ -221,15 +226,12 @@ export const fetchAllEntries = createAsyncThunk(
       }
       return rejectWithValue('Network error');
     }
-  }
+  },
 );
 
 export const fetchWeeklyTotal = createAsyncThunk(
   'timesheets/fetchWeeklyTotal',
-  async (
-    payload: { periodStart: string; periodEnd: string },
-    { rejectWithValue }
-  ) => {
+  async (payload: { periodStart: string; periodEnd: string }, { rejectWithValue }) => {
     try {
       const { data } = await api.post('/timesheets/weekly-total', payload);
       return data as { hours: number };
@@ -242,15 +244,12 @@ export const fetchWeeklyTotal = createAsyncThunk(
       }
       return rejectWithValue('Network error');
     }
-  }
+  },
 );
 
 export const submitWeek = createAsyncThunk(
   'timesheets/submitWeek',
-  async (
-    payload: { periodStart: string; periodEnd: string },
-    { rejectWithValue }
-  ) => {
+  async (payload: { periodStart: string; periodEnd: string }, { rejectWithValue }) => {
     try {
       const { data } = await api.post('/timesheets/submit-week', payload);
       return data;
@@ -263,14 +262,14 @@ export const submitWeek = createAsyncThunk(
       }
       return rejectWithValue('Network error');
     }
-  }
+  },
 );
 
 export const fetchSubmittedTimesheets = createAsyncThunk(
   'timesheets/fetchSubmitted',
   async (
     payload: { from?: string; to?: string; userId?: string; page?: number; limit?: number },
-    { rejectWithValue }
+    { rejectWithValue },
   ) => {
     try {
       const params = new URLSearchParams();
@@ -281,7 +280,19 @@ export const fetchSubmittedTimesheets = createAsyncThunk(
       if (payload?.limit) params.set('limit', String(payload.limit));
       const qs = params.toString();
       const { data } = await api.get(`/timesheets/submitted${qs ? `?${qs}` : ''}`);
-      return data as { items: Array<{ _id: string; staff: { name: string; email: string }; periodStart: string; periodEnd: string; hours: number; status: string }>; total: number; page: number; limit: number };
+      return data as {
+        items: Array<{
+          _id: string;
+          staff: { name: string; email: string };
+          periodStart: string;
+          periodEnd: string;
+          hours: number;
+          status: string;
+        }>;
+        total: number;
+        page: number;
+        limit: number;
+      };
     } catch (e: unknown) {
       if (typeof e === 'object' && e !== null && 'response' in e) {
         const error = e as { response?: { data?: unknown } };
@@ -291,20 +302,16 @@ export const fetchSubmittedTimesheets = createAsyncThunk(
       }
       return rejectWithValue('Network error');
     }
-  }
+  },
 );
 
 export const approveTimesheet = createAsyncThunk(
   'timesheets/approve',
-  async (
-    payload: { timesheetId: string; approvedBy: string },
-    { rejectWithValue }
-  ) => {
+  async (payload: { timesheetId: string; approvedBy: string }, { rejectWithValue }) => {
     try {
-      const { data } = await api.patch(
-        `/timesheets/${payload.timesheetId}/approve`,
-        { approvedBy: payload.approvedBy }
-      );
+      const { data } = await api.patch(`/timesheets/${payload.timesheetId}/approve`, {
+        approvedBy: payload.approvedBy,
+      });
       return data;
     } catch (e: unknown) {
       if (typeof e === 'object' && e !== null && 'response' in e) {
@@ -315,14 +322,14 @@ export const approveTimesheet = createAsyncThunk(
       }
       return rejectWithValue('Network error');
     }
-  }
+  },
 );
 
 export const rejectTimesheet = createAsyncThunk(
   'timesheets/reject',
   async (
     payload: { timesheetId: string; rejectedBy: string; reason?: string },
-    { rejectWithValue }
+    { rejectWithValue },
   ) => {
     try {
       const { data } = await api.patch(`/timesheets/${payload.timesheetId}/reject`, {
@@ -339,7 +346,7 @@ export const rejectTimesheet = createAsyncThunk(
       }
       return rejectWithValue('Network error');
     }
-  }
+  },
 );
 
 export const deleteEntry = createAsyncThunk(
@@ -357,7 +364,7 @@ export const deleteEntry = createAsyncThunk(
       }
       return rejectWithValue('Network error');
     }
-  }
+  },
 );
 
 export const downloadTimesheet = createAsyncThunk<
@@ -386,9 +393,8 @@ export const downloadTimesheet = createAsyncThunk<
       }
       return rejectWithValue('Network error');
     }
-  }
+  },
 );
-
 
 const timesheetsSlice = createSlice({
   name: 'timesheets',
@@ -431,7 +437,7 @@ const timesheetsSlice = createSlice({
         state.loading = false;
         state.status.isClockedIn = false;
         state.status.isOnBreak = false;
-        const index = state.entries.findIndex(entry => entry._id === action.payload._id);
+        const index = state.entries.findIndex((entry) => entry._id === action.payload._id);
         if (index !== -1) {
           state.entries[index] = action.payload;
         }
@@ -453,7 +459,7 @@ const timesheetsSlice = createSlice({
         state.loading = false;
         state.status.isOnBreak = true;
         // Update the entry in the array
-        const index = state.entries.findIndex(entry => entry._id === action.payload._id);
+        const index = state.entries.findIndex((entry) => entry._id === action.payload._id);
         if (index !== -1) {
           state.entries[index] = action.payload;
         }
@@ -474,7 +480,7 @@ const timesheetsSlice = createSlice({
         state.loading = false;
         state.status.isOnBreak = false;
         // Update the entry in the array
-        const index = state.entries.findIndex(entry => entry._id === action.payload._id);
+        const index = state.entries.findIndex((entry) => entry._id === action.payload._id);
         if (index !== -1) {
           state.entries[index] = action.payload;
         }
@@ -506,7 +512,8 @@ const timesheetsSlice = createSlice({
         if (action.payload && typeof action.payload === 'object' && 'message' in action.payload) {
           state.error = (action.payload as { message: string }).message;
         } else {
-          state.error = (action.payload as string) || action.error?.message || 'Fetch entries failed';
+          state.error =
+            (action.payload as string) || action.error?.message || 'Fetch entries failed';
         }
       })
       .addCase(fetchAllEntries.pending, (state) => {
@@ -522,7 +529,8 @@ const timesheetsSlice = createSlice({
         if (action.payload && typeof action.payload === 'object' && 'message' in action.payload) {
           state.error = (action.payload as { message: string }).message;
         } else {
-          state.error = (action.payload as string) || action.error?.message || 'Fetch all entries failed';
+          state.error =
+            (action.payload as string) || action.error?.message || 'Fetch all entries failed';
         }
       })
       .addCase(fetchWeeklyTotal.fulfilled, (state, action: PayloadAction<{ hours: number }>) => {
@@ -550,16 +558,32 @@ const timesheetsSlice = createSlice({
         state.loading = true;
         state.error = undefined;
       })
-      .addCase(fetchSubmittedTimesheets.fulfilled, (state, action: PayloadAction<{ items: Array<{ _id: string; staff: { name: string; email: string }; periodStart: string; periodEnd: string; hours: number; status: string }> }>) => {
-        state.loading = false;
-        state.submittedList = action.payload.items;
-      })
+      .addCase(
+        fetchSubmittedTimesheets.fulfilled,
+        (
+          state,
+          action: PayloadAction<{
+            items: Array<{
+              _id: string;
+              staff: { name: string; email: string };
+              periodStart: string;
+              periodEnd: string;
+              hours: number;
+              status: string;
+            }>;
+          }>,
+        ) => {
+          state.loading = false;
+          state.submittedList = action.payload.items;
+        },
+      )
       .addCase(fetchSubmittedTimesheets.rejected, (state, action) => {
         state.loading = false;
         if (action.payload && typeof action.payload === 'object' && 'message' in action.payload) {
           state.error = (action.payload as { message: string }).message;
         } else {
-          state.error = (action.payload as string) || action.error?.message || 'Fetch submitted failed';
+          state.error =
+            (action.payload as string) || action.error?.message || 'Fetch submitted failed';
         }
       })
       .addCase(approveTimesheet.pending, (state) => {
@@ -574,7 +598,8 @@ const timesheetsSlice = createSlice({
         if (action.payload && typeof action.payload === 'object' && 'message' in action.payload) {
           state.error = (action.payload as { message: string }).message;
         } else {
-          state.error = (action.payload as string) || action.error?.message || 'Approve timesheet failed';
+          state.error =
+            (action.payload as string) || action.error?.message || 'Approve timesheet failed';
         }
       })
       .addCase(rejectTimesheet.pending, (state) => {
@@ -589,22 +614,27 @@ const timesheetsSlice = createSlice({
         if (action.payload && typeof action.payload === 'object' && 'message' in action.payload) {
           state.error = (action.payload as { message: string }).message;
         } else {
-          state.error = (action.payload as string) || action.error?.message || 'Reject timesheet failed';
+          state.error =
+            (action.payload as string) || action.error?.message || 'Reject timesheet failed';
         }
       })
       .addCase(deleteEntry.pending, (state) => {
         state.error = undefined;
       })
-      .addCase(deleteEntry.fulfilled, (state, action: PayloadAction<{ success: boolean; entryId: string }>) => {
-        if (action.payload.success) {
-          state.entries = state.entries.filter((e) => e._id !== action.payload.entryId);
-        }
-      })
+      .addCase(
+        deleteEntry.fulfilled,
+        (state, action: PayloadAction<{ success: boolean; entryId: string }>) => {
+          if (action.payload.success) {
+            state.entries = state.entries.filter((e) => e._id !== action.payload.entryId);
+          }
+        },
+      )
       .addCase(deleteEntry.rejected, (state, action) => {
         if (action.payload && typeof action.payload === 'object' && 'message' in action.payload) {
           state.error = (action.payload as { message: string }).message;
         } else {
-          state.error = (action.payload as string) || action.error?.message || 'Delete entry failed';
+          state.error =
+            (action.payload as string) || action.error?.message || 'Delete entry failed';
         }
       })
       .addCase(checkSubmissionStatus.pending, (state) => {
@@ -630,10 +660,10 @@ const timesheetsSlice = createSlice({
         if (action.payload && typeof action.payload === 'object' && 'message' in action.payload) {
           state.error = (action.payload as { message: string }).message;
         } else {
-          state.error = (action.payload as string) || action.error?.message || 'Check submission status failed';
+          state.error =
+            (action.payload as string) || action.error?.message || 'Check submission status failed';
         }
-      })
-
+      });
   },
 });
 

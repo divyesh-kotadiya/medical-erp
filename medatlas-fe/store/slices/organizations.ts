@@ -51,7 +51,7 @@ export interface OrganizationState {
   switching: boolean;
   loaded: boolean;
   error?: string;
-  memberList: TenantMember[]
+  memberList: TenantMember[];
 }
 
 const initialState: OrganizationState = {
@@ -100,7 +100,6 @@ export const fetchOrganizations = createAsyncThunk<
   }
 });
 
-
 export const createOrganization = createAsyncThunk<
   Organization,
   Partial<Organization>,
@@ -131,19 +130,16 @@ export const fetchTenantMembers = createAsyncThunk<
   FetchTenantMembersResponse,
   string,
   { rejectValue: string }
->(
-  'tenants/fetchMembers',
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await api.post('/tenants/users');
-      return {
-        members: response.data,
-      };
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to fetch members');
-    }
+>('tenants/fetchMembers', async (_, { rejectWithValue }) => {
+  try {
+    const response = await api.post('/tenants/users');
+    return {
+      members: response.data,
+    };
+  } catch (error: any) {
+    return rejectWithValue(error.response?.data?.message || 'Failed to fetch members');
   }
-);
+});
 
 const organizationsSlice = createSlice({
   name: 'organizations',
@@ -209,7 +205,7 @@ const organizationsSlice = createSlice({
       })
       .addCase(fetchTenantMembers.rejected, (state, action) => {
         state.loading = false;
-        state.loaded = true
+        state.loaded = true;
         state.error = action.payload || action.error.message || 'Failed to fetch tenant members';
       });
   },

@@ -13,10 +13,10 @@ export class EmailService {
   private readonly logger = new Logger(EmailService.name);
   private transporter: nodemailer.Transporter;
 
-  private inviteTemplate?: string;
-  private otpTemplate?: string;
-  private resetSuccessTemplate?: string;
-  private resetTemplate?: string;
+  private inviteTemplate: string | undefined;
+  private otpTemplate: string | undefined;
+  private resetSuccessTemplate: string | undefined;
+  private resetTemplate: string | undefined;
 
   constructor(private configService: ConfigService) {}
 
@@ -107,7 +107,7 @@ export class EmailService {
       ? renderTemplate(this.otpTemplate, {
           userName: data.userName || 'there',
           otp: data.otp,
-          expiresIn: data.expiresIn || '5 minutes',
+          expiresIn: data.expiresIn || '1 minutes',
           currentYear: new Date().getFullYear().toString(),
         })
       : this.generateFallbackOtp(data);

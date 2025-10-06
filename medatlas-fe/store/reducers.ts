@@ -1,4 +1,4 @@
-import { combineReducers } from "@reduxjs/toolkit";
+import { combineReducers } from '@reduxjs/toolkit';
 import authReducer from './slices/auth';
 import inviteReducer from './slices/invite';
 import shiftReducer from './slices/shifts';
@@ -14,5 +14,5 @@ export const rootReducer = combineReducers({
   timesheets: timesheetsReducer,
   incidents: incidentsReducer,
   organizations: organizationsSlice,
-  documents: documentsSlice
+  documents: documentsSlice,
 });

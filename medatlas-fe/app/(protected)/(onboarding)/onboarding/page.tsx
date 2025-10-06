@@ -6,13 +6,7 @@ import { createOrganization, fetchOrganizations } from '@/store/slices/organizat
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { enqueueSnackbar } from 'notistack';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Building2, ChevronLeft, ChevronRight, Check } from 'lucide-react';
 
 import { useForm } from 'react-hook-form';
@@ -67,7 +61,7 @@ const Onboarding = () => {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const { organizations, loading, creating, loaded } = useAppSelector(
-    (state) => state.organizations
+    (state) => state.organizations,
   );
 
   const [currentStep, setCurrentStep] = useState(1);
@@ -151,8 +145,7 @@ const Onboarding = () => {
     if (currentStep === 1) fieldsToValidate = ['name', 'description', 'type'];
     if (currentStep === 2)
       fieldsToValidate = ['email', 'phone', 'street', 'city', 'state', 'zipCode', 'country'];
-    if (currentStep === 3)
-      fieldsToValidate = ['timezone', 'currency', 'dateFormat'];
+    if (currentStep === 3) fieldsToValidate = ['timezone', 'currency', 'dateFormat'];
 
     const valid = await trigger(fieldsToValidate);
 
@@ -186,12 +179,23 @@ const Onboarding = () => {
         <CardContent className="space-y-6">
           {currentStep === 1 && (
             <div className="space-y-4">
-              <InputField label="Organization Name" {...register('name')} error={errors.name?.message} />
-              <InputField label="Description" {...register('description')} error={errors.description?.message} />
+              <InputField
+                label="Organization Name"
+                {...register('name')}
+                error={errors.name?.message}
+              />
+              <InputField
+                label="Description"
+                {...register('description')}
+                error={errors.description?.message}
+              />
 
               <CustomDropdown
                 label="Organization Type"
-                options={organizationTypes.map((type) => ({ label: type.label, value: type.value }))}
+                options={organizationTypes.map((type) => ({
+                  label: type.label,
+                  value: type.value,
+                }))}
                 value={getValues('type')}
                 onChange={(val) => setValue('type', val, { shouldValidate: true })}
                 error={errors.type?.message}
@@ -200,12 +204,15 @@ const Onboarding = () => {
             </div>
           )}
 
-
           {currentStep === 2 && (
             <div className="space-y-4">
               <InputField label="Email" {...register('email')} error={errors.email?.message} />
               <InputField label="Phone" {...register('phone')} error={errors.phone?.message} />
-              <InputField label="Website" {...register('website')} error={errors.website?.message} />
+              <InputField
+                label="Website"
+                {...register('website')}
+                error={errors.website?.message}
+              />
               <InputField label="Street" {...register('street')} error={errors.street?.message} />
 
               <div className="grid grid-cols-2 gap-2">
@@ -214,8 +221,16 @@ const Onboarding = () => {
               </div>
 
               <div className="grid grid-cols-2 gap-2">
-                <InputField label="Zip Code" {...register('zipCode')} error={errors.zipCode?.message} />
-                <InputField label="Country" {...register('country')} error={errors.country?.message} />
+                <InputField
+                  label="Zip Code"
+                  {...register('zipCode')}
+                  error={errors.zipCode?.message}
+                />
+                <InputField
+                  label="Country"
+                  {...register('country')}
+                  error={errors.country?.message}
+                />
               </div>
             </div>
           )}

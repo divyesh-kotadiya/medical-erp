@@ -38,20 +38,27 @@ const initialState: DocumentsState = {
 
 export const fetchDocuments = createAsyncThunk(
   'documents/fetchDocuments',
-  async ({ tenantId, page = 1, limit = 10, category }: { tenantId: string; page?: number; limit?: number; category?: string }) => {
+  async ({
+    tenantId,
+    page = 1,
+    limit = 10,
+    category,
+  }: {
+    tenantId: string;
+    page?: number;
+    limit?: number;
+    category?: string;
+  }) => {
     const params: any = { tenantId, page, limit };
     if (category) params.category = category;
     const { data } = await api.get('/documents', { params });
     return data;
-  }
+  },
 );
 
 export const uploadDocument = createAsyncThunk(
   'documents/upload',
-  async (
-    formData: FormData,
-    { rejectWithValue }
-  ) => {
+  async (formData: FormData, { rejectWithValue }) => {
     try {
       const res = await api.post(`/documents/upload`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
@@ -60,7 +67,7 @@ export const uploadDocument = createAsyncThunk(
     } catch (err: any) {
       return rejectWithValue(err.response?.data?.message || 'Failed to upload document');
     }
-  }
+  },
 );
 
 export const deleteDocument = createAsyncThunk(
@@ -72,7 +79,7 @@ export const deleteDocument = createAsyncThunk(
     } catch (err: any) {
       return rejectWithValue(err.response?.data?.message || 'Failed to delete document');
     }
-  }
+  },
 );
 
 export const downloadDocument = createAsyncThunk(
@@ -120,9 +127,8 @@ export const downloadDocument = createAsyncThunk(
     } catch (err: any) {
       return rejectWithValue(err.response?.data?.message || 'Failed to download document');
     }
-  }
+  },
 );
-
 
 const documentsSlice = createSlice({
   name: 'documents',
@@ -147,17 +153,17 @@ const documentsSlice = createSlice({
     });
     builder.addCase(uploadDocument.pending, (state) => {
       state.loading = true;
-      state.error = null
-    })
+      state.error = null;
+    });
     builder.addCase(uploadDocument.fulfilled, (state, action: PayloadAction<Document>) => {
       state.items.unshift(action.payload);
       state.loading = false;
-      state.error = null
+      state.error = null;
     });
     builder.addCase(uploadDocument.rejected, (state, action) => {
       state.loading = false;
       state.error = action.payload || null;
-    })
+    });
 
     builder.addCase(deleteDocument.fulfilled, (state, action: PayloadAction<{ id: string }>) => {
       state.items = state.items.filter((doc) => doc._id !== action.payload.id);

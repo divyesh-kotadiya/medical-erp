@@ -27,10 +27,13 @@ async function seed() {
       Shift.deleteMany({}),
       Timesheet.deleteMany({}),
       Incident.deleteMany({}),
-      Doc.deleteMany({})
+      Doc.deleteMany({}),
     ]);
 
-    const t = await Tenant.create({ name: 'Demo Tenant', metadata: { demo: true } });
+    const t = await Tenant.create({
+      name: 'Demo Tenant',
+      metadata: { demo: true },
+    });
     const admin = await User.create({
       tenantId: t._id,
       email: 'admin@example.com',

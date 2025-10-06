@@ -20,9 +20,7 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-auto">
-          {children}
-        </main>
+        <main className="flex-1 overflow-auto">{children}</main>
       </div>
     </div>
   );

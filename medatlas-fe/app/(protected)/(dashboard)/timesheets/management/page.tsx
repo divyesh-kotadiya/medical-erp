@@ -17,7 +17,7 @@ import CustomDropdown from '@/components/layout/Dropdown/Dropdown';
 export default function TimesheetList() {
   const dispatch = useAppDispatch();
   const { entries, loading, submittedList, submissionStatus } = useAppSelector(
-    (state) => state.timesheets
+    (state) => state.timesheets,
   );
   const { currentOrganization } = useAppSelector((state) => state.organizations);
   const { user } = useAppSelector((state) => state.auth);
@@ -42,26 +42,26 @@ export default function TimesheetList() {
       fetchEntries({
         periodStart: periodStart.toISOString(),
         periodEnd: periodEnd.toISOString(),
-      })
+      }),
     );
     dispatch(
       fetchSubmittedTimesheets({
         from: periodStart.toISOString(),
         to: periodEnd.toISOString(),
-        userId: user?.id
-      })
+        userId: user?.id,
+      }),
     );
     dispatch(
       fetchWeeklyTotal({
         periodStart: periodStart.toISOString(),
         periodEnd: periodEnd.toISOString(),
-      })
+      }),
     );
     dispatch(
       checkSubmissionStatus({
         periodStart: periodStart.toISOString(),
         periodEnd: periodEnd.toISOString(),
-      })
+      }),
     );
   }, [dispatch, periodStart, periodEnd, user?.id, currentOrganization?.id]);
 
@@ -72,13 +72,13 @@ export default function TimesheetList() {
       submitWeek({
         periodStart: periodStart.toISOString(),
         periodEnd: periodEnd.toISOString(),
-      })
+      }),
     );
     await dispatch(
       fetchSubmittedTimesheets({
         from: periodStart.toISOString(),
         to: periodEnd.toISOString(),
-      })
+      }),
     );
   };
 
@@ -89,13 +89,13 @@ export default function TimesheetList() {
           userId: user?.id,
           periodStart: periodStart.toISOString(),
           periodEnd: periodEnd.toISOString(),
-        })
+        }),
       );
 
       if (downloadTimesheet.fulfilled.match(resultAction)) {
         const blob = resultAction.payload;
         const url = window.URL.createObjectURL(blob);
-        const link = document.createElement("a");
+        const link = document.createElement('a');
         link.href = url;
         link.download = `Timesheet_${periodStart.toLocaleDateString()}_to_${periodEnd.toLocaleDateString()}.csv`;
         document.body.appendChild(link);
@@ -103,10 +103,10 @@ export default function TimesheetList() {
         document.body.removeChild(link);
         window.URL.revokeObjectURL(url);
       } else {
-        console.error("Download failed:", resultAction.payload);
+        console.error('Download failed:', resultAction.payload);
       }
     } catch (error) {
-      console.error("Unexpected error downloading timesheet:", error);
+      console.error('Unexpected error downloading timesheet:', error);
     }
   };
 
@@ -138,9 +138,9 @@ export default function TimesheetList() {
       const match = submittedList.find(
         (t) =>
           new Date(t.periodStart).toISOString() === periodStart.toISOString() &&
-          new Date(t.periodEnd).toISOString() === periodEnd.toISOString()
+          new Date(t.periodEnd).toISOString() === periodEnd.toISOString(),
       );
-      
+
       if (match?.status) {
         return match.status.toUpperCase() as 'SUBMITTED' | 'APPROVED' | 'REJECTED';
       }
@@ -159,7 +159,7 @@ export default function TimesheetList() {
       checkSubmissionStatus({
         periodStart: periodStart.toISOString(),
         periodEnd: periodEnd.toISOString(),
-      })
+      }),
     );
   };
 
@@ -170,9 +170,7 @@ export default function TimesheetList() {
           <div className="bg-primary/10 p-3 rounded-lg mr-4">
             <ListChecks className="text-primary" size={24} />
           </div>
-          <h2 className="text-xl font-semibold text-foreground">
-            Weekly TimeSheet Management
-          </h2>
+          <h2 className="text-xl font-semibold text-foreground">Weekly TimeSheet Management</h2>
         </div>
 
         <div className="flex items-center gap-2">
@@ -232,7 +230,7 @@ export default function TimesheetList() {
         >
           <Download size={16} /> Export
         </button>
-        {(weekStatus === "REJECTED" || weekStatus === "NOT_SUBMITTED") && (
+        {(weekStatus === 'REJECTED' || weekStatus === 'NOT_SUBMITTED') && (
           <button
             className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-all disabled:opacity-50"
             onClick={handleSubmitWeek}
@@ -242,7 +240,7 @@ export default function TimesheetList() {
           </button>
         )}
 
-        {weekStatus === "SUBMITTED" && (
+        {weekStatus === 'SUBMITTED' && (
           <button
             className="px-4 py-2 bg-muted text-muted-foreground rounded-md cursor-not-allowed"
             disabled
@@ -251,10 +249,8 @@ export default function TimesheetList() {
           </button>
         )}
 
-        {weekStatus === "APPROVED" && (
-          <span className="px-4 py-2 bg-success text-success-foreground rounded-md">
-            Approved
-          </span>
+        {weekStatus === 'APPROVED' && (
+          <span className="px-4 py-2 bg-success text-success-foreground rounded-md">Approved</span>
         )}
       </div>
     </div>

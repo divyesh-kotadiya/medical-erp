@@ -32,9 +32,7 @@ export function PasswordStrength({ password }: PasswordStrengthProps) {
           />
         ))}
       </div>
-      <p className="text-xs text-muted-foreground">
-        {strengthLabels[strength]}
-      </p>
+      <p className="text-xs text-muted-foreground">{strengthLabels[strength]}</p>
     </div>
   );
 }

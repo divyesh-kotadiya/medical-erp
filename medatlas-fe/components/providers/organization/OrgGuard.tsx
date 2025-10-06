@@ -1,14 +1,17 @@
 'use client';
 
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { fetchOrganizations } from "@/store/slices/organizations";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { fetchOrganizations } from '@/store/slices/organizations';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 export function OrgGuard({ children }: { children: React.ReactNode }) {
-  const { organizations, currentOrganization, loading: orgLoading, loaded } = useAppSelector(
-    (state) => state.organizations
-  );
+  const {
+    organizations,
+    currentOrganization,
+    loading: orgLoading,
+    loaded,
+  } = useAppSelector((state) => state.organizations);
 
   const router = useRouter();
   const [initialized, setInitialized] = useState(false);
@@ -20,7 +23,7 @@ export function OrgGuard({ children }: { children: React.ReactNode }) {
     }
     if (!orgLoading) {
       if (organizations.length === 0) {
-        router.replace("/onboarding");
+        router.replace('/onboarding');
       }
       setInitialized(true);
     }

@@ -28,4 +28,3 @@ export function StatCard({ label, value, icon, helper, className }: StatCardProp
 }
 
 export default StatCard;
-

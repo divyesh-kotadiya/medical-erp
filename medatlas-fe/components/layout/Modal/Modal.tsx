@@ -3,7 +3,7 @@ import Button from '../Button/Button';
 import { X } from 'lucide-react';
 
 interface CenteredModalProps {
-  isOpen: boolean; 
+  isOpen: boolean;
   onClose?: () => void;
   message: string;
   buttonText: string;
@@ -11,13 +11,13 @@ interface CenteredModalProps {
   BtnVariants: 'primary' | 'secondary' | 'danger';
 }
 
-const CenteredModal: React.FC<CenteredModalProps> = ({ 
+const CenteredModal: React.FC<CenteredModalProps> = ({
   isOpen,
   onClose,
-  message, 
-  buttonText, 
+  message,
+  buttonText,
   onButtonClick,
-  BtnVariants
+  BtnVariants,
 }) => {
   if (!isOpen) return null;
 
@@ -34,7 +34,7 @@ const CenteredModal: React.FC<CenteredModalProps> = ({
         )}
 
         <p className="text-foreground text-lg mb-6 text-center">{message}</p>
-        
+
         <div className="flex justify-center gap-4">
           <Button
             variant={BtnVariants}

@@ -26,7 +26,9 @@ const FancyTabs = ({ tabs, className = '', variant = 'default' }: TabsProps) => 
 
   if (!mounted) {
     return (
-      <div className={`flex border-b border-gray-200 dark:border-gray-800 mb-6 w-full ${className}`}>
+      <div
+        className={`flex border-b border-gray-200 dark:border-gray-800 mb-6 w-full ${className}`}
+      >
         {tabs.map((tab) => (
           <div key={tab.href} className="px-5 py-4 text-gray-400">
             {tab.label}
@@ -38,7 +40,9 @@ const FancyTabs = ({ tabs, className = '', variant = 'default' }: TabsProps) => 
 
   if (variant === 'pills') {
     return (
-      <div className={`flex space-x-2 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg mb-6 ${className}`}>
+      <div
+        className={`flex space-x-2 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg mb-6 ${className}`}
+      >
         {tabs.map((tab) => {
           const isActive = pathname === tab.href;
           const Icon = tab.icon;

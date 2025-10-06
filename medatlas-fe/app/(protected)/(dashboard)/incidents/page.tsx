@@ -1,9 +1,18 @@
-"use client";
-import { useState, useEffect } from "react";
-import { X, Filter, AlertCircle, CheckCircle, Clock, FileText, ChevronDown, ChevronUp } from "lucide-react";
-import { useRouter } from "next/navigation";
-import CustomDropdown from "@/components/layout/Dropdown/Dropdown";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
+'use client';
+import { useState, useEffect } from 'react';
+import {
+  X,
+  Filter,
+  AlertCircle,
+  CheckCircle,
+  Clock,
+  FileText,
+  ChevronDown,
+  ChevronUp,
+} from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import CustomDropdown from '@/components/layout/Dropdown/Dropdown';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import {
   fetchIncidents,
   selectIncidents,
@@ -11,10 +20,10 @@ import {
   selectIncidentsLoading,
   selectIncidentsPagination,
   clearError,
-} from "@/store/slices/incidents";
-import { IncidentStatus, IncidentType, WorkflowStep } from "@/constants/Incidents";
-import Button from "@/components/layout/Button/Button";
-import Table from "@/components/common/Table";
+} from '@/store/slices/incidents';
+import { IncidentStatus, IncidentType, WorkflowStep } from '@/constants/Incidents';
+import Button from '@/components/layout/Button/Button';
+import Table from '@/components/common/Table';
 
 export default function IncidentsPage() {
   const dispatch = useAppDispatch();
@@ -29,13 +38,13 @@ export default function IncidentsPage() {
   const [limit] = useState(10);
   const [showFilters, setShowFilters] = useState(false);
 
-  const [tempStatus, setTempStatus] = useState("");
-  const [tempStep, setTempStep] = useState("");
-  const [tempType, setTempType] = useState("");
+  const [tempStatus, setTempStatus] = useState('');
+  const [tempStep, setTempStep] = useState('');
+  const [tempType, setTempType] = useState('');
 
-  const [statusFilter, setStatusFilter] = useState("");
-  const [stepFilter, setStepFilter] = useState("");
-  const [typeFilter, setTypeFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState('');
+  const [stepFilter, setStepFilter] = useState('');
+  const [typeFilter, setTypeFilter] = useState('');
 
   const hasActiveFilters = statusFilter || stepFilter || typeFilter;
 
@@ -49,7 +58,7 @@ export default function IncidentsPage() {
           incidentType: typeFilter || undefined,
           page,
           limit,
-        })
+        }),
       );
     }
   }, [currentOrganization, statusFilter, stepFilter, typeFilter, page, limit, dispatch]);
@@ -61,12 +70,12 @@ export default function IncidentsPage() {
   }, [dispatch]);
 
   const clearAllFilters = () => {
-    setStatusFilter("");
-    setStepFilter("");
-    setTypeFilter("");
-    setTempStatus("");
-    setTempStep("");
-    setTempType("");
+    setStatusFilter('');
+    setStepFilter('');
+    setTypeFilter('');
+    setTempStatus('');
+    setTempStep('');
+    setTempType('');
     setPage(1);
   };
 
@@ -85,8 +94,8 @@ export default function IncidentsPage() {
 
   const getStatusBadge = (status: IncidentStatus) => {
     let badgeClass = '';
-    
-    switch(status) {
+
+    switch (status) {
       case IncidentStatus.OPEN:
         badgeClass = 'bg-destructive/10 text-destructive';
         break;
@@ -102,9 +111,11 @@ export default function IncidentsPage() {
       default:
         badgeClass = 'bg-muted text-muted-foreground';
     }
-    
+
     return (
-      <span className={`px-3 py-1 inline-flex items-center text-xs font-semibold rounded-full ${badgeClass}`}>
+      <span
+        className={`px-3 py-1 inline-flex items-center text-xs font-semibold rounded-full ${badgeClass}`}
+      >
         {getStatusIcon(status)}
         <span className="ml-1">{status}</span>
       </span>
@@ -127,8 +138,8 @@ export default function IncidentsPage() {
 
   const getTypeBadge = (type: IncidentType) => {
     let badgeClass = '';
-    
-    switch(type) {
+
+    switch (type) {
       case IncidentType.UNAUTHORIZED_ACCESS:
         badgeClass = 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400';
         break;
@@ -141,9 +152,11 @@ export default function IncidentsPage() {
       default:
         badgeClass = 'bg-muted text-muted-foreground';
     }
-    
+
     return (
-      <span className={`px-3 py-1 inline-flex items-center text-xs font-semibold rounded-full ${badgeClass}`}>
+      <span
+        className={`px-3 py-1 inline-flex items-center text-xs font-semibold rounded-full ${badgeClass}`}
+      >
         {getTypeIcon(type)}
         <span className="ml-1">{type}</span>
       </span>
@@ -171,24 +184,24 @@ export default function IncidentsPage() {
           <div className="font-medium text-foreground">{value}</div>
           <div className="text-sm text-muted-foreground mt-1 line-clamp-2">
             {row.description?.substring(0, 80)}
-            {row.description && row.description.length > 80 ? "..." : ""}
+            {row.description && row.description.length > 80 ? '...' : ''}
           </div>
         </div>
-      )
+      ),
     },
     {
       key: 'status',
       label: 'Status',
-      render: (value: any, row: any) => getStatusBadge(value as IncidentStatus)
+      render: (value: any, row: any) => getStatusBadge(value as IncidentStatus),
     },
     {
       key: 'currentStep',
-      label: 'Current Step'
+      label: 'Current Step',
     },
     {
       key: 'incidentType',
       label: 'Type',
-      render: (value: any, row: any) => getTypeBadge(value as IncidentType)
+      render: (value: any, row: any) => getTypeBadge(value as IncidentType),
     },
     {
       key: 'createdAt',
@@ -197,8 +210,8 @@ export default function IncidentsPage() {
         <span className="text-sm text-muted-foreground">
           {new Date(value).toLocaleDateString()}
         </span>
-      )
-    }
+      ),
+    },
   ];
 
   return (
@@ -213,7 +226,10 @@ export default function IncidentsPage() {
             {hasActiveFilters && (
               <div className="flex items-center gap-2 px-3 py-1.5 bg-primary/10 text-primary rounded-full text-sm border border-primary/20">
                 <span>Filters applied</span>
-                <button onClick={clearAllFilters} className="ml-1 hover:text-primary flex items-center">
+                <button
+                  onClick={clearAllFilters}
+                  className="ml-1 hover:text-primary flex items-center"
+                >
                   <X className="h-3 w-3" />
                 </button>
               </div>
@@ -225,7 +241,11 @@ export default function IncidentsPage() {
             >
               <Filter className="h-4 w-4" />
               <span>Filters</span>
-              {showFilters ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              {showFilters ? (
+                <ChevronUp className="h-4 w-4" />
+              ) : (
+                <ChevronDown className="h-4 w-4" />
+              )}
             </Button>
           </div>
         </div>
@@ -263,17 +283,10 @@ export default function IncidentsPage() {
               />
             </div>
             <div className="mt-6 pt-4 border-t border-border flex justify-end gap-3">
-              <Button
-                variant="outline"
-                onClick={() => setShowFilters(false)}
-              >
+              <Button variant="outline" onClick={() => setShowFilters(false)}>
                 Cancel
               </Button>
-              <Button
-                onClick={applyFilters}
-              >
-                Apply Filters
-              </Button>
+              <Button onClick={applyFilters}>Apply Filters</Button>
             </div>
           </div>
         )}
@@ -299,7 +312,7 @@ export default function IncidentsPage() {
                 totalPages: pagination.totalPages,
                 onPageChange: setPage,
                 itemsPerPage: limit,
-                totalItems: pagination.total
+                totalItems: pagination.total,
               }}
               onRowClick={(row) => handleRowClick(row._id)}
               keyExtractor={(row) => row._id}

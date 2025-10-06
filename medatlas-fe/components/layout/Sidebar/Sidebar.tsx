@@ -17,7 +17,7 @@ import {
   ChevronDown,
   Check,
   Plus,
-  Sparkles
+  Sparkles,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -55,8 +55,8 @@ export const Sidebar = () => {
   const handleLogout = () => {
     dispatch(clearOrganizations());
     dispatch(logout());
-    setTheme("light");
-    enqueueSnackbar("Logout successful", { variant: "success" });
+    setTheme('light');
+    enqueueSnackbar('Logout successful', { variant: 'success' });
   };
 
   const handleSwitchOrganization = (orgId: string) => {
@@ -68,17 +68,17 @@ export const Sidebar = () => {
 
   const navigationItems = onboarding
     ? [
-      { title: 'Dashboard', url: '/onboarding', icon: LayoutDashboard },
-      { title: 'Settings', url: '/settings', icon: Settings },
-    ]
+        { title: 'Dashboard', url: '/onboarding', icon: LayoutDashboard },
+        { title: 'Settings', url: '/settings', icon: Settings },
+      ]
     : [
-      { title: 'Dashboard', url: '/dashboard', icon: LayoutDashboard },
-      { title: 'Scheduling', url: '/scheduling', icon: Calendar },
-      { title: 'Timesheets', url: '/timesheets', icon: Clock },
-      { title: 'Incidents', url: '/incidents', icon: AlertTriangle },
-      { title: 'Documents', url: '/documents', icon: FileText },
-      { title: 'Settings', url: '/settings', icon: Settings },
-    ];
+        { title: 'Dashboard', url: '/dashboard', icon: LayoutDashboard },
+        { title: 'Scheduling', url: '/scheduling', icon: Calendar },
+        { title: 'Timesheets', url: '/timesheets', icon: Clock },
+        { title: 'Incidents', url: '/incidents', icon: AlertTriangle },
+        { title: 'Documents', url: '/documents', icon: FileText },
+        { title: 'Settings', url: '/settings', icon: Settings },
+      ];
 
   useEffect(() => {
     const tl = gsap.timeline();
@@ -88,40 +88,47 @@ export const Sidebar = () => {
         x: 0,
         opacity: 1,
         duration: 0.8,
-        ease: "power3.out"
+        ease: 'power3.out',
       });
     }
 
     const validNavItems = navItemsRef.current.filter(Boolean);
     if (validNavItems.length > 0) {
-      tl.from(validNavItems, {
-        y: 20,
-        opacity: 1,
-        duration: 0.5,
-        stagger: 0.1,
-        ease: "power2.out"
-      }, "-=0.4");
+      tl.from(
+        validNavItems,
+        {
+          y: 20,
+          opacity: 1,
+          duration: 0.5,
+          stagger: 0.1,
+          ease: 'power2.out',
+        },
+        '-=0.4',
+      );
     }
 
     if (userInfoRef.current) {
-      tl.from(userInfoRef.current, {
-        y: 20,
-        opacity: 1,
-        duration: 0.5,
-        ease: "power2.out"
-      }, "-=0.3");
+      tl.from(
+        userInfoRef.current,
+        {
+          y: 20,
+          opacity: 1,
+          duration: 0.5,
+          ease: 'power2.out',
+        },
+        '-=0.3',
+      );
     }
-
 
     const hoverAnimations: gsap.core.Tween[] = [];
 
-    navItemsRef.current.forEach(item => {
+    navItemsRef.current.forEach((item) => {
       if (item) {
         const hoverAnim = gsap.to(item, {
           x: 5,
           duration: 1,
-          ease: "power2.out",
-          paused: true
+          ease: 'power2.out',
+          paused: true,
         });
 
         item.addEventListener('mouseenter', () => hoverAnim.play());
@@ -132,12 +139,12 @@ export const Sidebar = () => {
     });
 
     return () => {
-      hoverAnimations.forEach(anim => anim.kill());
+      hoverAnimations.forEach((anim) => anim.kill());
 
-      navItemsRef.current.forEach(item => {
+      navItemsRef.current.forEach((item) => {
         if (item) {
-          item.removeEventListener('mouseenter', () => { });
-          item.removeEventListener('mouseleave', () => { });
+          item.removeEventListener('mouseenter', () => {});
+          item.removeEventListener('mouseleave', () => {});
         }
       });
     };
@@ -148,12 +155,12 @@ export const Sidebar = () => {
       gsap.to(sidebarRef.current, {
         width: collapsed ? 100 : 256,
         duration: 0.4,
-        ease: "power2.inOut",
+        ease: 'power2.inOut',
         onComplete: () => {
           if (sidebarRef.current) {
             sidebarRef.current.getBoundingClientRect();
           }
-        }
+        },
       });
     }
   }, [collapsed]);
@@ -165,7 +172,7 @@ export const Sidebar = () => {
         opacity: 1,
         duration: 0.3,
         stagger: 0.05,
-        ease: "power2.out"
+        ease: 'power2.out',
       });
     }
   }, [showOrgSwitcher]);
@@ -181,7 +188,9 @@ export const Sidebar = () => {
         <div className="absolute -bottom-0 -left-40 w-80 h-[100%] bg-sidebar-accent rounded-full mix-blend-soft-light filter blur-3xl opacity-20"></div>
       </div>
 
-      <div className={`p-4 border-b border-sidebar-border flex items-center justify-center relative z-10 ${!collapsed && 'gap-3'}`}>
+      <div
+        className={`p-4 border-b border-sidebar-border flex items-center justify-center relative z-10 ${!collapsed && 'gap-3'}`}
+      >
         {!collapsed && (
           <div>
             <h2 className="text-lg font-semibold text-sidebar-foreground flex items-center gap-2">
@@ -199,7 +208,11 @@ export const Sidebar = () => {
           onClick={() => setCollapsed(!collapsed)}
           className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
         >
-          {collapsed ? <ChevronRight className="h-6 w-6 text-sidebar-foreground" /> : <ChevronLeft className="h-6 w-6 text-sidebar-foreground" />}
+          {collapsed ? (
+            <ChevronRight className="h-6 w-6 text-sidebar-foreground" />
+          ) : (
+            <ChevronLeft className="h-6 w-6 text-sidebar-foreground" />
+          )}
         </Button>
       </div>
 
@@ -224,22 +237,25 @@ export const Sidebar = () => {
             </div>
             <ChevronDown
               className={cn(
-                "h-4 w-4 text-sidebar-foreground transition-transform duration-300",
-                showOrgSwitcher && "rotate-180"
+                'h-4 w-4 text-sidebar-foreground transition-transform duration-300',
+                showOrgSwitcher && 'rotate-180',
               )}
             />
           </div>
 
           {showOrgSwitcher && (
-            <div ref={orgListRef} className="mt-2 space-y-2 max-h-60 overflow-y-scroll [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+            <div
+              ref={orgListRef}
+              className="mt-2 space-y-2 max-h-60 overflow-y-scroll [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+            >
               {organizations.map((org) => (
                 <div
                   key={org.id}
                   className={cn(
-                    "flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all duration-300",
+                    'flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all duration-300',
                     org.id === currentOrganization?.id
-                      ? "text-sidebar-primary-foreground shadow-md dark:[box-shadow:inset_0_0_10px_#ffffff]"
-                      : "bg-sidebar-muted hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+                      ? 'text-sidebar-primary-foreground shadow-md dark:[box-shadow:inset_0_0_10px_#ffffff]'
+                      : 'bg-sidebar-muted hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground',
                   )}
                   onClick={() => handleSwitchOrganization(org.id)}
                 >
@@ -258,9 +274,7 @@ export const Sidebar = () => {
                       </p>
                     </div>
                   </div>
-                  {org.id === currentOrganization?.id && (
-                    <Check className="h-4 w-4 text-primary" />
-                  )}
+                  {org.id === currentOrganization?.id && <Check className="h-4 w-4 text-primary" />}
                 </div>
               ))}
 
@@ -281,26 +295,30 @@ export const Sidebar = () => {
         {navigationItems.map((item, index) => (
           <Link
             key={item.title}
-            ref={el => navItemsRef.current[index] = el}
+            ref={(el) => (navItemsRef.current[index] = el)}
             href={item.url}
             prefetch
             className={cn(
               `flex items-center ${collapsed ? 'space-y-10 px-2 py-2  justify-center m-3' : ' m-3 space-x-4 px-4 py-3'} rounded-xl transition-all  duration-300 group`,
               isActive(item.url)
-                ? "bg-gradient-to-r from-sidebar-primary to-sidebar-accent text-sidebar-primary-foreground border-1 border-white shadow-md"
-                : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+                ? 'bg-gradient-to-r from-sidebar-primary to-sidebar-accent text-sidebar-primary-foreground border-1 border-white shadow-md'
+                : 'text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground',
             )}
           >
-            <div className={cn(
-              "p-2 rounded-lg transition-all duration-300 group-hover:scale-110",
-              isActive(item.url)
-                ? "bg-white/20"
-                : "bg-sidebar-primary/10 group-hover:bg-sidebar-primary/20"
-            )}>
-              <item.icon className={cn(
-                "h-5 w-5 transition-all duration-300",
-                isActive(item.url) ? "text-sidebar-primary-foreground" : "text-sidebar-primary"
-              )} />
+            <div
+              className={cn(
+                'p-2 rounded-lg transition-all duration-300 group-hover:scale-110',
+                isActive(item.url)
+                  ? 'bg-white/20'
+                  : 'bg-sidebar-primary/10 group-hover:bg-sidebar-primary/20',
+              )}
+            >
+              <item.icon
+                className={cn(
+                  'h-5 w-5 transition-all duration-300',
+                  isActive(item.url) ? 'text-sidebar-primary-foreground' : 'text-sidebar-primary',
+                )}
+              />
             </div>
             {!collapsed && <span className="font-medium">{item.title}</span>}
           </Link>
@@ -332,8 +350,8 @@ export const Sidebar = () => {
           variant="outline"
           onClick={handleLogout}
           className={cn(
-            "w-full justify-start bg-gradient-to-r from-sidebar-primary to-sidebar-accent hover:from-sidebar-primary/90 hover:to-sidebar-accent/90 text-sidebar-primary-foreground border-0 shadow-md transition-all duration-300",
-            collapsed && "px-2"
+            'w-full justify-start bg-gradient-to-r from-sidebar-primary to-sidebar-accent hover:from-sidebar-primary/90 hover:to-sidebar-accent/90 text-sidebar-primary-foreground border-0 shadow-md transition-all duration-300',
+            collapsed && 'px-2',
           )}
         >
           <LogOut className="h-4 w-4" />

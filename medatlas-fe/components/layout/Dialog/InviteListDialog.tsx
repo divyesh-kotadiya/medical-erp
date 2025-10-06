@@ -48,7 +48,9 @@ export default function InviteListDialog() {
           <div className="w-full max-w-5xl rounded-xl bg-card p-6 shadow-elevated border border-border">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold text-foreground">Invited Members</h2>
-              <button onClick={handleClose} className="text-muted-foreground hover:text-foreground">✕</button>
+              <button onClick={handleClose} className="text-muted-foreground hover:text-foreground">
+                ✕
+              </button>
             </div>
 
             <p className="mb-4 text-sm text-muted-foreground">Total Invites: {total || 0}</p>
@@ -98,7 +100,9 @@ export default function InviteListDialog() {
                             }
 
                             return (
-                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${bgClass}`}>
+                              <span
+                                className={`px-2 py-1 rounded-full text-xs font-medium ${bgClass}`}
+                              >
                                 {text}
                               </span>
                             );

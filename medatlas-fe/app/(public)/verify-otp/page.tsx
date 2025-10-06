@@ -16,18 +16,18 @@ export default function VerificationPage() {
   const [resendLoading, setResendLoading] = useState(false);
   const [countdown, setCountdown] = useState(0);
   const [error, setError] = useState<string | null>(null);
-  
+
   const router = useRouter();
   const dispatch = useAppDispatch();
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
-  
+
   const { userIdForOtp } = useAppSelector((state) => state.auth);
 
   useEffect(() => {
     if (inputRefs.current[0]) {
       inputRefs.current[0]?.focus();
     }
-    
+
     setCountdown(30);
   }, []);
 
@@ -40,13 +40,13 @@ export default function VerificationPage() {
 
   const handleInputChange = (index: number, value: string) => {
     if (error) setError(null);
-    
+
     if (!/^\d*$/.test(value)) return;
-    
+
     const newOtp = [...otp];
     newOtp[index] = value;
     setOtp(newOtp);
-    
+
     if (value && index < 5) {
       inputRefs.current[index + 1]?.focus();
     }
@@ -69,31 +69,32 @@ export default function VerificationPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (otp.some(digit => !digit)) {
-      setError("Please enter all 6 digits");
+
+    if (otp.some((digit) => !digit)) {
+      setError('Please enter all 6 digits');
       return;
     }
 
     try {
       setLoading(true);
       if (!userIdForOtp) {
-        setError("No user ID found for OTP verification");
+        setError('No user ID found for OTP verification');
         return;
       }
-      
+
       const otpString = otp.join('');
       const resultAction = await dispatch(verifyOtp({ userId: userIdForOtp, otp: otpString }));
 
       if (verifyOtp.fulfilled.match(resultAction)) {
-        enqueueSnackbar("Verification successful!", { variant: "success" });
-        router.push("/onboarding");
+        enqueueSnackbar('Verification successful!', { variant: 'success' });
+        router.push('/onboarding');
       } else {
-        const errorMessage = (resultAction.payload as { message?: string })?.message || "Verification failed";
+        const errorMessage =
+          (resultAction.payload as { message?: string })?.message || 'Verification failed';
         setError(errorMessage);
       }
     } catch {
-      setError("Something went wrong");
+      setError('Something went wrong');
     } finally {
       setLoading(false);
     }
@@ -101,29 +102,30 @@ export default function VerificationPage() {
 
   const handleResendOtp = async () => {
     if (countdown > 0) return;
-    
+
     try {
       setResendLoading(true);
       if (!userIdForOtp) {
-        setError("No user ID found for OTP verification");
+        setError('No user ID found for OTP verification');
         return;
       }
-      
+
       const resultAction = await dispatch(resendOtp(userIdForOtp));
 
       if (resendOtp.fulfilled.match(resultAction)) {
-        enqueueSnackbar("OTP resent successfully", { variant: "success" });
+        enqueueSnackbar('OTP resent successfully', { variant: 'success' });
         setCountdown(30);
         setOtp(Array(6).fill(''));
         if (inputRefs.current[0]) {
           inputRefs.current[0]?.focus();
         }
       } else {
-        const errorMessage = (resultAction.payload as { message?: string })?.message || "Failed to resend OTP";
+        const errorMessage =
+          (resultAction.payload as { message?: string })?.message || 'Failed to resend OTP';
         setError(errorMessage);
       }
     } catch {
-      setError("Something went wrong");
+      setError('Something went wrong');
     } finally {
       setResendLoading(false);
     }
@@ -132,14 +134,14 @@ export default function VerificationPage() {
   const features = [
     {
       icon: <Shield className="h-6 w-6 text-accent" />,
-      title: "Secure Verification",
-      description: "Two-factor authentication for enhanced security"
+      title: 'Secure Verification',
+      description: 'Two-factor authentication for enhanced security',
     },
     {
       icon: <Clock className="h-6 w-6 text-accent" />,
-      title: "Time-Limited",
-      description: "OTP expires in 10 minutes for your security"
-    }
+      title: 'Time-Limited',
+      description: 'OTP expires in 1 minutes for your security',
+    },
   ];
 
   return (
@@ -158,12 +160,14 @@ export default function VerificationPage() {
               {error}
             </div>
           )}
-          
+
           <div className="flex justify-center space-x-3" onPaste={handlePaste}>
             {otp.map((digit, index) => (
               <div key={index} className="relative">
                 <input
-                  ref={el => { inputRefs.current[index] = el; }}
+                  ref={(el) => {
+                    inputRefs.current[index] = el;
+                  }}
                   type="text"
                   inputMode="numeric"
                   pattern="[0-9]*"
@@ -181,31 +185,26 @@ export default function VerificationPage() {
                   aria-label={`OTP digit ${index + 1}`}
                 />
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  {digit && (
-                    <div className="w-1 h-1 bg-primary rounded-full animate-ping" />
-                  )}
+                  {digit && <div className="w-1 h-1 bg-primary rounded-full animate-ping" />}
                 </div>
               </div>
             ))}
           </div>
 
-          <AuthButton
-            type="submit"
-            loading={loading}
-            disabled={otp.some(digit => !digit)}
-          >
+          <AuthButton type="submit" loading={loading} disabled={otp.some((digit) => !digit)}>
             Verify Code
           </AuthButton>
-          
+
           <div className="text-center text-sm text-muted-foreground">
             Didn&apos;t receive the code?{' '}
-            <button 
-              type="button" 
+            <button
+              type="button"
               className={`
                 font-medium transition-colors duration-200
-                ${countdown > 0 || resendLoading 
-                  ? 'text-muted-foreground cursor-not-allowed' 
-                  : 'text-primary hover:text-primary-hover underline'
+                ${
+                  countdown > 0 || resendLoading
+                    ? 'text-muted-foreground cursor-not-allowed'
+                    : 'text-primary hover:text-primary-hover underline'
                 }
               `}
               onClick={handleResendOtp}
@@ -219,11 +218,11 @@ export default function VerificationPage() {
               ) : countdown > 0 ? (
                 `Resend in ${countdown}s`
               ) : (
-                "Resend OTP"
+                'Resend OTP'
               )}
             </button>
           </div>
-          
+
           <div className="text-center text-xs text-muted-foreground">
             <p>For your security, this code will expire in 10 minutes</p>
           </div>
