@@ -92,6 +92,26 @@ export const fetchMe = createAsyncThunk('auth/me', async (_, { rejectWithValue }
   }
 });
 
+export const updateProfile = createAsyncThunk(
+  'auth/updateProfile',
+  async (payload: { name?: string; phone?: string; avatar?: File | null }, { rejectWithValue }) => {
+    try {
+      const formData = new FormData();
+      if (payload.name) formData.append('name', payload.name);
+      if (payload.phone) formData.append('phone', payload.phone);
+      if (payload.avatar) formData.append('avatar', payload.avatar);
+
+      const { data } = await api.put('/auth/profile', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+
+      return data;
+    } catch (e: any) {
+      return rejectWithValue(e.response?.data || 'Profile update failed');
+    }
+  },
+);
+
 export const resendOtp = createAsyncThunk(
   'auth/resendOtp',
   async (userId: string, { rejectWithValue }) => {
@@ -251,6 +271,23 @@ const authSlice = createSlice({
         state.loading = false;
         state.error =
           (action.payload as any)?.message || action.error.message || 'Resend OTP failed';
+      });
+
+    builder
+      .addCase(updateProfile.pending, (state) => {
+        state.loading = true;
+        state.error = undefined;
+      })
+      .addCase(updateProfile.fulfilled, (state, action) => {
+        state.loading = false;
+        if (state.user) {
+          state.user = { ...state.user, ...action.payload.data };
+        }
+      })
+      .addCase(updateProfile.rejected, (state, action) => {
+        state.loading = false;
+        state.error =
+          (action.payload as any)?.message || action.error.message || 'Profile update failed';
       });
   },
 });

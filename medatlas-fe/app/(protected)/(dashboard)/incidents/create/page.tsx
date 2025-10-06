@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -33,14 +33,14 @@ const INCIDENT_OPTIONS = [
 ];
 
 const schema = z.object({
-  tenantId: z.string().nonempty('tenantId required'),
-  reportedBy: z.string().nonempty('User id required'),
+  tenantId: z.string().min(1, 'tenantId required'),
+  reportedBy: z.string().min(1, 'User id required'),
   title: z.string().min(5, 'Title must be at least 5 characters'),
   description: z.string().min(10, 'Description must be at least 10 characters'),
-  incidentType: z.string().nonempty('Please select an incident type'),
+  incidentType: z.string().min(1, 'Please select an incident type'),
   individualsAffected: z.string().refine((val) => Number(val) >= 0, 'Must be 0 or greater'),
-  occurrenceDate: z.string().nonempty('Occurrence date is required'),
-  discoveryDate: z.string().nonempty('Discovery date is required'),
+  occurrenceDate: z.string().min(1, 'Occurrence date is required'),
+  discoveryDate: z.string().min(1, 'Discovery date is required'),
   phiDataTypes: z.array(z.string()).min(1, 'Select at least one PHI type'),
 });
 
@@ -52,6 +52,7 @@ export default function IncidentReportForm() {
   const [submitted, setSubmitted] = useState(false);
   const { user } = useAppSelector((s) => s.auth);
   const { currentOrganization } = useAppSelector((state) => state.organizations);
+  
   const {
     register,
     handleSubmit,
@@ -61,21 +62,45 @@ export default function IncidentReportForm() {
   } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
-      tenantId: currentOrganization?.id,
-      reportedBy: user?.id,
+      tenantId: '',
+      reportedBy: '',
       title: '',
       description: '',
       incidentType: '',
       phiDataTypes: [],
-      individualsAffected: '',
+      individualsAffected: '0',
       occurrenceDate: '',
       discoveryDate: '',
     },
   });
 
-  const phiDataTypes = watch('phiDataTypes');
+  React.useEffect(() => {
+    if (currentOrganization?.id) {
+      setValue('tenantId', currentOrganization.id);
+    }
+  }, [currentOrganization?.id, setValue]);
 
+  React.useEffect(() => {
+    if (user?.id) {
+      setValue('reportedBy', user.id);
+    }
+  }, [user?.id, setValue]);
+
+  useEffect(() => {
+    if (currentOrganization?.id) {
+      setValue('tenantId', currentOrganization.id);
+    }
+  }, [currentOrganization?.id, setValue]);
+
+  useEffect(() => {
+    if (user?.id) {
+      setValue('reportedBy', user.id);
+    }
+  }, [user?.id, setValue]);
+
+  const phiDataTypes = watch('phiDataTypes');
   const router = useRouter();
+
   const togglePhiDataType = (id: string) => {
     const updated = phiDataTypes.includes(id)
       ? phiDataTypes.filter((t) => t !== id)
@@ -84,11 +109,26 @@ export default function IncidentReportForm() {
   };
 
   const onSubmit = async (data: FormData) => {
-    setGlobalError(null);
-    setSubmitted(false);
-    dispatch(createIncident(data));
-    router.replace('/incidents');
+    try {
+      setGlobalError(null);
+      setSubmitted(false);
+
+      await dispatch(createIncident(data)).unwrap();
+      
+      setSubmitted(true);
+      
+      setTimeout(() => {
+        router.replace('/incidents');
+      }, 1500);
+    } catch (err: any) {
+      setGlobalError(err?.message || 'Failed to create incident. Please try again.');
+    }
   };
+
+  const handleFormSubmit = (e: React.FormEvent) => {
+    handleSubmit(onSubmit)(e);
+  };
+
   return (
     <div className="min-h-screen max-w-8xl shadow-inner rounded-sm m-auto py-8 px-4 sm:px-6 lg:px-8">
       <div className="mx-auto space-y-8">
@@ -112,7 +152,7 @@ export default function IncidentReportForm() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4 rounded-xl bg-card">
+        <form onSubmit={handleFormSubmit} className="flex flex-col gap-4 rounded-xl bg-card">
           <div className="bg-card rounded-xl border border-border p-6 space-y-6">
             <h2 className="text-lg font-medium text-foreground">Incident Details</h2>
 
@@ -128,7 +168,10 @@ export default function IncidentReportForm() {
                 label="Incident Type"
                 options={INCIDENT_OPTIONS}
                 value={watch('incidentType')}
-                onChange={(val) => setValue('incidentType', val, { shouldValidate: true })}
+                onChange={(val) => {
+                  console.log('🔄 Incident type changed to:', val);
+                  setValue('incidentType', val, { shouldValidate: true });
+                }}
                 placeholder="Select incident type"
                 error={errors.incidentType?.message}
                 buttonClassName={`py-3.5 mt-2 ${errors.incidentType && 'border-destructive'}`}
@@ -189,20 +232,23 @@ export default function IncidentReportForm() {
                   key={id}
                   label={label}
                   checked={phiDataTypes.includes(id)}
-                  onChange={(checked) => {
-                    if (checked) {
-                      togglePhiDataType(id);
-                    } else {
-                      togglePhiDataType(id);
-                    }
-                  }}
+                  onChange={() => togglePhiDataType(id)}
                 />
               ))}
             </div>
           </div>
 
-          <div className="flex justify-end">
-            <Button type="submit" disabled={isSubmitting}>
+          <div className="flex justify-end gap-4">
+            <div className="text-sm text-muted-foreground flex items-center gap-2">
+              <span>Errors: {Object.keys(errors).length}</span>
+              <span>|</span>
+              <span>Submitting: {isSubmitting ? 'Yes' : 'No'}</span>
+            </div>
+            
+            <Button 
+              type="submit" 
+              disabled={isSubmitting}
+            >
               {isSubmitting ? <Loading /> : 'Submit Incident Report'}
             </Button>
           </div>

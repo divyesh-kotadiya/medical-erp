@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Building2 } from 'lucide-react';
-import { fetchMe } from '@/store/slices/auth';
+import { fetchMe, updateProfile } from '@/store/slices/auth';
 
 export default function UserProfile() {
   const { user } = useAppSelector((state) => state.auth);
@@ -69,18 +69,14 @@ export default function UserProfile() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!user?.id) return;
+    console.log("Fucation call workring")
     setUpdating(true);
     try {
       const res = await dispatch(
         updateProfile({
-          userId: user.id,
-          fields: {
-            name: profileData.name,
-            email: profileData.email,
-            phone: profileData.phone,
-          },
-          avatarFile: selectedFile,
+          name: profileData.name,
+          phone: profileData.phone,
+          avatar: selectedFile,
         }),
       ).unwrap();
       enqueueSnackbar(res?.message || 'Profile updated successfully', { variant: 'success' });

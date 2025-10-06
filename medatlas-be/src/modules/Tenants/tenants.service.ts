@@ -116,6 +116,7 @@ export class TenantsService {
           User: {
             name: 1,
             email: 1,
+            avatar: 1,
             _id: 1,
           },
           tenantId: 1,
